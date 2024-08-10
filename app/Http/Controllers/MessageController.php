@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Filesend;
 use finfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -68,8 +69,12 @@ class MessageController extends Controller
         $extension = $this->getExtensionFromMimeType($mimeType);
 
         // Nome completo do arquivo com extensão
-        $fileName = "whatsapp/files/$hashedFileName.$extension";
-
+        $fileName = "/whatsapp/files/$hashedFileName.$extension";
+        Filesend::create([
+            'path' => $fileName,
+            'type' => FILEINFO_MIME_TYPE,
+            'forget_in' => now()->addMinutes(30)
+        ]);;
         // Salvar o conteúdo baixado no armazenamento local do Laravel
         Storage::disk('local')->put($fileName, $fileContent);
         $savedFileContent = Storage::disk('local')->get($fileName);
