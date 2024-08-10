@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('path');
             $table->string('type');
+            $table->date('forget_in');
             $table->timestamps();
         });
     }
