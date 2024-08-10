@@ -68,7 +68,7 @@ class MessageController extends Controller
         $extension = $this->getExtensionFromMimeType($mimeType);
 
         // Nome completo do arquivo com extensão
-        $fileName = $hashedFileName . '.' . $extension;
+        $fileName = "whatsapp/files/$hashedFileName.$extension";
 
         // Salvar o conteúdo baixado no armazenamento local do Laravel
         Storage::disk('local')->put($fileName, $fileContent);
