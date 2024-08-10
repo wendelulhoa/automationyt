@@ -18,22 +18,14 @@ class WhatsappController extends Controller
     public function getQrcode(string $sessionId)
     {
        try {
-            // Url que pega o qrcode
-            $urlApi = "http://localhost:3001/api/{$sessionId}/getqrcode";
-
-            // Pega o qrcode
-            $_response = Http::get($urlApi);
-
-            // Caso ocorra falha
-            if($_response->failed()) {
-                return response()->json(['sucess' => false, 'message' => 'Ops! ocorreu um erro ao gerar qrcode.']);
-            }
+            // Variável para armazenar o resultado
+            $result = (new WebsocketWhatsapp($sessionId, 'getQrcode'))->connWebSocket();
 
             // Conteúdo
-            $content = $_response->json();
+            $content = $result['response'];
 
             // Gera o qrcode
-            $qrCode = QRCode::text(trim($content['code']))
+            $qrCode = QRCode::text(trim($content['qrCode']))
             ->setSize(100)
             ->setMargin(2)
             ->svg();

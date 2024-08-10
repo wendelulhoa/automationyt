@@ -3,58 +3,95 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Ratchet\Client\Connector;
-use React\EventLoop\Loop;
 
 class GroupController extends Controller
 {
+    /**
+     * Pega todos os grupos da instância
+     *
+     * @param string $sessionId 
+     * 
+     * @return JsonResponse
+     */
     public function getAllGroups(string $sessionId) 
     {
         try {
-            // Criar um loop de eventos
-            $loop = Loop::get();
-            $connector = new Connector($loop);
-
-            // URL do servidor Node.js com Socket.IO
-            $url = 'ws://localhost:8080';
-
             // Variável para armazenar o resultado
-            $groups = null;
-            $error = null;
-
-            // Conectar ao WebSocket
-            $connector($url)->then(function($conn) use ($sessionId, &$groups, &$loop) {
-                // Enviar dados para o servidor Node.js
-                $conn->send(json_encode(['sessionId' => $sessionId, 'action' => 'getAllGroups']));
-                // $conn->send(json_encode(['sessionId' => $sessionId, 'action' => 'getQrcode']));
-
-                $conn->on('message', function($msg) use($conn, &$groups, &$loop) {
-                    $groups = json_decode($msg->getPayload(), true);
-                    $conn->close();
-                    $loop->stop(); // Para o loop após receber a resposta
-                });
-
-            }, function ($e) use (&$error, &$loop) {
-                echo "Não foi possível conectar: {$e->getMessage()}\n";
-                $error = $e->getMessage();
-                $loop->stop(); // Para o loop em caso de erro
-            });
-
-            // Executa o loop até que ele seja interrompido
-            $loop->run();
-
-            // Verifica se houve um erro
-            if ($error) {
-                throw new \Exception($error);
-            }
+            $result = (new WebsocketWhatsapp($sessionId, 'getAllGroups'))->connWebSocket();
 
             // Retorna a resposta JSON com os grupos obtidos
-            return response()->json(['success' => true, 'message' => 'Grupos obtidos com sucesso.', 'groups' => $groups]);
-
+            return response()->json(['success' => $result['success'], 'message' => 'Grupos obtidos com sucesso.', 'groups' => $result['response']]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
-    // Outros métodos...
+
+    public function setGroupProperty(Request $request, string $sessionId) 
+    {
+        try {
+            $params = $request->validate([
+                'groupId'  => 'required|string',
+                'property' => 'required|string',
+                'active'   => 'required|string'
+            ]);
+
+            // Variável para armazenar o resultado
+            $result = (new WebsocketWhatsapp($sessionId, 'setGroupProperty', $params))->connWebSocket();
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $result['success'], 'message' => $result['response']]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function setGroupSubject(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                'groupId'  => 'required|string',
+                'subject' => 'required|string'
+            ]);
+
+            // Variável para armazenar o resultado
+            $result = (new WebsocketWhatsapp($sessionId, 'setGroupSubject', $params))->connWebSocket();
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $result['success'], 'message' => $result['response']]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function setGroupDescription(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                'groupId'  => 'required|string',
+                'description' => 'required|string'
+            ]);
+
+            // Variável para armazenar o resultado
+            $result = (new WebsocketWhatsapp($sessionId, 'setGroupDescription', $params))->connWebSocket();
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $result['success'], 'message' => $result['response']]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getGroupInviteLink(Request $request, string $sessionId, string $groupId)
+    {
+        try {
+            // Variável para armazenar o resultado
+            $result = (new WebsocketWhatsapp($sessionId, 'getGroupInviteLink', ['groupId' => $groupId]))->connWebSocket();
+
+            // Retorna a resposta JSON com os grupos obtidos
+            return response()->json(['success' => $result['success'], 'message' => 'Link de convite obtido com sucesso.', 'link' => $result['response']['link']]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }
