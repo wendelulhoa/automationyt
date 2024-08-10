@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use finfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -46,7 +47,7 @@ class MessageController extends Controller
             'path' => 'required|string'
         ]);
         // URL do arquivo que você deseja baixar
-        $urlFile = 'https://example.com/path/to/file';
+        $urlFile = $data['path'];
 
         // Baixar o conteúdo do arquivo
         $fileContent = file_get_contents($data['path']);
@@ -60,13 +61,21 @@ class MessageController extends Controller
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($fileContent);
 
-        // Criptografar a URL do arquivo para usar como nome do arquivo
-        $encryptionKey = 'chave_secreta'; // Defina uma chave secreta segura
-        $encryptedFileName = openssl_encrypt($urlFile, 'AES-128-ECB', $encryptionKey);
+        // Gerar um hash MD5 da URL para usar como nome do arquivo
+        $hashedFileName = md5($urlFile);
+
+        // Determinar a extensão do arquivo com base no mimetype
+        $extension = $this->getExtensionFromMimeType($mimeType);
+
+        // Nome completo do arquivo com extensão
+        $fileName = $hashedFileName . '.' . $extension;
 
         // Salvar o conteúdo baixado no armazenamento local do Laravel
-        Storage::disk('local')->put($encryptedFileName, $fileContent);
-        $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'fileBase64' => '']))->connWebSocket();
+        Storage::disk('local')->put($fileName, $fileContent);
+        $savedFileContent = Storage::disk('local')->get($fileName);
+        $savedFileHash = md5($urlFile);
+        dd($savedFileHash, $hashedFileName);
+        // $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'fileBase64' => '']))->connWebSocket();
     }
 
     public function sendPoll(Request $request) 
@@ -84,5 +93,19 @@ class MessageController extends Controller
             'message' => 'URL descriptografada com sucesso',
             'url_file' => $urlFile
         ]);
+    }
+
+    private function getExtensionFromMimeType($mimeType)
+    {
+        $mimeTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'application/pdf' => 'pdf',
+            'video/mp4' => 'mp4',
+            // Adicione mais mimetypes conforme necessário
+        ];
+
+        return $mimeTypes[$mimeType] ?? 'bin';
     }
 }
