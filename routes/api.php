@@ -21,4 +21,6 @@ Route::group(['prefix' => '/{sessionId}'], function() {
         Route::any('/send-image', [MessageController::class, 'sendImage']);
         Route::post('/send-text', [MessageController::class, 'sendText']);
     });
+    
+    Route::get('/downloadfile/{filename}', [WhatsappController::class, 'downloadFile'])->name('wapiwu.downloadfile');
 });

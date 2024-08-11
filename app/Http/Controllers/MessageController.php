@@ -47,6 +47,7 @@ class MessageController extends Controller
             'caption' => 'string',
             'path' => 'required|string'
         ]);
+
         // URL do arquivo que você deseja baixar
         $urlFile = $data['path'];
 
@@ -74,12 +75,12 @@ class MessageController extends Controller
             'path' => $fileName,
             'type' => FILEINFO_MIME_TYPE,
             'forget_in' => now()->addMinutes(30)
-        ]);;
+        ]);
+
         // Salvar o conteúdo baixado no armazenamento local do Laravel
         Storage::disk('local')->put($fileName, $fileContent);
-        $savedFileContent = Storage::disk('local')->get($fileName);
         $savedFileHash = md5($urlFile);
-        dd($savedFileHash, $hashedFileName);
+
         // $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'fileBase64' => '']))->connWebSocket();
     }
 

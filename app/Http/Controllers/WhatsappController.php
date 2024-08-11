@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use LaravelQRCode\Facades\QRCode;
 
 class WhatsappController extends Controller
@@ -35,4 +36,21 @@ class WhatsappController extends Controller
             return response()->json(['sucess' => false, 'message' => $th->getMessage()]);
        }
     }
+
+
+     /**
+      * Download de arquivos
+      *
+      * @param string $filename
+      * 
+      * @return File
+      */
+     public function downloadFile(string $filename)
+     {
+        $savedFileContent = Storage::disk('local')->get("whatsapp/files/{$filename}");
+
+        
+
+        return response()->download($savedFileContent);
+     }
 }
