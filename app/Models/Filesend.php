@@ -10,5 +10,5 @@ class Filesend extends Model
     use HasFactory;
 
     protected $table = 'filesend';
-    protected $fillable = ['path', 'type', 'forget_in'];
+    protected $fillable = ['path', 'type', 'hash', 'forget_in'];
 }

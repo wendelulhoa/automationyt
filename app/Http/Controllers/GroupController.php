@@ -20,7 +20,7 @@ class GroupController extends Controller
             $result = (new WebsocketWhatsapp($sessionId, 'getAllGroups'))->connWebSocket();
 
             // Retorna a resposta JSON com os grupos obtidos
-            return response()->json(['success' => $result['success'], 'message' => 'Grupos obtidos com sucesso.', 'groups' => $result['response']]);
+            return response()->json(['success' => $result['success'], 'message' => 'Grupos obtidos com sucesso.', 'groups' => $result['response']['groups']]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }

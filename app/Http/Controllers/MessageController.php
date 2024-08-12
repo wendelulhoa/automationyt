@@ -7,6 +7,7 @@ use finfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MessageController extends Controller
 {
@@ -42,46 +43,54 @@ class MessageController extends Controller
 
     public function sendImage(Request $request, string $sessionId) 
     {
-        $data = $request->validate([
-            'chatId' => 'required|string',
-            'caption' => 'string',
-            'path' => 'required|string'
-        ]);
-
-        // URL do arquivo que você deseja baixar
-        $urlFile = $data['path'];
-
-        // Baixar o conteúdo do arquivo
-        $fileContent = file_get_contents($data['path']);
-
-        // Verificar se o conteúdo foi baixado com sucesso
-        if ($fileContent === FALSE) {
-            return response()->json(['error' => 'Não foi possível baixar o arquivo'], 500);
+        try {
+            $data = $request->validate([
+                'chatId' => 'required|string',
+                'caption' => 'string',
+                'path' => 'required|string'
+            ]);
+    
+            // URL do arquivo que você deseja baixar
+            $urlFile = $data['path'];
+    
+            // Baixar o conteúdo do arquivo
+            $fileContent = file_get_contents($data['path']);
+    
+            // Verificar se o conteúdo foi baixado com sucesso
+            if ($fileContent === FALSE) {
+                return response()->json(['error' => 'Não foi possível baixar o arquivo'], 500);
+            }
+    
+            // Determinar o mimetype do arquivo
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($fileContent);
+    
+            // Gerar um hash MD5 da URL para usar como nome do arquivo
+            $hashedUrl = md5($urlFile);
+    
+            // Determinar a extensão do arquivo com base no mimetype
+            $extension = $this->getExtensionFromMimeType($mimeType);
+    
+            // Gerar um nome aleatório para o arquivo
+            $randomFileName = strtolower(Str::random(10));
+    
+            // Nome completo do arquivo com extensão
+            $fileName = "$sessionId/$randomFileName.$extension";
+            Filesend::create([
+                'path' => $fileName,
+                'hash' => $hashedUrl,
+                'type' => FILEINFO_MIME_TYPE,
+                'forget_in' => now()->addMinutes(30)
+            ]);
+    
+            // Salvar o conteúdo baixado no armazenamento local do Laravel
+            Storage::disk('minio')->put($fileName, $fileContent);
+            dd('aqui', $fileName);
+            // $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'filename' => "lkonja7auu.mp4"]))->connWebSocket();
+            
+        } catch (\Throwable $th) {
+            dd($th);
         }
-
-        // Determinar o mimetype do arquivo
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mimeType = $finfo->buffer($fileContent);
-
-        // Gerar um hash MD5 da URL para usar como nome do arquivo
-        $hashedFileName = md5($urlFile);
-
-        // Determinar a extensão do arquivo com base no mimetype
-        $extension = $this->getExtensionFromMimeType($mimeType);
-
-        // Nome completo do arquivo com extensão
-        $fileName = "/whatsapp/files/$hashedFileName.$extension";
-        Filesend::create([
-            'path' => $fileName,
-            'type' => FILEINFO_MIME_TYPE,
-            'forget_in' => now()->addMinutes(30)
-        ]);
-
-        // Salvar o conteúdo baixado no armazenamento local do Laravel
-        Storage::disk('local')->put($fileName, $fileContent);
-        $savedFileHash = md5($urlFile);
-
-        // $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'fileBase64' => '']))->connWebSocket();
     }
 
     public function sendPoll(Request $request) 
