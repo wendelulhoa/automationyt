@@ -46,6 +46,7 @@ services:
             - NET_ADMIN
         links:
             - db-mysql
+        command: npm install && npm start
 
 networks:
     dev-wapiwuphp:

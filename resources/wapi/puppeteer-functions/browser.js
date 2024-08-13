@@ -23,7 +23,7 @@ export async function getPage(sessionId) {
             browser = await puppeteer.connect({ browserWSEndpoint: wsEndpoint });
         } catch (error) {
             browser = await puppeteer.launch({
-                headless: false,
+                headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 product: 'chrome',
                 protocol: 'webDriverBiDi',
@@ -34,7 +34,7 @@ export async function getPage(sessionId) {
         }
     } else {
         browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
             product: 'chrome',
             protocol: 'webDriverBiDi',

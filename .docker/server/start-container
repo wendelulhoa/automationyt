@@ -22,5 +22,5 @@ git config --system user.email "$GITEMAIL"
 exec /usr/sbin/apache2ctl -D FOREGROUND
 
 # Iniciar o servidor WebSocket
-cd /var/www/html/resources/wapiwu
-node websocket.js
+npm install
+npm start
