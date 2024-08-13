@@ -49,45 +49,44 @@ class MessageController extends Controller
                 'caption' => 'string',
                 'path' => 'required|string'
             ]);
+
+            // // URL do arquivo que você deseja baixar
+            // $urlFile = $data['path'];
     
-            // URL do arquivo que você deseja baixar
-            $urlFile = $data['path'];
+            // // Baixar o conteúdo do arquivo
+            // $fileContent = file_get_contents($data['path']);
     
-            // Baixar o conteúdo do arquivo
-            $fileContent = file_get_contents($data['path']);
+            // // Verificar se o conteúdo foi baixado com sucesso
+            // if ($fileContent === FALSE) {
+            //     return response()->json(['error' => 'Não foi possível baixar o arquivo'], 500);
+            // }
     
-            // Verificar se o conteúdo foi baixado com sucesso
-            if ($fileContent === FALSE) {
-                return response()->json(['error' => 'Não foi possível baixar o arquivo'], 500);
-            }
+            // // Determinar o mimetype do arquivo
+            // $finfo = new finfo(FILEINFO_MIME_TYPE);
+            // $mimeType = $finfo->buffer($fileContent);
     
-            // Determinar o mimetype do arquivo
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $mimeType = $finfo->buffer($fileContent);
+            // // Gerar um hash MD5 da URL para usar como nome do arquivo
+            // $hashedUrl = md5($urlFile);
     
-            // Gerar um hash MD5 da URL para usar como nome do arquivo
-            $hashedUrl = md5($urlFile);
+            // // Determinar a extensão do arquivo com base no mimetype
+            // $extension = $this->getExtensionFromMimeType($mimeType);
     
-            // Determinar a extensão do arquivo com base no mimetype
-            $extension = $this->getExtensionFromMimeType($mimeType);
+            // // Gerar um nome aleatório para o arquivo
+            // $randomFileName = strtolower(Str::random(10));
     
-            // Gerar um nome aleatório para o arquivo
-            $randomFileName = strtolower(Str::random(10));
+            // // Nome completo do arquivo com extensão
+            // $fileName = "$sessionId/$randomFileName.$extension";
+            // Filesend::create([
+            //     'path' => $fileName,
+            //     'hash' => $hashedUrl,
+            //     'type' => FILEINFO_MIME_TYPE,
+            //     'forget_in' => now()->addMinutes(30)
+            // ]);
     
-            // Nome completo do arquivo com extensão
-            $fileName = "$sessionId/$randomFileName.$extension";
-            Filesend::create([
-                'path' => $fileName,
-                'hash' => $hashedUrl,
-                'type' => FILEINFO_MIME_TYPE,
-                'forget_in' => now()->addMinutes(30)
-            ]);
-    
-            // Salvar o conteúdo baixado no armazenamento local do Laravel
-            Storage::disk('minio')->put($fileName, $fileContent);
-            dd('aqui', $fileName);
-            // $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'filename' => "lkonja7auu.mp4"]))->connWebSocket();
-            
+            // // Salvar o conteúdo baixado no armazenamento local do Laravel
+            // Storage::put($fileName, $fileContent);
+            $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'caption' => $request->caption, 'filename' => "5i3oct0ejn.mp4"]))->connWebSocket();
+            dd($result);
         } catch (\Throwable $th) {
             dd($th);
         }

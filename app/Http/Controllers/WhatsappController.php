@@ -84,25 +84,14 @@ class WhatsappController extends Controller
                $filePath = "$sessionId/$filename";
 
                // Verificar se o arquivo existe no MinIO
-               if (!Storage::disk('minio')->exists($filePath)) {
+               if (!Storage::exists($filePath)) {
                     return response()->json(['error' => 'Arquivo não encontrado'], 404);
                }
 
-               // Obter o conteúdo do arquivo
-               $fileContents = Storage::disk('minio')->get($filePath);
-
-               // Obter o tipo MIME do arquivo
-               $mimeType = Storage::disk('minio')->mimeType($filePath);
-
                // Retornar o arquivo para download
-               return response()->stream(function () use ($fileContents) {}, 200,
-                    [
-                         'Content-Type' => $mimeType,
-                         'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                    ]
-               );
+               return Storage::download($filePath);
           } catch (\Throwable $th) {
-               dd($th);
+               return response()->json(['error' => $th->getMessage()], 500);
           }
      }
 }

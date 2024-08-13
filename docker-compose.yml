@@ -1,0 +1,56 @@
+services:
+    db-mysql:
+        image: mysql:8.0.33
+        container_name: mysql-wapiwuphp
+        command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE:-wapiwuphp}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234567}
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports:
+            - 3383:3306
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - dev-wapiwuphp
+
+    redis:
+        image: redis:latest
+        container_name: redis-wapiwuphp
+        networks:
+            - dev-wapiwuphp
+    web:
+        depends_on:
+            - db-mysql
+        image: wapiwuphp
+        container_name: server-wapiwuphp
+        build:
+            context: ./.docker/server
+            dockerfile: Dockerfile
+            args:
+                WWWUSER: ${WWWUSER:-developer}
+                WWWGROUP: ${WWWGROUP:-1000}
+        environment:
+            GITNAME: ${GITNAME:-developer}
+            GITEMAIL: ${GITEMAIL:-developer@ulhoa.com}
+        restart: 'no'
+        ports:
+            - "8001:80"
+        working_dir: /var/www/html/wapiwuphp
+        volumes:
+            - .:/var/www/html/wapiwuphp
+            - ~/.ssh:/root/.ssh
+        networks:
+            - dev-wapiwuphp
+        cap_add:
+            - NET_ADMIN
+        links:
+            - db-mysql
+
+networks:
+    dev-wapiwuphp:
+        driver: bridge
+
+volumes:
+    mysql_data:
+        driver: local

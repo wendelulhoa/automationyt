@@ -41,6 +41,12 @@ class WebsocketWhatsapp extends Controller
 
             // Conectar ao WebSocket
             $connector($this->url)->then(function($conn) use (&$_response, &$loop) {
+                // Adicionar temporizador de 30 segundos
+                $loop->addTimer(30, function () use ($conn, &$loop) {
+                    $conn->close();
+                    $loop->stop(); // Para o loop após receber a resposta
+                });
+
                 // Enviar dados para o servidor Node.js
                 $conn->send(json_encode(['sessionId' => $this->sessionId, 'action' => $this->fnAction, 'params' => $this->params]));
 
