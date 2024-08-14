@@ -7,6 +7,32 @@ use Illuminate\Http\Request;
 class GroupController extends Controller
 {
     /**
+     * Cria um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function createGroup(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                'name' => 'required|string',
+                'participants' => 'required|array'
+            ]);
+
+            // Variável para armazenar o resultado
+            $result = (new WebsocketWhatsapp($sessionId, 'createGroup', $params))->connWebSocket();
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $result['success'], 'message' => $result['response']]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Pega todos os grupos da instância
      *
      * @param string $sessionId 
@@ -26,7 +52,14 @@ class GroupController extends Controller
         }
     }
 
-
+    /**
+     * Seta uma propriedade de um grupo
+     *
+     * @param string $sessionId
+     * @param string $groupId
+     * 
+     * @return JsonResponse
+     */
     public function setGroupProperty(Request $request, string $sessionId) 
     {
         try {
@@ -46,6 +79,13 @@ class GroupController extends Controller
         }
     }
 
+    /**
+     * Seta a descrição de um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * @return void
+     */
     public function setGroupSubject(Request $request, string $sessionId)
     {
         try {
@@ -64,6 +104,13 @@ class GroupController extends Controller
         }
     }
 
+    /**
+     * Seta a descrição de um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * @return void
+     */
     public function setGroupDescription(Request $request, string $sessionId)
     {
         try {
@@ -82,6 +129,13 @@ class GroupController extends Controller
         }
     }
 
+    /**
+     * Busca o link de convite de um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * @return void
+     */
     public function getGroupInviteLink(Request $request, string $sessionId, string $groupId)
     {
         try {

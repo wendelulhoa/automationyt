@@ -3,6 +3,9 @@
 ## Variáveis
 source .env
 
+# Iniciar o servidor WebSocket
+npm install && npm start
+
 ## Define usuário e Permissões dos arquivos
 chown $WWWUSER:www-data -R /var/www/html/wapiwuphp
 
@@ -20,7 +23,3 @@ git config --system user.name "$GITNAME"
 git config --system user.email "$GITEMAIL"
 
 exec /usr/sbin/apache2ctl -D FOREGROUND
-
-# Iniciar o servidor WebSocket
-npm install
-npm start

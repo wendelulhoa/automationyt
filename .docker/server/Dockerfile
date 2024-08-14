@@ -148,9 +148,7 @@ RUN chmod +x /usr/local/bin/start-container
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 # Rodar npm install na pasta resources/wapiwu
-WORKDIR /var/www/html/resources/wapiwu
-COPY resources/wapiwu/package*.json ./
-RUN npm install
+# RUN npm install
 
 EXPOSE 80
 

@@ -18,4 +18,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/resources/wapiwu/puppeteer-functions/sessions
+/resources/wapi/puppeteer-functions/sessions
+/resources/wapi/puppeteer-functions/sessions.json

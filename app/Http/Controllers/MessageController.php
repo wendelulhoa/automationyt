@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Filesend;
 use finfo;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -16,9 +17,10 @@ class MessageController extends Controller
      *
      * @param Request $request
      * @param string $sessionId
-     * @return void
+     * 
+     * @return JsonResponse
      */
-    public function sendText(Request $request, string $sessionId) 
+    public function sendText(Request $request, string $sessionId): JsonResponse
     {
         try {
             $params = $request->validate([
@@ -38,10 +40,25 @@ class MessageController extends Controller
         }
     }
 
-    public function sendVcard(Request $request) 
-    {}
+    /**
+     * Envia um contato
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * @return JsonResponse
+     */
+    // public function sendVcard(Request $request): JsonResponse
+    // {}
 
-    public function sendImage(Request $request, string $sessionId) 
+    /**
+     * Envia uma imagem
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function sendImage(Request $request, string $sessionId): JsonResponse
     {
         try {
             $data = $request->validate([
@@ -50,66 +67,68 @@ class MessageController extends Controller
                 'path' => 'required|string'
             ]);
 
-            // // URL do arquivo que você deseja baixar
-            // $urlFile = $data['path'];
+            // Verificar se o arquivo já foi enviado anteriormente
+            $fileSend = Filesend::where('hash', md5($data['path']))->first();
+            $fileName = $fileSend->path ?? null;
+
+            // Verificar se o arquivo já foi enviado anteriormente
+            if(empty($fileSend)) {
+                // Baixar o conteúdo do arquivo
+                $fileContent = file_get_contents($data['path']);
+        
+                // Verificar se o conteúdo foi baixado com sucesso
+                if ($fileContent === FALSE) {
+                    return response()->json(['error' => 'Não foi possível baixar o arquivo'], 500);
+                }
+        
+                // Determinar o mimetype do arquivo
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mimeType = $finfo->buffer($fileContent);
+        
+                // Determinar a extensão do arquivo com base no mimetype
+                $extension = $this->getExtensionFromMimeType($mimeType);
+        
+                // Gerar um nome aleatório para o arquivo
+                $randomFileName = strtolower(Str::random(10));
+        
+                // Nome completo do arquivo com extensão
+                $fileName = "$randomFileName.$extension";
+                Filesend::create([
+                    'path' => $fileName,
+                    'hash' => md5($data['path']),
+                    'type' => FILEINFO_MIME_TYPE,
+                    'forget_in' => now()->addMinutes(120)
+                ]);
+        
+                // Salvar o conteúdo baixado no armazenamento local do Laravel
+                Storage::put($fileName, $fileContent);
     
-            // // Baixar o conteúdo do arquivo
-            // $fileContent = file_get_contents($data['path']);
-    
-            // // Verificar se o conteúdo foi baixado com sucesso
-            // if ($fileContent === FALSE) {
-            //     return response()->json(['error' => 'Não foi possível baixar o arquivo'], 500);
-            // }
-    
-            // // Determinar o mimetype do arquivo
-            // $finfo = new finfo(FILEINFO_MIME_TYPE);
-            // $mimeType = $finfo->buffer($fileContent);
-    
-            // // Gerar um hash MD5 da URL para usar como nome do arquivo
-            // $hashedUrl = md5($urlFile);
-    
-            // // Determinar a extensão do arquivo com base no mimetype
-            // $extension = $this->getExtensionFromMimeType($mimeType);
-    
-            // // Gerar um nome aleatório para o arquivo
-            // $randomFileName = strtolower(Str::random(10));
-    
-            // // Nome completo do arquivo com extensão
-            // $fileName = "$sessionId/$randomFileName.$extension";
-            // Filesend::create([
-            //     'path' => $fileName,
-            //     'hash' => $hashedUrl,
-            //     'type' => FILEINFO_MIME_TYPE,
-            //     'forget_in' => now()->addMinutes(30)
-            // ]);
-    
-            // // Salvar o conteúdo baixado no armazenamento local do Laravel
-            // Storage::put($fileName, $fileContent);
-            $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'caption' => $request->caption, 'filename' => "5i3oct0ejn.mp4"]))->connWebSocket();
-            dd($result);
+                // Se o arquivo não foi encontrado após 15 segundos, lançar uma exceção
+                if (!Storage::exists($fileName)) {
+                    throw new \Exception("Erro ao salvar o arquivo no armazenamento.");
+                }
+            }
+
+            // Enviar o arquivo
+            $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'caption' => $request->caption, 'filename' => $fileName]))->connWebSocket();
+            
+            return response()->json(['success' => $result['response']['success'], 'message' => ($result['response']['success'] ? 'Imagem enviada com sucesso.' : 'Erro ao enviar a imagem.')]);
         } catch (\Throwable $th) {
-            dd($th);
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
     }
 
     public function sendPoll(Request $request) 
     {}
 
-    public function decryptFileName($encryptedFileName)
-    {
-        // Chave de criptografia usada anteriormente
-        $encryptionKey = 'chave_secreta'; // Deve ser a mesma chave usada para criptografar
-
-        // Descriptografar o nome do arquivo para obter a URL original
-        $urlFile = openssl_decrypt($encryptedFileName, 'AES-128-ECB', $encryptionKey);
-
-        return response()->json([
-            'message' => 'URL descriptografada com sucesso',
-            'url_file' => $urlFile
-        ]);
-    }
-
-    private function getExtensionFromMimeType($mimeType)
+    /**
+     * Função para obter a extensão do arquivo com base no mimetype
+     *
+     * @param string $mimeType
+     * 
+     * @return string
+     */
+    private function getExtensionFromMimeType(string $mimeType)
     {
         $mimeTypes = [
             'image/jpeg' => 'jpg',

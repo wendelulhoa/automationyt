@@ -1,16 +1,9 @@
 import { getPage } from "../../puppeteer-functions/browser.js";
 import fs from 'fs'; // Importar o módulo fs padrão
 import path from 'path';
-import { fileURLToPath } from 'url';
 import mime from 'mime-types';
-import http from 'http';
-import https from 'https';
 import dotenv from 'dotenv';
-import axios from 'axios';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+import { fileURLToPath } from 'url';
 // Carregar variáveis de ambiente do arquivo .env
 dotenv.config();
 
@@ -18,35 +11,6 @@ dotenv.config();
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-// Função para baixar o arquivo usando http ou https
-async function downloadFile(url, filePath) {
-    try {
-        const response = await axios({
-            method: 'get',
-            url: url,
-            responseType: 'stream'
-        });
-
-        const file = fs.createWriteStream(filePath);
-        response.data.pipe(file);
-
-        file.on('finish', () => {
-            file.close(() => {
-                fs.readFile(filePath, (err, data) => {
-                    if (err) {
-                        console.error('Erro ao ler o arquivo:', err);
-                        return;
-                    }
-                    const base64Data = data.toString('base64');
-                });
-            });
-        });
-    } catch (error) {
-        console.error(`Erro ao baixar o arquivo: ${error.message}`);
-    }
-}
-
 
 // Busca todos os grupos
 export async function sendFile(sessionId, chatId, caption, filename) {
@@ -57,22 +21,18 @@ export async function sendFile(sessionId, chatId, caption, filename) {
         const mimeType = mime.lookup(filename) || 'application/octet-stream';  // Determina o MIME type com base no nome do arquivo
 
         try {
-            // Exemplo de uso da função downloadFile
-            const url = `${process.env.API_ENDPOINT}/dev-session5180/downloadfile/${filename}`;
-            const filePath = path.join(__dirname, 'files', `video.mp4`);
-            const auxFileName = 'video.mp4';
+            // Caminho relativo
+            const relativePath = `/var/www/html/wapiwuphp/storage/app/${filename}`;
 
-            // Baixa o arquivo
-            await downloadFile(url, filePath);
-
-            // Pausa a execução por 0.5 segundo
-            await sleep(1000);
+            // Caminho absoluto
+            const filePath = path.join('', relativePath);
+            console.log(filePath);
 
             // Lê o conteúdo do arquivo como base64
             const fileContent = await fs.promises.readFile(filePath, { encoding: 'base64' });
 
             // Transforma em um objeto File no contexto da página
-            await page.evaluate((fileContent, auxFileName, mimeType) => {
+            await page.evaluate((fileContent, filename, mimeType) => {
                 // Converte a string base64 em um ArrayBuffer
                 const binaryString = window.atob(fileContent);
                 const binaryLen = binaryString.length;
@@ -86,20 +46,20 @@ export async function sendFile(sessionId, chatId, caption, filename) {
                 const blob = new Blob([bytes], { type: mimeType });
 
                 // Cria um objeto File a partir do Blob
-                window.fileSend = new File([blob], auxFileName, { type: mimeType });
-            }, fileContent, auxFileName, mimeType);
+                window.fileSend = new File([blob], filename, { type: mimeType });
+            }, fileContent, filename, mimeType);
 
             // Envia o arquivo
-            const response = await page.evaluate(async (chatId, filename, caption) => {
-                return await window.WAPI.sendFile(chatId, caption);
+            var response = await page.evaluate(async (chatId, filename, caption) => {
+                return await window.WAPIWU.sendFile(chatId, caption);
             }, chatId, filename, caption);
 
+            return {success: response.success, message: response.message, response: response};
         } catch (error) {
-            return {success: true, message: 'Erro ao enviar o arquivo', error: error};
+            return {success: false, message: 'Erro ao enviar o arquivo', error: error.message};
         }
-
-        return {success: true, message: 'Arquivo enviado com sucesso', response: response};
     } catch (error) {
+        console.log(error);
         return {success: false, message: 'Erro ao enviar o arquivo', error: error};
     }
 }

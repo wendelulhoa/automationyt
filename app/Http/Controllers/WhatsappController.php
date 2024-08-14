@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
 
@@ -16,9 +14,9 @@ class WhatsappController extends Controller
      *
      * @param string $sessionId
      * 
-     * @return Image
+     * @return JsonResponse
      */
-    public function getQrcode(string $sessionId)
+    public function getQrcode(string $sessionId): JsonResponse
      {
           try {
                // Conecta ao WebSocket e obtém o conteúdo da resposta
@@ -65,33 +63,6 @@ class WhatsappController extends Controller
                     'status' => $th->getMessage(),
                     'qrcode' => null
                ]);
-          }
-     }
-
-
-
-     /**
-      * Download de arquivos
-      *
-      * @param string $filename
-      * 
-      * @return File
-      */
-     public function downloadFile(string $sessionId, string $filename)
-     {
-          try {
-               // Caminho do arquivo no MinIO
-               $filePath = "$sessionId/$filename";
-
-               // Verificar se o arquivo existe no MinIO
-               if (!Storage::exists($filePath)) {
-                    return response()->json(['error' => 'Arquivo não encontrado'], 404);
-               }
-
-               // Retornar o arquivo para download
-               return Storage::download($filePath);
-          } catch (\Throwable $th) {
-               return response()->json(['error' => $th->getMessage()], 500);
           }
      }
 }

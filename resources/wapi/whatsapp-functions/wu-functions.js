@@ -142,34 +142,6 @@ export async function injectFunctions(page, sessionId) {
             }
         };
 
-        /**
-         * Converte uma string base64 em um objeto File.
-         *
-         * @param {string} base64 - A string base64 para converter.
-         * @param {string} fileName - O nome do arquivo a ser criado.
-         * @param {string} mimeType - O tipo MIME do arquivo (ex: 'image/jpeg' ou 'video/mp4').
-         * @returns {File} O objeto File criado.
-         */
-        window.WAPIWU.base64ToFile = async (base64, fileName, mimeType) => {
-            // Remove a parte do base64 que é o tipo MIME (se existir)
-            const base64Data = base64.replace(/^data:.+;base64,/, '');
-            
-            // Converte base64 em um ArrayBuffer
-            const binaryString = window.atob(base64Data);
-            const binaryLen = binaryString.length;
-            const bytes = new Uint8Array(binaryLen);
-            
-            for (let i = 0; i < binaryLen; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            
-            // Cria um Blob a partir do ArrayBuffer
-            const blob = new Blob([bytes], { type: mimeType });
-            
-            // Cria um File a partir do Blob
-            return new File([blob], fileName, { type: mimeType });
-        }
-
         // Função que retorna as configurações para enviar o arquivo
         window.WAPIWU.getConfigsSend = async (prepRawMedia, caption = '') => {
             // Busca as informações de todos os grupos
@@ -193,7 +165,7 @@ export async function injectFunctions(page, sessionId) {
             msg.isNewMsg = true
             msg.local = true
             msg.ack = 0
-            msg.caption = "teste"
+            msg.caption = caption
             msg.mentionedJidList = []
             msg.groupMentions = []
             msg.ephemeralSettingTimestamp = null
@@ -230,7 +202,7 @@ export async function injectFunctions(page, sessionId) {
         }
 
         // Faz o envio do arquivo
-        window.WAPIWU.sendFile = async (chatId, caption) =>{
+        window.WAPIWU.sendFile = async (chatId, caption) => {
             try {
                 // Cria o arquivo para envio
                 var createFromData = await require("WAWebMediaOpaqueData").createFromData(window.fileSend, window.fileSend.type)
@@ -252,8 +224,53 @@ export async function injectFunctions(page, sessionId) {
 
                 return {success: success, message: (success ? 'Arquivo enviado com sucesso' : 'Erro ao enviar o arquivo'), response: response};
             } catch (error) {
-                return {success: false, message: 'Erro ao enviar o arquivo', error: error};
+                return {success: false, message: 'Erro ao enviar o arquivo a', error: error};
             }
         }
+
+        // Cria um novo grupo
+        window.WAPIWU.createGroup = async (name, participants = []) => {
+            try {
+                // Ação que irá criar o grupo
+                var createGroup = require("WAWebCreateGroupAction");
+
+                // Configurações do grupo
+                const configs = {
+                    "title": name,
+                    "ephemeralDuration": 0,
+                    "restrict": false,
+                    "announce": false,
+                    "membershipApprovalMode": false,
+                    "memberAddMode": false
+                }
+                
+                // Cria o grupo
+                const response = await createGroup.createGroup(configs, participants);
+                const success = response.server == "g.us";
+
+                // Busca as informações de um grupo
+                const metadata = await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(response._serialized);
+
+                return {success: success, message: (success ? 'Grupo criado com sucesso' : 'Erro ao criar grupo'), metadata: metadata};
+            } catch (error) {
+                return {success: false, message: 'Erro ao criar grupo', error: error};
+            }
+        }
+
+        // Desativa os autodownloads
+        window.WAPIWU.disableAutoDownloads = () => {
+            var permissionDownload = require('WAWebUserPrefsGeneral');
+
+            // Desativa o download automático
+            permissionDownload.setAutoDownloadPhotos(false);
+            permissionDownload.setAutoDownloadAudio(false);
+            permissionDownload.setAutoDownloadVideos(false);
+            permissionDownload.setAutoDownloadDocuments(false);
+
+            return true;
+        }
+
+        // Desativa todos autodownloads
+        window.WAPIWU.disableAutoDownloads();
     });
 }
