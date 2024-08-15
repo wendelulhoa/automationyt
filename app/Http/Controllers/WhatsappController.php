@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
+use HeadlessChromium\BrowserFactory;
 
 class WhatsappController extends Controller
 {
@@ -18,7 +19,6 @@ class WhatsappController extends Controller
     public function getQrcode(string $sessionId): JsonResponse
      {
           try {
-
                // $this->stopWebSocket();
                // Verifica se o WebSocket está ativo
                if(!$this->checkWebsocket()) {
@@ -32,30 +32,33 @@ class WhatsappController extends Controller
                // Conteúdo do QR code
                $content = $result['response'];
 
-               // Caminho completo para o arquivo
-               $fullPath = public_path("$sessionId-qrcode.svg");
-
-               // Gera o QR code em SVG
-               $qrCode = QRCode::text(trim($content['qrCode']))
-                    ->setSize(6)
-                    ->setMargin(2)
-                    ->setOutfile($fullPath)
-                    ->svg();
-               
-               // Lê o conteúdo do arquivo
-               $fileContent = File::get($fullPath);
-
-               // Obtém o tipo MIME do arquivo
-               $mimeType = File::mimeType($fullPath);
-
-               // Codifica o conteúdo do arquivo para base64
-               $base64Content = base64_encode($fileContent);
-
-               // Cria o Data URI
-               $qrCode = 'data:' . $mimeType . ';base64,' . $base64Content;
-
-               // Exclui o arquivo
-               unlink($fullPath);
+               $qrCode = null;
+               if($content['success']) {
+                    // Caminho completo para o arquivo
+                    $fullPath = public_path("$sessionId-qrcode.svg");
+     
+                    // Gera o QR code em SVG
+                    $qrCode = QRCode::text(trim($content['qrCode']))
+                         ->setSize(6)
+                         ->setMargin(2)
+                         ->setOutfile($fullPath)
+                         ->svg();
+                    
+                    // Lê o conteúdo do arquivo
+                    $fileContent = File::get($fullPath);
+     
+                    // Obtém o tipo MIME do arquivo
+                    $mimeType = File::mimeType($fullPath);
+     
+                    // Codifica o conteúdo do arquivo para base64
+                    $base64Content = base64_encode($fileContent);
+     
+                    // Cria o Data URI
+                    $qrCode = 'data:' . $mimeType . ';base64,' . $base64Content;
+     
+                    // Exclui o arquivo
+                    unlink($fullPath);
+               }
 
                // Retorna o resultado em JSON
                return response()->json([
@@ -97,6 +100,11 @@ class WhatsappController extends Controller
           }
      }
 
+     /**
+      * Para o projeto de WebSocket
+      *
+      * @return void
+      */
      public function stopWebSocket()
      {
           try {
@@ -120,10 +128,15 @@ class WhatsappController extends Controller
           }
      }
 
+     /**
+      * Verifica se o WebSocket está ativo
+      *
+      * @return bool
+      */
      public function checkWebsocket()
      {
           // Usar ps com grep para capturar o processo específico, evitando falsos positivos
-          $command = 'ps aux | grep "node ./resources/wapi/websocket.js" | grep -v grep';
+          $command = 'ps aux | grep "node /var/www/html/wapiwuphp/resources/wapi/websocket.js" | grep -v grep';
           $output = [];
           exec($command, $output);
 

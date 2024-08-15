@@ -56,7 +56,7 @@ export async function getPage(sessionId) {
         page = await browser.newPage();
     }
 
-    const url = await page.url();
+    const url = page.url();
     if (!url.includes('web.whatsapp.com')) {
         await page.goto('https://web.whatsapp.com');
     }
@@ -68,7 +68,7 @@ export async function getPage(sessionId) {
     
     // Se as funções não foram injetadas, injete-as
     if(isInjected === undefined) {
-        await injectFunctions(page, sessionId);
+        await injectFunctions(page);
     }
 
     return page;

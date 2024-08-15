@@ -19,7 +19,7 @@ class WaitRequestMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Aguarda a request ser executada
-        $this->waitRequest();
+        // $this->waitRequest();
 
         return $next($request);
     }
@@ -34,6 +34,6 @@ class WaitRequestMiddleware
     public function terminate($request, $response)
     {
         // Finaliza a request
-        $this->finishRequest();
+        // $this->finishRequest();
     }
 }

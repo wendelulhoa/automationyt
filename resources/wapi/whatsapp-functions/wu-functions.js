@@ -1,5 +1,5 @@
-export async function injectFunctions(page, sessionId) {
-
+export async function injectFunctions(page) {
+    console.log('injetou as funções');
     return await page.evaluate(async () => {
         window.WAPIWU = {};
 
@@ -256,18 +256,6 @@ export async function injectFunctions(page, sessionId) {
                 return {success: false, message: 'Erro ao criar grupo', error: error};
             }
         }
-
-        // Verifica a conexão
-        window.WAPIWU.checkConnection = async () => {
-            try {
-                var WAWebStreamModel = require('WAWebStreamModel');
-                const success = WAWebStreamModel.Stream.__x_displayInfo == 'NORMAL';
-
-                return {success: success, message: (success ? 'Conexão ativa' : 'Conexão inativa')};
-            } catch (error) {
-                return {success: false, message: 'Erro ao verificar a conexão', error: error};
-            }
-        };
 
         // Desativa os autodownloads
         window.WAPIWU.disableAutoDownloads = () => {

@@ -1,4 +1,6 @@
 {
-  "session01": "ws://127.0.0.1:44677/devtools/browser/d23c1e5c-582c-4200-9494-a04792ec87dd",
-  "dev-session5180": "ws://127.0.0.1:40109/devtools/browser/ff9f1403-05e9-400c-b6a8-f47601e817d3"
+  "session01": "ws://127.0.0.1:40141/devtools/browser/94fa5fb4-9360-4f01-a93f-1dbd65deb6a8",
+  "dev-session5180": "ws://127.0.0.1:40109/devtools/browser/ff9f1403-05e9-400c-b6a8-f47601e817d3",
+  "dev-session5173}": "ws://127.0.0.1:39863/devtools/browser/77c8d8c1-6bf6-4b80-bd9c-d5a6ece51558",
+  "dev-session5173": "ws://127.0.0.1:33031/devtools/browser/5735a7b9-caba-4d14-8014-a3c923839931"
 }
