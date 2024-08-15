@@ -3,11 +3,12 @@
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\WhatsappController;
+use App\Http\Middleware\WaitRequestMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-Route::group(['prefix' => '/{sessionId}'], function() {
+Route::group(['prefix' => '/{sessionId}', 'middleware' => [WaitRequestMiddleware::class]], function() {
     Route::get('/getqrcode', [WhatsappController::class, 'getQrcode'])->name('wapiwu.getqrcode');
 
     Route::group(['prefix' => 'group'], function() {

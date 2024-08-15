@@ -257,6 +257,18 @@ export async function injectFunctions(page, sessionId) {
             }
         }
 
+        // Verifica a conexão
+        window.WAPIWU.checkConnection = async () => {
+            try {
+                var WAWebStreamModel = require('WAWebStreamModel');
+                const success = WAWebStreamModel.Stream.__x_displayInfo == 'NORMAL';
+
+                return {success: success, message: (success ? 'Conexão ativa' : 'Conexão inativa')};
+            } catch (error) {
+                return {success: false, message: 'Erro ao verificar a conexão', error: error};
+            }
+        };
+
         // Desativa os autodownloads
         window.WAPIWU.disableAutoDownloads = () => {
             var permissionDownload = require('WAWebUserPrefsGeneral');
