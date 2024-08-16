@@ -68,7 +68,7 @@ class MessageController extends Controller
             ]);
 
             // Verificar se o arquivo já foi enviado anteriormente
-            $fileSend = Filesend::where('hash', md5($data['path']))->first();
+            // $fileSend = Filesend::where('hash', md5($data['path']))->first();
             $fileName = $fileSend->path ?? null;
 
             // Verificar se o arquivo já foi enviado anteriormente
@@ -93,12 +93,12 @@ class MessageController extends Controller
         
                 // Nome completo do arquivo com extensão
                 $fileName = "$randomFileName.$extension";
-                Filesend::create([
-                    'path' => $fileName,
-                    'hash' => md5($data['path']),
-                    'type' => FILEINFO_MIME_TYPE,
-                    'forget_in' => now()->addMinutes(120)
-                ]);
+                // Filesend::create([
+                //     'path' => $fileName,
+                //     'hash' => md5($data['path']),
+                //     'type' => FILEINFO_MIME_TYPE,
+                //     'forget_in' => now()->addMinutes(120)
+                // ]);
         
                 // Salvar o conteúdo baixado no armazenamento local do Laravel
                 Storage::put($fileName, $fileContent);

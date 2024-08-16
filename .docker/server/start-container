@@ -4,7 +4,7 @@
 source .env
 
 # Iniciar o servidor WebSocket
-npm install && npm start
+# npm install && npm start
 
 ## Define usuário e Permissões dos arquivos
 chown $WWWUSER:www-data -R /var/www/html/wapiwuphp

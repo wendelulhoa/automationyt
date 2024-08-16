@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::group(['prefix' => '/{sessionId}', 'middleware' => [WaitRequestMiddleware::class]], function() {
-    Route::get('/getqrcode', [WhatsappController::class, 'getQrcode'])->name('wapiwu.getqrcode');
+    Route::get('/getqrcode', [WhatsappController::class, 'getQrcode1'])->name('wapiwu.getqrcode');
 
     Route::group(['prefix' => 'group'], function() {
         Route::post('/getallgroups', [GroupController::class, 'getAllGroups'])->name('wapiwu.group.getallgroups');

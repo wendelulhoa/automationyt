@@ -1,27 +1,22 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Puppeter;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Ratchet\Client\Connector;
 use React\EventLoop\Loop;
 
-class WebsocketWhatsapp extends Controller
+class Websocketpuppeteer extends Controller
 {
-    // URL do servidor Node.js com Socket.IO
-    // private string $url = 'ws://localhost:8080';
-    private string $url = 'ws://127.0.0.1:9223/devtools/page/3BEA64A8E25016F55EA786C86BE51DF5';
-
     /**
      * Construtor da classe
      *
      * @param string $url
      * @param string $sessionId
-     * @param string $fnAction
-     * @param array $params
      */
-    public function __construct(private string $sessionId, private string $fnAction, private array $params = [])
+    public function __construct(private string $url)
     {
     }
 
@@ -30,7 +25,7 @@ class WebsocketWhatsapp extends Controller
      *
      * @return array
      */
-    public function connWebSocket(): array
+    public function connWebSocket(array $command): array
     {
         try {
             // Criar um loop de eventos
@@ -40,24 +35,18 @@ class WebsocketWhatsapp extends Controller
             // Variável para armazenar o resultado
             $_response = null;
             $_error    = null;
-            
-            // Conectar ao WebSocket
-            $connector($this->url)->then(function($conn) use (&$_response, &$loop) {
-                // Adicionar temporizador de 30 segundos
-                $loop->addTimer(30, function () use ($conn, &$loop) {
-                    $conn->close();
-                    $loop->stop(); // Para o loop após receber a resposta
-                });
 
-                // Enviar dados para o servidor Node.js
-                $conn->send(json_encode(['sessionId' => $this->sessionId, 'action' => $this->fnAction, 'params' => $this->params]));
+            // Conectar ao WebSocket
+            $connector($this->url)->then(function($conn) use (&$_response, &$loop, $command) {
+                // Envia o comando para o WebSocket
+                $conn->send(json_encode($command));
 
                 $conn->on('message', function($msg) use($conn, &$_response, &$loop) {
                     $_response = json_decode($msg->getPayload(), true);
-                    dd($_response, $msg->getPayload());
                     $conn->close();
                     $loop->stop(); // Para o loop após receber a resposta
                 });
+
             }, function ($e) use (&$_error, &$loop) {
                 $_error = $e->getMessage();
                 $loop->stop(); // Para o loop em caso de erro
@@ -71,13 +60,8 @@ class WebsocketWhatsapp extends Controller
                 throw new \Exception($_error);
             }
 
-            return [
-                'success'  => true,
-                'response' => $_response,
-                'error'    => null
-            ];
+            return $_response;
         } catch (\Throwable $th) {
-            dd($th);
             return [
                 'success' => false,
                 'error'   => $th->getMessage()

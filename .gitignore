@@ -20,3 +20,4 @@ yarn-error.log
 /.vscode
 /resources/wapi/puppeteer-functions/sessions
 /resources/wapi/puppeteer-functions/sessions.json
+/chrome-sessions/
