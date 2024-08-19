@@ -4,6 +4,13 @@ import { getPage } from "../../puppeteer-functions/browser.js";
 export async function getAllGroups(sessionId) {
     try {
         const page = await getPage(sessionId);
+
+        // Busca os grupos
+        await page.evaluate(async () => {
+            return  'a'
+        }); 
+
+        return {success: true, message: 'Grupos obtidos'};
         
         // Busca os grupos
         await page.evaluate(async () => {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Puppeter\Traits;
+namespace App\Http\Controllers\Puppeter;
 use App\Http\Controllers\Puppeter\Websocketpuppeteer;
 use Illuminate\Support\Facades\Http;
 
@@ -32,6 +32,28 @@ Class Browser {
     }
 
     /**
+     * Busca sempre a primeira página aberta
+     *
+     * @return Page
+     */
+    public function getFirstPage(): Page
+    {
+        // Pega as páginas abertas
+        $pages = $this->getPages();
+
+        // Verifica se existe alguma página aberta
+        if(count($pages) > 0) {
+            $page = $pages[0];
+        } 
+        // Cria a página caso não exista nenhuma aberta
+        else {
+            $page = $this->createPage('');
+        }
+
+        return $page;
+    }
+
+    /**
      * Método para obter a URL do socket
      *
      * @return string
@@ -39,7 +61,7 @@ Class Browser {
     public function getUrlSocket(): string 
     {
         // Pega o caminho do arquivo que contém a porta
-        $pathPort = "../chrome-sessions/$this->sessionId/port.txt";
+        $pathPort = "./chrome-sessions/$this->sessionId/port.txt";
 
         // Cria os diretórios caso não existam
         if (!file_exists($pathPort)) {
@@ -103,7 +125,30 @@ Class Browser {
         // Pega o ID da aba
         $targetId = $result['result']['targetId'];
 
-        return (new Page("ws://127.0.0.1:{$this->port}/devtools/page/{$targetId}"));
+        return new Page("ws://127.0.0.1:{$this->port}/devtools/page/{$targetId}", $targetId);
+    }
+
+    /**
+     * Busca as abas abertas
+     *
+     * @return array
+     */
+    public function getPages(): array
+    {
+        $result = $this->connection()->connWebSocket([
+            'id' => 1,
+            'method' => 'Target.getTargets'
+        ]);
+
+        // Pega as abas abertas
+        $pages = [];
+        foreach ($result['result']['targetInfos'] as $value) {
+            if($value['type'] == 'page' && !in_array($value['url'], ['chrome://privacy-sandbox-dialog/notice', 'about:blank', 'chrome-untrusted://new-tab-page/one-google-bar?paramsencoded="'])) {
+                $pages[] = new Page("ws://127.0.0.1:{$this->port}/devtools/page/{$value['targetId']}", $value['targetId']);
+            }
+        }
+
+        return $pages;
     }
 
     /**
@@ -115,11 +160,11 @@ Class Browser {
     public function start()
     {
         try {
-            $pathData = "../chrome-sessions/{$this->sessionId}/userdata";
-            $pathLogs = "../chrome-sessions/{$this->sessionId}/logs";
-            $pathPids = "../chrome-sessions/{$this->sessionId}/pids";
-            $pathPort = "../chrome-sessions/{$this->sessionId}/port.txt";
-            $pathDisplay = "../chrome-sessions/{$this->sessionId}/display.txt";
+            exec("chmod -R 777 ./chrome-sessions/");
+            $pathData = "./chrome-sessions/{$this->sessionId}/userdata";
+            $pathLogs = "./chrome-sessions/{$this->sessionId}/logs";
+            $pathPids = "./chrome-sessions/{$this->sessionId}/pids";
+            $pathPort = "./chrome-sessions/{$this->sessionId}/port.txt";
 
             // Cria os diretórios caso não existam
             if (!file_exists($pathLogs)) {
@@ -131,18 +176,32 @@ Class Browser {
 
             // Define a porta e o número do display base
             $basePort = 9224;
-            $baseDisplay = 100;
 
             // Define uma porta e um número de display disponíveis
             $port = $this->getAvailablePort($basePort, $this->sessionId);
-            $display = $this->getAvailableDisplay($baseDisplay, $this->sessionId);
 
             // Armazena a porta e o display em arquivos
             file_put_contents($pathPort, $port);
-            file_put_contents($pathDisplay, $display);
 
+            exec("chmod -R 777 ./chrome-sessions/");
+            exec("chmod -R 777 ./chrome-sessions/{$this->sessionId}/");
+            exec("chown -R root:root ./chrome-sessions/");
+            exec("chmod -R 777 /root/.local");
+  
             // Comando para iniciar o navegador
-            $command = "nohup xvfb-run --server-args=\"-screen 0 1920x1080x24 -ac -nolisten tcp\" --server-num=$display google-chrome --disable-gpu --remote-debugging-port=$port --remote-allow-origins=* --user-data-dir=$pathData --no-sandbox > $pathLogs/chrome-{$this->sessionId}.log 2>&1 & echo $! > $pathPids/chrome-{$this->sessionId}.pid";
+            $command = "
+                nohup google-chrome --headless \
+                    --disable-gpu \
+                    --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36' \
+                    --remote-debugging-port=$port \
+                    --disable-dev-shm-usage \
+                    --remote-allow-origins=* \
+                    --user-data-dir=$pathData \
+                    --no-sandbox \
+                    --lang=pt-BR \
+                    > $pathLogs/chrome-{$this->sessionId}.log 2>&1 & \
+                    echo $! > $pathPids/chrome-{$this->sessionId}.pid
+            ";
 
             // Caso tenha um processo em execução, mata o processo
             if (file_exists("$pathPids/chrome-{$this->sessionId}.pid")) {
@@ -161,7 +220,6 @@ Class Browser {
         }
     }
 
-
     /**
      * Metodo para pega a porta disponível
      *
@@ -173,17 +231,5 @@ Class Browser {
     private function getAvailablePort(int $basePort, string $sessionId): int
     {
         return $basePort + intval(substr($sessionId, -1));
-    }
-
-    /**
-     * Método para obter um display disponível
-     *
-     * @param integer $baseDisplay
-     * @param string $sessionId
-     * @return integer
-     */
-    private function getAvailableDisplay(int $baseDisplay, string $sessionId): int
-    {
-        return $baseDisplay + intval(substr($sessionId, -1));
     }
 }

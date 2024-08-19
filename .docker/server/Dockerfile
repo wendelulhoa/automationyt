@@ -23,7 +23,6 @@ RUN apt update -y && \
       lsof \
       gnupg \
       software-properties-common \
-      xvfb \
       bash-completion \
       && rm -rf /var/lib/apt/lists/*
 

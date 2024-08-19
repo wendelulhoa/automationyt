@@ -271,6 +271,6 @@ export async function injectFunctions(page) {
         }
 
         // Desativa todos autodownloads
-        window.WAPIWU.disableAutoDownloads();
+        // window.WAPIWU.disableAutoDownloads();
     });
 }

@@ -1,1 +1,453 @@
-window.WAPIWU={},window.WAPIWU.getGroupMetadata=async e=>await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(e),window.WAPIWU.getGroupParticipants=async e=>await require("WAWebSchemaParticipant").getParticipantTable().get(e),window.WAPIWU.setGroups=async e=>{window.WAPIWU.groups=[],await require("WAWebSchemaChat").getChatTable().all().then(e=>{e.forEach(async e=>{let a=await window.WAPIWU.getGroupMetadata(e.id);if(a){let t=await window.WAPIWU.getGroupParticipants(e.id);a.participants=t,window.WAPIWU.groups.push(a)}})})},window.WAPIWU.getAllGroups=async()=>{try{return await window.WAPIWU.setGroups(),{success:!0,groups:window.WAPIWU.groups}}catch(e){return{success:!1,message:"Erro ao buscar os grupos"}}},window.WAPIWU.setGroupSubject=async(e,a)=>{try{var t,r,s,o=await require("WAWebGroupModifyInfoJob").setGroupSubject(require("WAWebWidFactory").createWid(e),a);return{success:!0,message:"Alterado com sucesso"}}catch(i){return{success:!1,message:"Erro ao alterar",error:i}}},window.WAPIWU.setGroupDescription=async(e,a)=>{try{var t,r,s,o=require("WAWebGroupModifyInfoJob");return await o.setGroupDescription(require("WAWebWidFactory").createWid(e),a,require("WAHex").randomHex(8),(await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(e)).descId),{success:!0,message:"Alterado com sucesso"}}catch(i){return{success:!1,message:"Erro ao alterar"}}},window.WAPIWU.setGroupProperty=async(e,a,t)=>{try{let r=require("WAWebGroupConstants"),s={1:r.GROUP_SETTING_TYPE.ALLOW_NON_ADMIN_SUB_GROUP_CREATION,2:r.GROUP_SETTING_TYPE.ANNOUNCEMENT,3:r.GROUP_SETTING_TYPE.EPHEMERAL,4:r.GROUP_SETTING_TYPE.MEMBERSHIP_APPROVAL_MODE,5:r.GROUP_SETTING_TYPE.NO_FREQUENTLY_FORWARDED,6:r.GROUP_SETTING_TYPE.REPORT_TO_ADMIN_MODE,7:r.GROUP_SETTING_TYPE.RESTRICT};var o,i,c,n=await require("WAWebGroupModifyInfoJob").setGroupProperty(require("WAWebWidFactory").createWid(e),s[a],t);return{success:"SetPropertyResponseSuccess"==n,message:"Alterado com sucesso"}}catch(d){return{success:!1,message:"Erro ao alterar"}}},window.WAPIWU.sendTextMsgToChat=async(e,a)=>{try{var t,r,s=await require("WAWebSendTextMsgChatAction").sendTextMsgToChat(require("WAWebCollections").Chat.get(e),a,{}),o="OK"==s.messageSendResult;return{success:o,message:o?"Enviado com sucesso":`Erro ao enviar: ${s}`,chatId:e,text:a,response:s}}catch(i){return{success:!1,message:`Erro ao enviar catch: ${i}`,chatId:e,text:a}}},window.WAPIWU.getGroupInviteLink=async e=>{try{var a=await require("WAWebMexFetchGroupInviteCodeJob").fetchMexGroupInviteCode(e);return{success:!0,message:"Enviado com sucesso",link:`https://chat.whatsapp.com/${a}`}}catch(t){return{success:!1,message:"Erro ao enviar catch",error:t,groupId:e}}},window.WAPIWU.getConfigsSend=async(e,a="")=>{var t,r,s,o=await require("WAWebMsgDataUtils").genOutgoingMsgData(require("WAWebCollections").Chat.get("120363298399150006@g.us"),window.fileSend.type),i={"image/jpeg":"image","image/png":"image","image/gif":"gif","video/webm":"video","video/mp4":"video"};return o.body=e._mediaData.preview,o.filehash=e._mediaData.filehash,o.type=i[window.fileSend.type],o.agentId=void 0,o.isNewMsg=!0,o.local=!0,o.ack=0,o.caption=a,o.mentionedJidList=[],o.groupMentions=[],o.ephemeralSettingTimestamp=null,o.disappearingModeInitiator="chat",o.size=window.fileSend.size,o.isVcardOverMmsDocument=!1,o.filename=void 0,o.mimetype=window.fileSend.type,o.isViewOnce=!1,o.ctwaContext=void 0,o.ephemeralDuration=604800,o.footer=void 0,o.forwardedFromWeb=void 0,o.forwardedNewsletterMessageInfo=void 0,o.forwardingScore=void 0,o.gifAttribution=void 0,o.height=187,o.width=198,o.streamingSidecar=void 0,o.isAvatar=void 0,o.isForwarded=void 0,o.isGif=void 0,o.messageSecret=void 0,multicast=void 0,o.pageCount=void 0,o.quotedMsg=void 0,o.quotedParticipant=void 0,o.quotedRemoteJid=void 0,o.quotedStanzaID=void 0,o.staticUrl="",o.subtype=void 0,o},window.WAPIWU.sendFile=async(e,a)=>{try{var t,r,s=await require("WAWebMedia").prepRawMedia(await require("WAWebMediaOpaqueData").createFromData(window.fileSend,window.fileSend.type),{}),o=s._mediaData;o.set({mediaPrep:s});var i,c,n=require("WAWebCollections").Chat.get(e),d=await o.mediaPrep.sendToChat(n,require("WAWebMsgCollection").MsgCollection.add(await window.WAPIWU.getConfigsSend(s,a))[0]),u="OK"==d.messageSendResult;return{success:u,message:u?"Arquivo enviado com sucesso":"Erro ao enviar o arquivo",response:d}}catch(W){return{success:!1,message:"Erro ao enviar o arquivo a",error:W}}},window.WAPIWU.createGroup=async(e,a=[])=>{try{var t=require("WAWebCreateGroupAction");let r={title:e,ephemeralDuration:0,restrict:!1,announce:!1,membershipApprovalMode:!1,memberAddMode:!1},s=await t.createGroup(r,a),o="g.us"==s.server,i=await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(s._serialized);return{success:o,message:o?"Grupo criado com sucesso":"Erro ao criar grupo",metadata:i}}catch(c){return{success:!1,message:"Erro ao criar grupo",error:c}}},window.WAPIWU.sleep=async e=>new Promise(a=>setTimeout(a,e)),window.WAPIWU.getQrCode=async()=>{let e=0;for(;e<3e4;)try{var a="//*/div/div[2]/div[3]/div[1]/div/div/div[2]/div",t=document.evaluate(a,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue,r=t?t.getAttribute("data-ref"):null;if(null!==r)return{success:!0,qrCode:r,message:"QR gerado com sucesso"};await window.WAPIWU.sleep(1e3),e+=1e3}catch(s){return{success:!1,error:s.message,qrCode:null,aq:"a"}}return{success:!1,error:"QR code n\xe3o encontrado em 30 segundos",qrCode:null}},window.WAPIWU.disableAutoDownloads=()=>{var e=require("WAWebUserPrefsGeneral");return e.setAutoDownloadPhotos(!1),e.setAutoDownloadAudio(!1),e.setAutoDownloadVideos(!1),e.setAutoDownloadDocuments(!1),!0},window.WAPIWU.disableAutoDownloads();
+window.WAPIWU = {};
+
+// Busca o metadata de um grupo
+window.WAPIWU.getGroupMetadata = async (chatId) => {
+    return await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(chatId);
+};
+
+// Busca os participantes de um grupo
+window.WAPIWU.getGroupParticipants = async (chatId) => {
+    return await require("WAWebSchemaParticipant")
+        .getParticipantTable()
+        .get(chatId);
+};
+
+// Seta os grupos na variável global
+window.WAPIWU.setGroups = async () => {
+    window.WAPIWU.groups = [];
+
+    try {
+        // Busca as informações de todos os chats
+        const chats = await require("WAWebSchemaChat").getChatTable().all();
+
+        // Usa Promise.all para lidar com as funções assíncronas
+        await Promise.all(
+            chats.map(async (chat) => {
+                let groupMetadata = await window.WAPIWU.getGroupMetadata(chat.id);
+
+                // Verifica se é grupo
+                if (groupMetadata) {
+                    let participants = await window.WAPIWU.getGroupParticipants(chat.id);
+
+                    // Adiciona os participantes no metadata do grupo
+                    groupMetadata.participants = participants;
+
+                    // Adiciona o grupo na variável global
+                    window.WAPIWU.groups.push(groupMetadata);
+                }
+            })
+        );
+    } catch (error) {
+        console.error("Erro ao setar os grupos:", error);
+    }
+};
+
+// Busca todos os grupos
+window.WAPIWU.getAllGroups = async () => {
+    try {
+        await window.WAPIWU.setGroups();
+
+        return { success: true, groups: window.WAPIWU.groups };
+    } catch (error) {
+        return { success: false, message: "Erro ao buscar os grupos" };
+    }
+};
+
+// Setar o título de um grupo
+window.WAPIWU.setGroupSubject = async (groupId, subject) => {
+    try {
+        var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
+        var WAWebWidFactoryLocal = require("WAWebWidFactory");
+        var group = WAWebWidFactoryLocal.createWid(groupId);
+
+        // Seta o título do grupo
+        await setJobConfigGroup.setGroupSubject(group, subject);
+
+        // Tentar buscar o metadata no máximo 5 vezes
+        let attempts = 0;
+        let success = false;
+        let metadata;
+
+        while (attempts < 5 && !success) {
+            attempts++;
+            await window.WAPIWU.sleep(500); // Espera 0.5 segundos
+
+            // Busca as informações do grupo
+            metadata = await window.WAPIWU.getGroupMetadata(groupId);
+            success = metadata.subject.trim() === subject.trim();
+        }
+
+        return { success: success, message: (success ? "Alterado com sucesso" : "Erro ao alterar") };
+    } catch (error) {
+        return { success: false, message: "Erro ao alterar", error: error };
+    }
+};
+
+// Seta a descrição de um grupo
+window.WAPIWU.setGroupDescription = async (groupId, description) => {
+    try {
+        // Seta as variáveis
+        var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
+        var WAWebWidFactoryLocal = require("WAWebWidFactory");
+        var group = WAWebWidFactoryLocal.createWid(groupId);
+
+        var c = await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(groupId);
+
+        await setJobConfigGroup.setGroupDescription(
+            group,
+            description,
+            require("WAHex").randomHex(8),
+            c.descId
+        );
+
+        // Tentar buscar o metadata no máximo 5 vezes
+        let attempts = 0;
+        let success = false;
+        let metadata;
+
+        while (attempts < 5 && !success) {
+            attempts++;
+            await window.WAPIWU.sleep(500); // Espera 0.5 segundos
+
+            // Busca as informações do grupo
+            metadata = await window.WAPIWU.getGroupMetadata(groupId);
+            success = metadata.desc.trim() === description.trim();
+        }
+
+        return { success: success, message: (success ? "Alterado com sucesso" : "Erro ao alterar") };
+    } catch (error) {
+        return { success: false, message: "Erro ao alterar" };
+    }
+};
+
+/**
+ * Setar uma propriedade de um grupo
+ * 86400/24 h 604800/7
+ * @param {*} groupId
+ * @param {*} type
+ * @param {*} value
+ */
+window.WAPIWU.setGroupProperty = async (groupId, type, value) => {
+    try {
+        const constantsType = require("WAWebGroupConstants");
+        const types = {
+            1: constantsType.GROUP_SETTING_TYPE.ANNOUNCEMENT,
+            2: constantsType.GROUP_SETTING_TYPE.EPHEMERAL,
+            3: constantsType.GROUP_SETTING_TYPE.RESTRICT,
+            4: constantsType.GROUP_SETTING_TYPE.ALLOW_NON_ADMIN_SUB_GROUP_CREATION,
+            5: constantsType.GROUP_SETTING_TYPE.MEMBERSHIP_APPROVAL_MODE,
+            6: constantsType.GROUP_SETTING_TYPE.NO_FREQUENTLY_FORWARDED,
+            7: constantsType.GROUP_SETTING_TYPE.REPORT_TO_ADMIN_MODE,
+        };
+
+        // Se for ephemeral, multiplica por 86400
+        if(type == 2) {
+            value = 604800;
+        }
+
+        var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
+
+        var WAWebWidFactoryLocal = require("WAWebWidFactory");
+
+        var group = WAWebWidFactoryLocal.createWid(groupId);
+
+        var response = await setJobConfigGroup.setGroupProperty(
+            group,
+            types[type],
+            value
+        );
+
+        return {
+            success: response == "SetPropertyResponseSuccess",
+            message: "Alterado com sucesso",
+        };
+    } catch (error) {
+        return { success: false, message: "Erro ao alterar" };
+    }
+};
+
+// Enviar uma mensagem para um chat
+window.WAPIWU.sendTextMsgToChat = async (chatId, text) => {
+    try {
+        var sendMessageText = require("WAWebSendTextMsgChatAction");
+
+        // Busca as informações de todos os grupos
+        var webCollection = require("WAWebCollections");
+
+        // Response
+        var response = await sendMessageText.sendTextMsgToChat(
+            webCollection.Chat.get(chatId),
+            text,
+            {}
+        );
+        var success = response.messageSendResult == "OK";
+
+        return {
+            success: success,
+            message: success
+                ? "Enviado com sucesso"
+                : `Erro ao enviar: ${response}`,
+            chatId: chatId,
+            text: text,
+            response: response,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: `Erro ao enviar catch: ${error}`,
+            chatId: chatId,
+            text: text,
+        };
+    }
+};
+
+// Cria um link de convite para um grupo
+window.WAPIWU.getGroupInviteLink = async (groupId) => {
+    try {
+        var codeInvite = await require("WAWebMexFetchGroupInviteCodeJob").fetchMexGroupInviteCode(
+                groupId
+            );
+
+        // Verifica se o código foi gerado
+        var success = codeInvite != null;
+
+        return {
+            success: success,
+            message: (success ? "Link gerado com sucesso" : "Erro ao gerar link"),
+            link: `https://chat.whatsapp.com/${codeInvite}`,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: "Erro ao enviar catch",
+            error: error,
+            groupId: groupId,
+        };
+    }
+};
+
+// Função que retorna as configurações para enviar o arquivo
+window.WAPIWU.getConfigsSend = async (chatId, prepRawMedia, caption = "", fileSend) => {
+    // Busca as informações de todos os grupos
+    var collections = require("WAWebCollections");
+    var chat = collections.Chat.get(chatId);
+    var dataUtil = require("WAWebMsgDataUtils");
+    var msg = await dataUtil.genOutgoingMsgData(chat, fileSend.type);
+
+    var typesFile = {
+        "image/jpeg": "image",
+        "image/png": "image",
+        "image/gif": "gif",
+        "video/webm": "video",
+        "video/mp4": "video",
+    };
+
+    msg.body = prepRawMedia._mediaData.preview;
+    msg.filehash = prepRawMedia._mediaData.filehash;
+    msg.type = typesFile[fileSend.type];
+    msg.agentId = undefined;
+    msg.isNewMsg = true;
+    msg.local = true;
+    msg.ack = 0;
+    msg.caption = caption;
+    msg.mentionedJidList = [];
+    msg.groupMentions = [];
+    msg.ephemeralSettingTimestamp = null;
+    msg.disappearingModeInitiator = "chat";
+    msg.size = fileSend.size;
+    msg.isVcardOverMmsDocument = false;
+    msg.filename = undefined;
+    msg.mimetype = fileSend.type;
+    msg.isViewOnce = false;
+    msg.ctwaContext = undefined;
+    msg.ephemeralDuration = 604800;
+    msg.footer = undefined;
+    msg.forwardedFromWeb = undefined;
+    msg.forwardedNewsletterMessageInfo = undefined;
+    msg.forwardingScore = undefined;
+    msg.gifAttribution = undefined;
+    msg.height = 187;
+    msg.width = 198;
+    msg.streamingSidecar = undefined;
+    msg.isAvatar = undefined;
+    msg.isForwarded = undefined;
+    msg.isGif = undefined;
+    msg.messageSecret = undefined;
+    msg.pageCount = undefined;
+    msg.quotedMsg = undefined;
+    msg.quotedParticipant = undefined;
+    msg.quotedRemoteJid = undefined;
+    msg.quotedStanzaID = undefined;
+    msg.staticUrl = "";
+    msg.subtype = undefined;
+
+    return msg;
+};
+
+// Faz o envio do arquivo
+window.WAPIWU.sendFile = async (chatId, caption, inputUsed) => {
+    try {
+        var fileSend = document.querySelector(inputUsed).files[0];
+
+        // Cria o arquivo para envio
+        var createFromData =
+            await require("WAWebMediaOpaqueData").createFromData(
+                fileSend,
+                fileSend.type
+            );
+        var prepRawMedia = await require("WAWebMedia").prepRawMedia(
+            createFromData,
+            {}
+        );
+        var objMediaData = prepRawMedia._mediaData;
+
+        // Cria o objeto para envio
+        objMediaData.set({ mediaPrep: prepRawMedia });
+
+        // Busca a informação do chat de envio
+        var WAWebCollections = require("WAWebCollections");
+        var chat = WAWebCollections.Chat.get(chatId);
+
+        // Envia o arquivo
+        var configsSend = await window.WAPIWU.getConfigsSend(
+            chatId,
+            prepRawMedia,
+            caption,
+            fileSend
+        );
+        var addMsg =
+            require("WAWebMsgCollection").MsgCollection.add(configsSend);
+        var response = await objMediaData.mediaPrep.sendToChat(chat, addMsg[0]);
+        var success = response.messageSendResult == "OK";
+
+        return {
+            success: success,
+            message: success
+                ? "Arquivo enviado com sucesso"
+                : "Erro ao enviar o arquivo",
+            response: response,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: "Erro ao enviar o arquivo a",
+            error: error.message,
+        };
+    }
+};
+
+// Cria um novo grupo
+window.WAPIWU.createGroup = async (name, participants = []) => {
+    try {
+        // Ação que irá criar o grupo
+        var createGroup = require("WAWebCreateGroupAction");
+
+        // Configurações do grupo
+        const configs = {
+            title: name,
+            ephemeralDuration: 0,
+            restrict: false,
+            announce: false,
+            membershipApprovalMode: false,
+            memberAddMode: false,
+        };
+
+        // Cria o grupo
+        const response = await createGroup.createGroup(configs, participants);
+        const success = response.server == "g.us";
+
+        // Busca as informações de um grupo
+        const metadata = await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(response._serialized);
+
+        return {
+            success: success,
+            message: success
+                ? "Grupo criado com sucesso"
+                : "Erro ao criar grupo",
+            metadata: metadata,
+        };
+    } catch (error) {
+        return { success: false, message: "Erro ao criar grupo", error: error };
+    }
+};
+
+// Função de utilidade para pausar a execução
+window.WAPIWU.sleep = async (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Pega o qr code
+window.WAPIWU.getQrCode = async () => {
+    const maxWaitTime = 30000; // 30 segundos
+    const interval = 1000; // 1 segundo
+    let elapsedTime = 0;
+
+    while (elapsedTime < maxWaitTime) {
+        try {
+            var path = `//*/div/div[2]/div[3]/div[1]/div/div/div[2]/div`;
+            var elQrcode = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+            var qrCode = elQrcode ? elQrcode.getAttribute('data-ref') : null;
+
+            // Retorna o qr code
+            if (qrCode !== null) {
+                return { success: true, qrCode: qrCode, message: 'QR gerado com sucesso' };
+            }
+
+            await window.WAPIWU.sleep(interval);
+            elapsedTime += interval;
+        } catch (error) {
+            return { success: false, error: error.message, qrCode: null};
+        }
+    }
+
+    return { success: false, error: 'QR code não encontrado em 30 segundos', qrCode: null };
+}
+
+// Desativa os autodownloads
+window.WAPIWU.disableAutoDownloads = () => {
+    var permissionDownload = require("WAWebUserPrefsGeneral");
+
+    // Desativa o download automático
+    permissionDownload.setAutoDownloadPhotos(false);
+    permissionDownload.setAutoDownloadAudio(false);
+    permissionDownload.setAutoDownloadVideos(false);
+    permissionDownload.setAutoDownloadDocuments(false);
+
+    return true;
+};
+
+// Desativa todos autodownloads
+window.WAPIWU.disableAutoDownloads();
+
+// Adiciona um inputfile no body
+window.WAPIWU.addInputFile = (nameInput) => {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.name = `${nameInput}`;
+    input.dataset[`${nameInput}`] = `${nameInput}`
+    input.dataset[`namedata`] = `${nameInput}`
+    input.style.display = 'none'; // Ocultar o input
+    document.body.appendChild(input);
+
+    return { success: true, message: 'Input adicionado com sucesso' };
+};
+
+// Remove inputfile do body
+window.WAPIWU.removeInputFile = (nameInput) => {
+    var input = document.querySelector(`input[data-${nameInput}="${nameInput}"]`);
+    input.remove();
+
+    return { success: true, message: 'Input removido com sucesso' };
+};
+
+// Função para checar a conexão
+window.WAPIWU.checkConnection = async () => {
+    try {
+        var WAWebStreamModel = require('WAWebStreamModel');
+        var success = WAWebStreamModel.Stream.__x_displayInfo == 'NORMAL'
+
+        return { success: success, message: success ? 'Conexão OK' : 'Erro na conexão', status: WAWebStreamModel.Stream.__x_displayInfo};
+    } catch (error) {
+        return { success: false, message: 'Erro na conexão', error: error.message, status: null};
+    }
+};

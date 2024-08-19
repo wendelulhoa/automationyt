@@ -13,24 +13,21 @@ window.WAPIWU.getGroupParticipants = async (chatId) => {
 };
 
 // Seta os grupos na variável global
-window.WAPIWU.setGroups = async (groups) => {
+window.WAPIWU.setGroups = async () => {
     window.WAPIWU.groups = [];
 
-    // Busca as informações de todos os chats
-    await require("WAWebSchemaChat")
-        .getChatTable()
-        .all()
-        .then((chats) => {
-            chats.forEach(async (chat) => {
-                let groupMetadata = await window.WAPIWU.getGroupMetadata(
-                    chat.id
-                );
+    try {
+        // Busca as informações de todos os chats
+        const chats = await require("WAWebSchemaChat").getChatTable().all();
+
+        // Usa Promise.all para lidar com as funções assíncronas
+        await Promise.all(
+            chats.map(async (chat) => {
+                let groupMetadata = await window.WAPIWU.getGroupMetadata(chat.id);
 
                 // Verifica se é grupo
                 if (groupMetadata) {
-                    let participants = await window.WAPIWU.getGroupParticipants(
-                        chat.id
-                    );
+                    let participants = await window.WAPIWU.getGroupParticipants(chat.id);
 
                     // Adiciona os participantes no metadata do grupo
                     groupMetadata.participants = participants;
@@ -38,14 +35,18 @@ window.WAPIWU.setGroups = async (groups) => {
                     // Adiciona o grupo na variável global
                     window.WAPIWU.groups.push(groupMetadata);
                 }
-            });
-        });
+            })
+        );
+    } catch (error) {
+        console.error("Erro ao setar os grupos:", error);
+    }
 };
 
 // Busca todos os grupos
 window.WAPIWU.getAllGroups = async () => {
     try {
         await window.WAPIWU.setGroups();
+
         return { success: true, groups: window.WAPIWU.groups };
     } catch (error) {
         return { success: false, message: "Erro ao buscar os grupos" };

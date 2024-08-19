@@ -2,45 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Puppeter\Browser;
 use App\Http\Controllers\Puppeter\Puppeteer;
-use App\Http\Controllers\Puppeter\Traits\Browser;
 use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
-use HeadlessChromium\BrowserFactory;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class WhatsappController extends Controller
 {
-
-     public function getQrcode1(string $sessionId)
+     /**
+      * Obtém o QR Code
+      *
+      * @param string $sessionId
+      * 
+      * @return JsonResponse
+      */
+     public function getQrcode(string $sessionId)
      {
           try {
                // Cria uma nova página e navega até a URL
-               $browser = (new Browser($sessionId));
-               $page    = $browser->createPage('');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
-               $result = $page->navigate('https://web.whatsapp.com');
+               // Pega o qrcode
+               $content = $page->evaluate("window.WAPIWU.getQrCode();")['result']['result']['value'];
 
-               // Seta o script que irá buscar o qrcode
-               $page->evaluate(view('whatsapp-functions.injected-functions-minified')->render());
-
-               dd($page, $result);
-
-               // // Cria uma nova página e navega até a URL
-               $page = $browser->createPage();
-               // $page->navigate('https://web.whatsapp.com')->waitForNavigation();
-
-               // Obtenha o valor da variável JavaScript
-               $content = $page->evaluate("window.WAPIWU.getAllGroups();")->getReturnValue();
-               // dd($content);
                $qrCode = null;
                if($content['success']) {
                     // Caminho completo para o arquivo
                     $fullPath = public_path("$sessionId-qrcode.svg");
 
                     // Gera o QR code em SVG
-                    return QRCode::text(trim($content['qrCode']))
+                    // $qrCode = QRCode::text(trim($content['qrCode']))
+                    //      ->setSize(6)
+                    //      ->setMargin(2)
+                    //      ->setOutfile($fullPath)
+                    //      ->svg();
+                    return $qrCode = QRCode::text(trim($content['qrCode']))
                          ->setSize(6)
                          ->setMargin(2)
                          // ->setOutfile($fullPath)
@@ -78,141 +76,119 @@ class WhatsappController extends Controller
           }
      }
 
-    /**
-     * Pega o QRCode para autenticação
-     *
-     * @param string $sessionId
-     * 
-     * @return JsonResponse
-     */
-     public function getQrcode(string $sessionId)
-     {    
+     /**
+      * Verifica a conexão com o WhatsApp
+      *
+      * @param string $sessionId
+      * 
+      * @return JsonResponse
+      */
+     public function checkConnection(string $sessionId)
+     {
           try {
-               // $this->stopWebSocket();
-               // Verifica se o WebSocket está ativo
-               if(!$this->checkWebsocket()) {
-                    $this->startWebSocket();
-                    sleep(2);
-               }
+               // Cria uma nova página e navega até a URL
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
-               // Conecta ao WebSocket e obtém o conteúdo da resposta
-               $result = (new WebsocketWhatsapp($sessionId, 'getQrcode'))->connWebSocket();
+               // Verifica a conexão
+               $content = $page->evaluate("window.WAPIWU.checkConnection();")['result']['result']['value'];
 
-               // Conteúdo do QR code
-               $content = $result['response'];
-
-               $qrCode = null;
-               if($content['success']) {
-                    // Caminho completo para o arquivo
-                    $fullPath = public_path("$sessionId-qrcode.svg");
-     
-                    // Gera o QR code em SVG
-                    $qrCode = QRCode::text(trim($content['qrCode']))
-                         ->setSize(6)
-                         ->setMargin(2)
-                         ->setOutfile($fullPath)
-                         ->svg();
-                    
-                    // Lê o conteúdo do arquivo
-                    $fileContent = File::get($fullPath);
-     
-                    // Obtém o tipo MIME do arquivo
-                    $mimeType = File::mimeType($fullPath);
-     
-                    // Codifica o conteúdo do arquivo para base64
-                    $base64Content = base64_encode($fileContent);
-     
-                    // Cria o Data URI
-                    $qrCode = 'data:' . $mimeType . ';base64,' . $base64Content;
-     
-                    // Exclui o arquivo
-                    unlink($fullPath);
-               }
+               // Define o status code da resposta
+               $statusCode = $content['success'] ? 200 : 400;
 
                // Retorna o resultado em JSON
                return response()->json([
-                    'success' => true,
-                    'qrcode' => $qrCode,
-                    'status' => $content['message']
-               ]);
+                    'success' => $content['success'],
+                    'message' => $content['message'],
+                    'status'  => $content['status']
+               ], $statusCode);
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha
                return response()->json([
                     'success' => false,
-                    'status' => $th->getMessage(),
-                    'qrcode' => null
-               ]);
+                    'message' => $th->getMessage(),
+                    'status'  => null
+               ], 400);
           }
      }
 
-     /**
-      * Inicia o projeto de WebSocket
-      *
-      * @return void
-      */
-     public function startWebSocket()
+
+     public function disconnect(string $sessionId)
      {
           try {
-               $command = 'nohup node /var/www/html/wapiwuphp/resources/wapi/websocket.js > output.log &';
-               exec($command);
+               // Cria uma nova página e navega até a URL
+               $browser = (new Browser($sessionId));
 
-               return response()->json([
-                    'success' => true,
-                    'status' => 'Websocket iniciado com sucesso.'
-               ]);
-          } catch (\Throwable $th) {
-               // Em caso de erro, retorna uma resposta de falha
-               return response()->json([
-                    'success' => false,
-                    'status' => $th->getMessage()
-               ]);
-          }
-     }
+               // Pega a primeira página
+               $page = $browser->getFirstPage();
 
-     /**
-      * Para o projeto de WebSocket
-      *
-      * @return void
-      */
-     public function stopWebSocket()
-     {
-          try {
-               // Comando para encontrar o PID do processo node
-               $command = 'pgrep -f "node /var/www/html/wapiwuphp/resources/wapi/websocket.js"';
-               $output = [];
-               exec($command, $output);
-
-               if (count($output) > 0) {
-                    // Mata cada processo encontrado
-                    foreach ($output as $pid) {
-                         exec("kill $pid");
-                    }
-               } else {
-                    return false;
+               // Verifica se a URL atual é diferente da URL do WhatsApp
+               if(!(strpos($page->getCurrentUrl(), 'https://web.whatsapp.com') !== false)) {
+                    // Navega até a URL
+                    $page->navigate('https://web.whatsapp.com');
                }
 
-               return true;
+               // Seta o script que irá verificar a conexão
+               $page->evaluate(view('whatsapp-functions.injected-functions-minified')->render());
+
+               // Verifica a conexão
+               $content = $page->evaluate("window.WAPIWU.disconnect();")['result']['result']['value'];
+
+               // Define o status code da resposta
+               $statusCode = $content['success'] ? 200 : 400;
+
+               // Retorna o resultado em JSON
+               return response()->json([
+                    'success' => $content['success'],
+                    'message' => $content['message'],
+                    'status'  => $content['status']
+               ], $statusCode);
           } catch (\Throwable $th) {
-               return false;
+               // Em caso de erro, retorna uma resposta de falha
+               return response()->json([
+                    'success' => false,
+                    'message' => $th->getMessage(),
+                    'status'  => null
+               ], 400);
           }
      }
 
-     /**
-      * Verifica se o WebSocket está ativo
-      *
-      * @return bool
-      */
-     public function checkWebsocket()
+     public function screenShot(string $sessionId)
      {
-          // Usar ps com grep para capturar o processo específico, evitando falsos positivos
-          $command = 'ps aux | grep "node /var/www/html/wapiwuphp/resources/wapi/websocket.js" | grep -v grep';
-          $output = [];
-          exec($command, $output);
+          try {
+               // Cria uma nova página e navega até a URL
+               $browser = (new Browser($sessionId));
 
-          if (count($output) > 0) {
-               return true;
-          } else {
-               return false;
+               // Pega a primeira página
+               $page = $browser->getFirstPage();
+
+               // Verifica se a URL atual é diferente da URL do WhatsApp
+               if(!(strpos($page->getCurrentUrl(), 'https://web.whatsapp.com') !== false)) {
+                    // Navega até a URL
+                    $page->navigate('https://web.whatsapp.com');
+               }
+
+               // Seta o script que irá verificar a conexão
+               $page->evaluate(view('whatsapp-functions.injected-functions-minified')->render());
+
+               // Verifica a conexão
+               $content = $page->evaluate("window.WAPIWU.screenShot();")['result']['result']['value'];
+
+               // Define o status code da resposta
+               $statusCode = $content['success'] ? 200 : 400;
+
+               // Retorna o resultado em JSON
+               return response()->json([
+                    'success' => $content['success'],
+                    'message' => $content['message'],
+                    'status'  => $content['status']
+               ], $statusCode);
+          } catch (\Throwable $th) {
+               // Em caso de erro, retorna uma resposta de falha
+               return response()->json([
+                    'success' => false,
+                    'message' => $th->getMessage(),
+                    'status'  => null
+               ], 400);
           }
      }
 }

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Puppeter\Page;
+use App\Http\Controllers\Puppeter\Puppeteer;
 use App\Models\Filesend;
 use finfo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class MessageController extends Controller
@@ -28,13 +28,32 @@ class MessageController extends Controller
                 'text' => 'required|string'
             ]);
 
-            // Variável para armazenar o resultado
-            $result = (new WebsocketWhatsapp($sessionId, 'sendText', $params))->connWebSocket();
+            // Pega o chatId e o texto
+            [$chatId, $text] = [$params['chatId'], $params['text']];
 
-            // Conteúdo
-            $content = $result['response'];
+            // Aguarda 1 segundo
+            sleep(1);
 
-            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.')]);
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Seta o text temporário
+            $randomNameVar = strtolower(Str::random(5));
+            $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
+
+            // Seta o script para enviar a imagem
+            $script = "window.WAPIWU.sendTextMsgToChat('$chatId', localStorage.getItem('$randomNameVar'));";
+
+            // Executa o script no navegador
+            $content = $page->evaluate($script)['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.'), 'response' => $content], $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
@@ -67,9 +86,25 @@ class MessageController extends Controller
                 'path' => 'required|string'
             ]);
 
+            // Aguarda 1 segundos
+            sleep(1);
+
+            // Pega o chatId e a legenda
+            [$chatId, $caption] = [$data['chatId'], $data['caption']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+
             // Verificar se o arquivo já foi enviado anteriormente
-            // $fileSend = Filesend::where('hash', md5($data['path']))->first();
+            $fileSend = Filesend::where('hash', md5($data['path']))->first();
             $fileName = $fileSend->path ?? null;
+            
+            // Verifica se o arquivo existe
+            if(!file_exists("/storage/$fileName")) {
+                Filesend::where('hash', md5($data['path']))->delete();
+                $fileName = null;
+            }
 
             // Verificar se o arquivo já foi enviado anteriormente
             if(empty($fileSend)) {
@@ -93,28 +128,48 @@ class MessageController extends Controller
         
                 // Nome completo do arquivo com extensão
                 $fileName = "$randomFileName.$extension";
-                // Filesend::create([
-                //     'path' => $fileName,
-                //     'hash' => md5($data['path']),
-                //     'type' => FILEINFO_MIME_TYPE,
-                //     'forget_in' => now()->addMinutes(120)
-                // ]);
-        
-                // Salvar o conteúdo baixado no armazenamento local do Laravel
-                Storage::put($fileName, $fileContent);
-    
-                // Se o arquivo não foi encontrado após 15 segundos, lançar uma exceção
-                if (!Storage::exists($fileName)) {
-                    throw new \Exception("Erro ao salvar o arquivo no armazenamento.");
-                }
+                Filesend::create([
+                    'path' => $fileName,
+                    'hash' => md5($data['path']),
+                    'type' => $mimeType,
+                    'forget_in' => now()->addMinutes(120)
+                ]);
+
+                // Salva o arquivo na raiz do container
+                file_put_contents("/storage/$fileName", $fileContent);
+
+                // Define as permissões para 777
+                chmod("/storage/$fileName", 0777);
             }
 
-            // Enviar o arquivo
-            $result = (new WebsocketWhatsapp($sessionId, 'sendFile', ['chatId' => $request->chatId, 'caption' => $request->caption, 'filename' => $fileName]))->connWebSocket();
+            // Adiciona o input file no DOM
+            [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
             
-            return response()->json(['success' => $result['response']['success'], 'message' => ($result['response']['success'] ? 'Imagem enviada com sucesso.' : 'Erro ao enviar a imagem.')]);
+            // Seta o caption temporário
+            $randomNameVar = strtolower(Str::random(6));
+            $page->evaluate("localStorage.setItem('$randomNameVar', `$caption`);");
+
+            // Seta o arquivo no input
+            $page->setFileInput($backendNodeId, "/storage/$fileName");
+
+            // Seta o script para enviar a imagem
+            $script = "window.WAPIWU.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");";
+
+            // Executa o script no navegador
+            $result   = $page->evaluate($script);
+            $response = $result;
+            $content  = $result['result']['result']['value'];
+
+            // Deleta a variável temporária e o input file
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Imagem enviada com sucesso.' : 'Erro ao enviar a imagem.')], $statusCode);
         } catch (\Throwable $th) {
-            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+            return response()->json(['success' => false, 'message' => $th->getMessage(), 'response' => $response ?? null], 400);
         }
     }
 
@@ -140,5 +195,38 @@ class MessageController extends Controller
         ];
 
         return $mimeTypes[$mimeType] ?? 'bin';
+    }
+
+    /**
+     * Adiciona um input file no DOM
+     *
+     * @param Page $page
+     * @param string $nameFIleInput
+     * 
+     * @return array
+     */
+    public function addInputFile(Page $page): array
+    {
+        // Deleta a variável temporária
+        $randomNameVar = strtolower(Str::random(6));
+        $page->evaluate("window.WAPIWU.addInputFile('$randomNameVar');");
+
+        // Pega o body 
+        $body = $page->getDocument()['result']['root']['children'][1]['children'][1];
+        
+        // Pego todos inputs
+        $auxInputs = [];
+        foreach($body['children'] as $children) {
+            if($children['nodeName'] == "INPUT") {
+                foreach ($children['attributes'] as $attribute) {
+                    if(strpos($attribute, "data-$randomNameVar") !== false) {
+                            $auxInputs[$attribute] = $children;
+                    }
+                }
+            }
+        }
+
+        // Pega o id do elemento
+        return [$auxInputs["data-$randomNameVar"]['backendNodeId'], $randomNameVar];
     }
 }

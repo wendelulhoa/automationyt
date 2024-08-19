@@ -7,16 +7,16 @@ wss.on('connection', (ws) => {
     console.log('Novo cliente conectado');
 
     ws.on('message', async (message) => {        
+        var request = JSON.parse(message);
+        const sessionId = request.sessionId;
+        const action    = request.action;
+        const params    = (request.params || {});
+
+        // Busca o qrcode
+        const body = await execFunction(action, sessionId, params);
+
+        ws.send(JSON.stringify(body));
         try {
-            var request = JSON.parse(message);
-            const sessionId = request.sessionId;
-            const action    = request.action;
-            const params    = (request.params || {});
-
-            // Busca o qrcode
-            const body = await execFunction(action, sessionId, params);
-
-            ws.send(JSON.stringify(body));
         } catch (error) {
             console.log(error)
             ws.send(JSON.stringify({ success: false, message: 'Erro ao processar a requisição', error: error }));
