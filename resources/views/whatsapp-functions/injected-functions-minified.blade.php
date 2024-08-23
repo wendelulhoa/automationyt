@@ -2,7 +2,6 @@
 
 window.WAPIWU = {};
 
-
 // Função para buscar informações de um grupo
 window.WAPIWU.findGroupInfo = async (groupId) => {
     try {
@@ -74,6 +73,17 @@ window.WAPIWU.getAllGroups = async () => {
         return { success: false, message: "Erro ao buscar os grupos" };
     }
 };
+
+window.WAPIWU.addParticipantToGroup = (groupId, contact) => {
+    // Pega o contato
+    var collections = require('WAWebCollections')
+    var contact = collections.Contact.get('556196406283@c.us');
+    var group = collections.Chat.get(groupId);
+
+    var addParticipants = require("WAWebModifyParticipantsGroupAction")
+
+    addParticipants.addParticipants(group, [contact])
+}
 
 // Setar o título de um grupo
 window.WAPIWU.setGroupSubject = async (groupId, subject) => {

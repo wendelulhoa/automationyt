@@ -77,7 +77,7 @@ class MessageController extends Controller
      * 
      * @return JsonResponse
      */
-    public function sendImage(Request $request, string $sessionId): JsonResponse
+    public function sendFile(Request $request, string $sessionId): JsonResponse
     {
         try {
             $data = $request->validate([
