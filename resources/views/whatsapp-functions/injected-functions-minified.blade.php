@@ -1,4 +1,26 @@
+@include('whatsapp-functions.injected-functionscustom-wa')
+
 window.WAPIWU = {};
+
+
+// Função para buscar informações de um grupo
+window.WAPIWU.findGroupInfo = async (groupId) => {
+    try {
+        // Busca as informações do grupo
+        let groupMetadata = await window.WAPIWU.getGroupMetadata(groupId);
+
+        // Verifica se é grupo
+        let participants = await window.WAPIWU.getGroupParticipants(groupId);
+
+        // Adiciona os participantes no metadata do grupo
+        groupMetadata.participants = participants;
+        groupMetadata.inviteCode = (await window.WAPIWU.getGroupInviteLink(groupId)).link;
+
+        return { success: true, message: 'Grupo encontrado com sucesso.', metadata: groupMetadata };
+    } catch (error) {
+        return { success: false, message: "Erro ao buscar as informações do grupo" };
+    }
+};
 
 // Busca o metadata de um grupo
 window.WAPIWU.getGroupMetadata = async (chatId) => {
@@ -240,6 +262,7 @@ window.WAPIWU.getConfigsSend = async (chatId, prepRawMedia, caption = "", fileSe
         "image/gif": "gif",
         "video/webm": "video",
         "video/mp4": "video",
+        'audio/ogg': 'ogg'
     };
 
     msg.body = prepRawMedia._mediaData.preview;
@@ -449,5 +472,39 @@ window.WAPIWU.checkConnection = async () => {
         return { success: success, message: success ? 'Conexão OK' : 'Erro na conexão', status: WAWebStreamModel.Stream.__x_displayInfo};
     } catch (error) {
         return { success: false, message: 'Erro na conexão', error: error.message, status: null};
+    }
+};
+
+// Função para enviar enquete
+window.WAPIWU.sendPoll = async (chatId, title, options, selectableCount = 0) => {
+    try {
+        // Monta as variaveis
+        var webCollection = require('WAWebCollections');
+        var poll = {
+            name: title,
+            options: options,
+            selectableOptionsCount: selectableCount
+        };
+        
+        // Envia a enquete
+        const response = await require('WAWebPollsSendPollCreationMsgActionWU').sendPollCreation({ poll: poll, chat: webCollection.Chat.get(chatId), quotedMsg: undefined });
+
+        // Verifica se deu sucesso
+        const success = response[1].messageSendResult === "OK";
+
+        return {success: success, message: (success ? "Enquete enviada com sucesso" : "Erro ao enviar enquete")};
+    } catch (error) {
+        return { success: false, message: 'Erro ao enviar enquete', error: error.message };
+    }
+};
+
+// Busca o número de telefone
+window.WAPIWU.getPhoneNumber = async () => {
+    try {
+        var phoneNumber = require('WAWebUserPrefsMeUser').getMe().user;
+
+        return { success: true, phoneNumber: phoneNumber, message: 'Número de telefone encontrado' };
+    } catch (error) {
+        return { success: false, message: 'Erro ao buscar o número de telefone', error: error.message };
     }
 };

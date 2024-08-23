@@ -47,7 +47,7 @@ window.WAPIWU.getAllGroups = async () => {
     try {
         await window.WAPIWU.setGroups();
 
-        return { success: true, groups: window.WAPIWU.groups };
+        return { success: true, groups: window.WAPIWU.groups, message: "Grupos buscados com sucesso" };
     } catch (error) {
         return { success: false, message: "Erro ao buscar os grupos" };
     }

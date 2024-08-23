@@ -70,7 +70,7 @@ class GroupController extends Controller
             $statusCode = $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com os grupos obtidos
-            return response()->json(['success' => $content['success'], 'message' => $content['message'], 'groups' => $content['groups']], $statusCode);
+            return response()->json(['success' => $content['success'], 'message' => $content['message'] ?? '', 'groups' => $content['groups']], $statusCode);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -209,6 +209,45 @@ class GroupController extends Controller
             return response()->json(['success' => $content['success'], 'message' => $content['message'], 'link' => $content['link']], $statusCode);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Busca informações de um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * @return JsonResponse
+     */
+    public function findGroupInfo(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                    'groupId' => 'required|string'
+            ]);
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Verifica a conexão
+            $content = $page->evaluate("window.WAPIWU.findGroupInfo('{$params['groupId']}');")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            // Retorna o resultado em JSON
+            return response()->json([
+                    'success'  => $content['success'],
+                    'message'  => $content['message'],
+                    'metadata' => $content['metadata']
+            ], $statusCode);
+        } catch (\Throwable $th) {
+            // Em caso de erro, retorna uma resposta de falha
+            return response()->json([
+                    'success' => false,
+                    'message' => $th->getMessage(),
+                    'status'  => null
+            ], 400);
         }
     }
 }

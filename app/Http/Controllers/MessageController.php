@@ -82,7 +82,7 @@ class MessageController extends Controller
         try {
             $data = $request->validate([
                 'chatId' => 'required|string',
-                'caption' => 'string',
+                // 'caption' => 'string',
                 'path' => 'required|string'
             ]);
 
@@ -90,7 +90,7 @@ class MessageController extends Controller
             sleep(1);
 
             // Pega o chatId e a legenda
-            [$chatId, $caption] = [$data['chatId'], $data['caption']];
+            [$chatId, $caption] = [$data['chatId'], $data['caption'] ?? ''];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -173,8 +173,63 @@ class MessageController extends Controller
         }
     }
 
-    public function sendPoll(Request $request) 
-    {}
+    /**
+     * Faz o envio de enquete
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function sendPoll(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'chatId' => 'required|string',
+                'poll' => 'required|array',
+            ]);
+
+            // Aguarda 1 segundos
+            sleep(1);
+
+            // Pega o chatId e a legenda
+            [$chatId, $poll] = [$data['chatId'], $data['poll']];
+
+            // Monta as opções
+            $auxOptions = [];
+            foreach ($poll['options'] as $option) {
+                $auxOptions[] = ['name' => $option];
+            }
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Seta o question temporário
+            $randomNameVar = strtolower(Str::random(6));
+            $page->evaluate("localStorage.setItem('$randomNameVar', `{$poll['name']}`);");
+
+            // Seta o options temporário
+            $randomNameVarOptions = strtolower(Str::random(6));
+            $page->evaluate("localStorage.setItem('$randomNameVarOptions', `" . json_encode($auxOptions) . "`);");
+
+            // Seta o script para enviar a imagem
+            $script = "window.WAPIWU.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});";
+
+            // Executa o script no navegador
+            $content = $page->evaluate($script)['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            $page->evaluate("localStorage.removeItem(`$randomNameVarOptions`);");
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Enquete enviada com sucesso.' : 'Erro ao enviar a enquete.'), "teste" => $page->evaluate($script)], $statusCode);
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+        }
+    }
 
     /**
      * Função para obter a extensão do arquivo com base no mimetype
@@ -191,7 +246,12 @@ class MessageController extends Controller
             'image/gif' => 'gif',
             'application/pdf' => 'pdf',
             'video/mp4' => 'mp4',
-            // Adicione mais mimetypes conforme necessário
+            'audio/ogg' => 'ogg',
+            'application/zip' => 'zip', // Adicionado mimetype de zip
+            'application/msword' => 'doc', // Adicionado mimetype de doc
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx', // Adicionado mimetype de docx
+            'application/vnd.ms-excel' => 'xls', // Adicionado mimetype de xls
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx', // Adicionado mimetype de xlsx
         ];
 
         return $mimeTypes[$mimeType] ?? 'bin';

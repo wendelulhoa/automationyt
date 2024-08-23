@@ -7,6 +7,7 @@ use App\Http\Controllers\Puppeter\Puppeteer;
 use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 
 class WhatsappController extends Controller
@@ -33,16 +34,16 @@ class WhatsappController extends Controller
                     $fullPath = public_path("$sessionId-qrcode.svg");
 
                     // Gera o QR code em SVG
-                    // $qrCode = QRCode::text(trim($content['qrCode']))
-                    //      ->setSize(6)
-                    //      ->setMargin(2)
-                    //      ->setOutfile($fullPath)
-                    //      ->svg();
-                    return $qrCode = QRCode::text(trim($content['qrCode']))
+                    $qrCode = QRCode::text(trim($content['qrCode']))
                          ->setSize(6)
                          ->setMargin(2)
-                         // ->setOutfile($fullPath)
+                         ->setOutfile($fullPath)
                          ->svg();
+                    // return $qrCode = QRCode::text(trim($content['qrCode']))
+                    //      ->setSize(6)
+                    //      ->setMargin(2)
+                    //      // ->setOutfile($fullPath)
+                    //      ->svg();
                     
                     // Lê o conteúdo do arquivo
                     $fileContent = File::get($fullPath);
@@ -111,7 +112,13 @@ class WhatsappController extends Controller
           }
      }
 
+     /**
+      * Desconecta do WhatsApp
+      *
+      * @param string $sessionId
 
+      * @return JsonResponse
+      */
      public function disconnect(string $sessionId)
      {
           try {
@@ -152,6 +159,13 @@ class WhatsappController extends Controller
           }
      }
 
+     /**
+      * Tira um screenshot da tela
+      *
+      * @param string $sessionId
+      * 
+      * @return JsonResponse
+      */
      public function screenShot(string $sessionId)
      {
           try {
@@ -181,6 +195,41 @@ class WhatsappController extends Controller
                     'success' => $content['success'],
                     'message' => $content['message'],
                     'status'  => $content['status']
+               ], $statusCode);
+          } catch (\Throwable $th) {
+               // Em caso de erro, retorna uma resposta de falha
+               return response()->json([
+                    'success' => false,
+                    'message' => $th->getMessage(),
+                    'status'  => null
+               ], 400);
+          }
+     }
+
+     /**
+      * Obtém o número de telefone
+      *
+      * @param string $sessionId
+      * 
+      * @return JsonResponse
+      */
+     public function getPhoneNumber(string $sessionId)
+     {
+          try {
+               // Cria uma nova página e navega até a URL
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+               // Verifica a conexão
+               $content = $page->evaluate("window.WAPIWU.getPhoneNumber();")['result']['result']['value'];
+
+               // Define o status code da resposta
+               $statusCode = $content['success'] ? 200 : 400;
+
+               // Retorna o resultado em JSON
+               return response()->json([
+                    'success' => $content['success'],
+                    'message' => $content['message'],
+                    'number'  => $content['phoneNumber']
                ], $statusCode);
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha
