@@ -82,7 +82,7 @@ class MessageController extends Controller
         try {
             $data = $request->validate([
                 'chatId' => 'required|string',
-                // 'caption' => 'string',
+                'caption' => 'string',
                 'path' => 'required|string'
             ]);
 

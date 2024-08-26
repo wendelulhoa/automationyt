@@ -208,7 +208,7 @@ Class Browser {
                 $pid = file_get_contents("$pathPids/chrome-{$this->sessionId}.pid");
                 exec("kill $pid");
                 // Aguarde um momento para garantir que o processo foi finalizado
-                sleep(2);
+                sleep(1);
             }
 
             // Sobe o navegador
