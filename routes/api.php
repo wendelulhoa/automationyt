@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/{sessionId}', 'middleware' => [WaitRequestMiddleware::class]], function() {
     Route::get('/getqrcode', [WhatsappController::class, 'getQrcode'])->name('wapiwu.getqrcode');
+    Route::get('/start-session', [WhatsappController::class, 'startSession'])->name('wapiwu.startsession');
     Route::get('/checkconnection', [WhatsappController::class, 'checkConnection'])->name('wapiwu.checkconnection');
     Route::get('/getphonenumber', [WhatsappController::class, 'getPhoneNumber'])->name('wapiwu.getphonenumber');
 
@@ -19,6 +20,15 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [WaitRequestMiddleware
         Route::get('/group-invite-link/{groupId}', [GroupController::class, 'getGroupInviteLink'])->name('wapiwu.group.getgroupinvitelink');
         Route::put('/setgroupsubject', [GroupController::class, 'setGroupSubject'])->name('wapiwu.group.setgroupsubject');
         Route::put('/setgroupdescription', [GroupController::class, 'setGroupDescription'])->name('wapiwu.group.setgroupdescription');
+        Route::put('/setgroupproperty', [GroupController::class, 'setGroupProperty'])->name('wapiwu.group.setgroupproperty');
+        
+        // Participantes Adicionar/Remover
+        Route::post('/add-participant-group', [GroupController::class, 'addParticipant'])->name('wapiwu.group.addparticipant');
+        Route::delete('/remove-participant-group', [GroupController::class, 'removeParticipant'])->name('wapiwu.group.removeparticipant');
+        
+        // Participantes promove/despromove
+        Route::put('/demote-participant-group', [GroupController::class, 'demoteParticipant'])->name('wapiwu.group.demoteparticipant');
+        Route::put('/promote-participant-group', [GroupController::class, 'promoteParticipant'])->name('wapiwu.group.promoteparticipant');
     });
 
     Route::group(['prefix' => 'message'], function() {

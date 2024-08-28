@@ -14,10 +14,11 @@ class Puppeteer extends Controller
      * @param string $url
      * @param string $script
      * @param string $existsFn
+     * @param bool   $reload
      * 
      * @return Page
      */
-    public function init(string $sessionId, string $url, string $script, string $existsFn = ''): Page
+    public function init(string $sessionId, string $url, string $script, string $existsFn = '', bool $reload = false): Page
     {
         // Cria uma nova página e navega até a URL
         $browser = (new Browser($sessionId));
@@ -30,6 +31,12 @@ class Puppeteer extends Controller
             // Navega até a URL
             $page->navigate($url);
         }   
+
+        // Verifica se é para recarregar a página
+        // if($reload) {
+        //     $page->reload();
+        //     sleep(2);
+        // }
 
         // Verifica se a função existe
         if(($page->evaluate($existsFn)['result']['result']['type'] ?? '') == 'undefined' || empty($existsFn)) {

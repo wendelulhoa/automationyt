@@ -24,7 +24,7 @@ class GroupController extends Controller
                 'participants' => 'array'
             ]);
 
-            // Adiciona o nome e os participantes do grupo
+            // Adiciona o id e o participante do grupo
             [$subject, $participants] = [$params['subject'], $params['participants']];
 
             // Cria uma nova página e navega até a URL
@@ -90,14 +90,30 @@ class GroupController extends Controller
             $params = $request->validate([
                 'groupId'  => 'required|string',
                 'property' => 'required|string',
-                'active'   => 'required|string'
+                'active'   => 'required|int'
             ]);
 
-            // Variável para armazenar o resultado
-            $result = (new WebsocketWhatsapp($sessionId, 'setGroupProperty', $params))->connWebSocket();
+            // Tipos de propriedades
+            $typeProperties = [
+                'announcement' => 1,
+                'ephemeral'    => 2,
+                'restrict'     => 3,
+            ];
+
+            // Adiciona o id e o título do grupo
+            [$groupId, $property, $active] = [$params['groupId'], $params['property'], $params['active']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Seta os grupos
+            $content = $page->evaluate("window.WAPIWU.setGroupProperty('$groupId', $typeProperties[$property], $active)")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
-            return response()->json(['success' => $result['success'], 'message' => $result['response']]);
+            return response()->json(['success' => $content['success'], 'message' => $content['response']], $statusCode);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -118,7 +134,7 @@ class GroupController extends Controller
                 'subject' => 'required|string'
             ]);
 
-            // Adiciona o nome e os participantes do grupo
+            // Adiciona o id e o título do grupo
             [$groupId, $subject] = [$params['groupId'], $params['subject']];
 
             // Cria uma nova página e navega até a URL
@@ -160,7 +176,7 @@ class GroupController extends Controller
                 'description' => 'required|string'
             ]);
 
-            // Adiciona o nome e os participantes do grupo
+            // Adiciona o id e a descrição do grupo
             [$groupId, $description] = [$params['groupId'], $params['description']];
 
             // Cria uma nova página e navega até a URL
@@ -248,6 +264,146 @@ class GroupController extends Controller
                     'message' => $th->getMessage(),
                     'status'  => null
             ], 400);
+        }
+    }
+
+    /**
+     * Promove participante de um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function promoteParticipant(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                'groupId' => 'required|string',
+                'number'  => 'required|string'
+            ]);
+
+            // Adiciona o id e o participante do grupo
+            [$groupId, $number] = [$params['groupId'], $params['number']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            
+            // Seta os grupos
+            $content = $page->evaluate("window.WAPIWU.promoteParticipants('$groupId', '$number');")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Despromove participante de um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function demoteParticipant(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                'groupId' => 'required|string',
+                'number'  => 'required|string'
+            ]);
+
+            // Adiciona o id e o participante do grupo
+            [$groupId, $number] = [$params['groupId'], $params['number']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Seta os grupos
+            $content = $page->evaluate("window.WAPIWU.demoteParticipants('$groupId', '$number');")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Adiciona um participante a um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function addParticipant(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                'groupId' => 'required|string',
+                'number'  => 'required|string'
+            ]);
+
+            // Adiciona o id e o participante do grupo
+            [$groupId, $number] = [$params['groupId'], $params['number']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Seta os grupos
+            $content = $page->evaluate("window.WAPIWU.addParticipant('$groupId', '$number');")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Remove um participante a um grupo
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function removeParticipant(Request $request, string $sessionId)
+    {
+        try {
+            $params = $request->validate([
+                'groupId' => 'required|string',
+                'number'  => 'required|string'
+            ]);
+
+            // Adiciona o id e o participante do grupo
+            [$groupId, $number] = [$params['groupId'], $params['number']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Seta os grupos
+            $content = $page->evaluate("window.WAPIWU.removeParticipant('$groupId', '$number');")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            // Retorna a resposta JSON com a mensagem de sucesso
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 }

@@ -156,10 +156,10 @@ window.WAPIWU.setGroupDescription = async (groupId, description) => {
  * Setar uma propriedade de um grupo
  * 86400/24 h 604800/7
  * @param {*} groupId
- * @param {*} type
+ * @param {*} property
  * @param {*} value
  */
-window.WAPIWU.setGroupProperty = async (groupId, type, value) => {
+window.WAPIWU.setGroupProperty = async (groupId, property, value) => {
     try {
         const constantsType = require("WAWebGroupConstants");
         const types = {
@@ -173,8 +173,8 @@ window.WAPIWU.setGroupProperty = async (groupId, type, value) => {
         };
 
         // Se for ephemeral, multiplica por 86400
-        if(type == 2) {
-            value = 604800;
+        if(property == 2) {
+            value = value ? 604800 : 0;
         }
 
         var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
@@ -185,7 +185,7 @@ window.WAPIWU.setGroupProperty = async (groupId, type, value) => {
 
         var response = await setJobConfigGroup.setGroupProperty(
             group,
-            types[type],
+            types[property],
             value
         );
 
@@ -272,7 +272,8 @@ window.WAPIWU.getConfigsSend = async (chatId, prepRawMedia, caption = "", fileSe
         "image/gif": "gif",
         "video/webm": "video",
         "video/mp4": "video",
-        'audio/ogg': 'ogg'
+        'audio/ogg': 'ogg',
+        'image/webp': 'webp'
     };
 
     msg.body = prepRawMedia._mediaData.preview;
@@ -516,5 +517,119 @@ window.WAPIWU.getPhoneNumber = async () => {
         return { success: true, phoneNumber: phoneNumber, message: 'Número de telefone encontrado' };
     } catch (error) {
         return { success: false, message: 'Erro ao buscar o número de telefone', error: error.message };
+    }
+};
+
+// Inicia a sessão
+window.WAPIWU.startSession = async () => {
+    try {
+        return { success: true, message: 'Sessão iniciada com sucesso' };
+    } catch (error) {
+        return { success: false, message: 'Erro ao iniciar a sessão', error: error.message };
+    }
+};
+
+// Função para promover um participante
+window.WAPIWU.promoteParticipants = async (groupId, number) => { 
+    try {
+        // Seta as variáveis
+        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
+        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
+
+        // Pega o contato
+        var collections = require('WAWebCollections')
+        var contact     = groupInfo.participants.get(number);
+        var group       = collections.Chat.get(groupId);
+
+        // Verifica se o participante é admin
+        if(contact.__x_isAdmin) {
+            return { success: true, message: 'Participante é admin'};      
+        }
+
+        // promover o participante
+        await WAWebModifyParticipantsGroupAction.promoteParticipants(group, [contact]);
+
+        return { success: true, message: 'Participante promovido com sucesso'};
+    } catch (error) {
+        return { success: false, message: 'Erro ao promover o participante', error: error.message };
+    }
+};
+
+// Função para despromover um participante
+window.WAPIWU.demoteParticipants = async (groupId, number) => { 
+    try {
+        // Seta as variáveis
+        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
+        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
+
+        // Pega o contato
+        var collections = require('WAWebCollections')
+        var contact     = groupInfo.participants.get(number);
+        var group       = collections.Chat.get(groupId);
+
+        // Verifica se o participante é admin
+        if(!contact.__x_isAdmin) {
+            return { success: true, message: 'Participante não é admin'};      
+        }
+
+        // Despromove o participante
+        await WAWebModifyParticipantsGroupAction.demoteParticipants(group, [contact]);
+
+        return { success: true, message: 'Participante despromovido com sucesso'};
+    } catch (error) {
+        return { success: false, message: 'Erro ao despromover o participante', error: error.message };
+    }
+};
+
+// Função para promover um participante
+window.WAPIWU.addParticipant = async (groupId, number) => { 
+    try {
+        // Seta as variáveis
+        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
+        var participants = await window.WAPIWU.getGroupParticipants(groupId);
+
+        // Pega o contato
+        var collections = require('WAWebCollections')
+        var contact     = collections.Contact.get(number);
+        var group       = collections.Chat.get(groupId);
+
+        // Verifica se o participante é admin
+        if(participants.participants.includes(number)) {
+            return { success: true, message: 'Participante está adicionado'};      
+        }
+
+        // promover o participante
+        await WAWebModifyParticipantsGroupAction.addParticipants(group, [contact]);
+
+        return { success: true, message: 'Participante Adicionado com sucesso'};
+    } catch (error) {
+        return { success: false, message: 'Erro ao adicionar o participante', error: error.message };
+    }
+};
+
+// Função para promover um participante
+window.WAPIWU.removeParticipant = async (groupId, number) => { 
+    try {
+        // Seta as variáveis
+        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
+        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
+
+        // Pega o contato
+        var collections = require('WAWebCollections')
+        var contact     = groupInfo.participants.get(number);
+        var group       = collections.Chat.get(groupId);
+
+        // Verifica se o participante é admin
+        if(!contact) {
+            return { success: true, message: 'Participante não está adicionado'};      
+        }
+
+        // promover o participante
+        await WAWebModifyParticipantsGroupAction.removeParticipants(group, [contact]);
+
+        return { success: true, message: 'Participante removido com sucesso'};
+    } catch (error) {
+        console.log(error);
+        return { success: false, message: 'Erro ao remover o participante', error: error };
     }
 };

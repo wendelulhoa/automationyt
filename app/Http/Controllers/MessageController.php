@@ -87,7 +87,7 @@ class MessageController extends Controller
             ]);
 
             // Aguarda 1 segundos
-            sleep(1);
+            // sleep(1);
 
             // Pega o chatId e a legenda
             [$chatId, $caption] = [$data['chatId'], $data['caption'] ?? ''];
@@ -252,6 +252,7 @@ class MessageController extends Controller
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx', // Adicionado mimetype de docx
             'application/vnd.ms-excel' => 'xls', // Adicionado mimetype de xls
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx', // Adicionado mimetype de xlsx
+            'image/webp' => 'webp', // Adicionado mimetype de webp
         ];
 
         return $mimeTypes[$mimeType] ?? 'bin';
