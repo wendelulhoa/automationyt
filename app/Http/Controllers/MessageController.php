@@ -42,7 +42,55 @@ class MessageController extends Controller
             $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
 
             // Seta o script para enviar a imagem
-            $script = "window.WAPIWU.sendTextMsgToChat('$chatId', localStorage.getItem('$randomNameVar'));";
+            $script = "window.WAPIWU.sendText('$chatId', localStorage.getItem('$randomNameVar'));";
+
+            // Executa o script no navegador
+            $content = $page->evaluate($script)['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.'), 'response' => $content], $statusCode);
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+        }
+    }
+
+    /**
+     * Envia uma mensagem de linkpreview
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function sendLinkPreview(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $params = $request->validate([
+                'chatId' => 'required|string',
+                'text' => 'required|string',
+                'link' => 'required|string'
+            ]);
+
+            // Pega o chatId e o texto
+            [$chatId, $text, $link] = [$params['chatId'], $params['text'], $params['link']];
+
+            // Aguarda 1 segundo
+            sleep(1);
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Seta o text temporário
+            $randomNameVar = strtolower(Str::random(5));
+            $page->evaluate("localStorage.setItem('$randomNameVar', `$text \n\n $link`);");
+
+            // Seta o script para enviar a imagem
+            $script = "window.WAPIWU.sendLinkPreview('$chatId', localStorage.getItem('$randomNameVar'), '$link');";
 
             // Executa o script no navegador
             $content = $page->evaluate($script)['result']['result']['value'];
@@ -87,7 +135,7 @@ class MessageController extends Controller
             ]);
 
             // Aguarda 1 segundos
-            // sleep(1);
+            sleep(1);
 
             // Pega o chatId e a legenda
             [$chatId, $caption] = [$data['chatId'], $data['caption'] ?? ''];

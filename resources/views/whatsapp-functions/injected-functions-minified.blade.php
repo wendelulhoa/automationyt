@@ -1,6 +1,7 @@
-@include('whatsapp-functions.injected-functionscustom-wa')
-
 window.WAPIWU = {};
+
+// Guarda os eventos do whatsapp
+window.WAPIWU.webhookEvents = {};
 
 // Função para buscar informações de um grupo
 window.WAPIWU.findGroupInfo = async (groupId) => {
@@ -198,8 +199,34 @@ window.WAPIWU.setGroupProperty = async (groupId, property, value) => {
     }
 };
 
+window.WAPIWU.getLinkPreview = async (url) => {
+    // Pega query
+    var query = require("WAWebMexFetchPlaintextLinkPreviewJobQuery.graphql");
+
+    // Pega a url
+    var urlQuery = {
+        "input": {
+            "url": url
+        }
+    };
+
+    var WAWebMexNativeClient = require('WAWebMexNativeClient');
+    var response = await WAWebMexNativeClient.fetchQuery(query, urlQuery);
+    var content  = response.xwa2_newsletter_link_preview;
+
+    return {
+        "matchedText": url,
+        "title": content.title,
+        "description": content.description,
+        "richPreviewType": 0,
+        "doNotPlayInline": true,
+        "isLoading": false,
+        "thumbnail": content.thumb_data
+    };
+}
+
 // Enviar uma mensagem para um chat
-window.WAPIWU.sendTextMsgToChat = async (chatId, text) => {
+window.WAPIWU.sendText = async (chatId, text) => {
     try {
         var sendMessageText = require("WAWebSendTextMsgChatAction");
 
@@ -226,7 +253,47 @@ window.WAPIWU.sendTextMsgToChat = async (chatId, text) => {
     } catch (error) {
         return {
             success: false,
-            message: `Erro ao enviar catch: ${error}`,
+            message: `Erro ao enviar catch: ${error.message}`,
+            chatId: chatId,
+            text: text,
+        };
+    }
+};
+
+// Enviar um linkpreview para um chat
+window.WAPIWU.sendLinkPreview = async (chatId, text, link) => {
+    try {
+        var sendMessageText = require("WAWebSendTextMsgChatAction");
+
+        // Busca as informações de todos os grupos
+        var webCollection = require("WAWebCollections");
+
+        // Response
+        var response = await sendMessageText.sendTextMsgToChat(
+            webCollection.Chat.get(chatId),
+            text,
+            {
+                "linkPreview": await window.WAPIWU.getLinkPreview(link),
+                "mentionedJidList": [],
+                "groupMentions": [],
+                "botMsgBodyType": null
+            }
+        );
+        var success = response.messageSendResult == "OK";
+
+        return {
+            success: success,
+            message: success
+                ? "Enviado com sucesso"
+                : `Erro ao enviar: ${response}`,
+            chatId: chatId,
+            text: text,
+            response: response,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: `Erro ao enviar catch: ${error.message}`,
             chatId: chatId,
             text: text,
         };
@@ -633,3 +700,20 @@ window.WAPIWU.removeParticipant = async (groupId, number) => {
         return { success: false, message: 'Erro ao remover o participante', error: error };
     }
 };
+
+window.WAPIWU.setWebhookEvent = async function (events) {
+    events.forEach(event => {
+        console.log('event', event);
+        switch(event.subtype) {
+            case "leave":
+            case "invite":
+            case "add":
+            case "message":
+                window.WAPIWU.webhookEvents[event.id.id] = event;
+                break;
+        }
+    });
+};
+
+// Adiciona as funções customizadas que substitui as originais do webwhatsapp
+@include('whatsapp-functions.injected-functionscustom-wa')
