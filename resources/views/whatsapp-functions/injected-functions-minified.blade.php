@@ -75,6 +75,7 @@ window.WAPIWU.getAllGroups = async () => {
     }
 };
 
+// Adiciona um participante a um grupo
 window.WAPIWU.addParticipantToGroup = (groupId, contact) => {
     // Pega o contato
     var collections = require('WAWebCollections')
@@ -154,8 +155,8 @@ window.WAPIWU.setGroupDescription = async (groupId, description) => {
 };
 
 /**
- * Setar uma propriedade de um grupo
- * 86400/24 h 604800/7
+ * Setar uma propriedade do grupo
+ * 
  * @param {*} groupId
  * @param {*} property
  * @param {*} value
@@ -199,6 +200,7 @@ window.WAPIWU.setGroupProperty = async (groupId, property, value) => {
     }
 };
 
+// Monta o link preview
 window.WAPIWU.getLinkPreview = async (url) => {
     // Pega query
     var query = require("WAWebMexFetchPlaintextLinkPreviewJobQuery.graphql");
@@ -388,14 +390,16 @@ window.WAPIWU.getConfigsSend = async (chatId, prepRawMedia, caption = "", fileSe
 // Faz o envio do arquivo
 window.WAPIWU.sendFile = async (chatId, caption, inputUsed) => {
     try {
+        // Pega o arquivo
         var fileSend = document.querySelector(inputUsed).files[0];
 
         // Cria o arquivo para envio
-        var createFromData =
-            await require("WAWebMediaOpaqueData").createFromData(
-                fileSend,
-                fileSend.type
-            );
+        var createFromData = await require("WAWebMediaOpaqueData").createFromData(
+            fileSend,
+            fileSend.type
+        );
+
+        // Prepara o arquivo para envio
         var prepRawMedia = await require("WAWebMedia").prepRawMedia(
             createFromData,
             {}
@@ -416,8 +420,9 @@ window.WAPIWU.sendFile = async (chatId, caption, inputUsed) => {
             caption,
             fileSend
         );
-        var addMsg =
-            require("WAWebMsgCollection").MsgCollection.add(configsSend);
+
+        // Envia a mensagem
+        var addMsg = require("WAWebMsgCollection").MsgCollection.add(configsSend);
         var response = await objMediaData.mediaPrep.sendToChat(chat, addMsg[0]);
         var success = response.messageSendResult == "OK";
 
@@ -565,7 +570,7 @@ window.WAPIWU.sendPoll = async (chatId, title, options, selectableCount = 0) => 
         };
         
         // Envia a enquete
-        const response = await require('WAWebPollsSendPollCreationMsgActionWU').sendPollCreation({ poll: poll, chat: webCollection.Chat.get(chatId), quotedMsg: undefined });
+        const response = await require('WAWebPollsSendPollCreationMsgAction').sendPollCreation({ poll: poll, chat: webCollection.Chat.get(chatId), quotedMsg: undefined });
 
         // Verifica se deu sucesso
         const success = response[1].messageSendResult === "OK";
@@ -701,19 +706,214 @@ window.WAPIWU.removeParticipant = async (groupId, number) => {
     }
 };
 
+// Seta os eventos para enviar para o webhook
 window.WAPIWU.setWebhookEvent = async function (events) {
     events.forEach(event => {
         console.log('event', event);
         switch(event.subtype) {
             case "leave":
             case "invite":
-            case "add":
             case "message":
                 window.WAPIWU.webhookEvents[event.id.id] = event;
                 break;
         }
     });
 };
+
+// Gera um código sempre aleatório
+window.WAPIWU.generateRandomCode = (length = 22) => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Conjunto de caracteres permitidos
+    let code = '';
+  
+    for (let i = 0; i < length; i++) {
+      // Seleciona um caractere aleatório do conjunto
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      code += characters[randomIndex]; // Adiciona o caractere selecionado ao código
+    }
+  
+    return code;
+}
+
+// Envia um vcard
+window.WAPIWU.sendVcard = async (chatId, title, contact) => {
+    try {
+        // Busca o chat
+        var webCollection = require('WAWebCollections');
+        var chat          = webCollection.Chat.get(chatId);
+
+        // Monta as informações de envio
+        var dataUtil = require('WAWebMsgDataUtils') 
+        var msg = await dataUtil.genOutgoingMsgData(chat, 'text/vcard');
+
+        // Remove código anterior e adiciona o novo
+        msg.id._serialized = msg.id._serialized.replace(msg.id.id, ':newcode');
+        msg.id.id = window.WAPIWU.generateRandomCode(22);
+        msg.id._serialized = msg.id._serialized.replace(':newcode', msg.id.id);
+
+        // Monta o vcard
+        const msgData = {
+            "type": "vcard",
+            "vcardFormattedName": title,
+            "body": `BEGIN:VCARD\nVERSION:3.0\nN:;${title};;;\nFN:${title}\nTEL;type=CELL;waid=${contact}:${contact}\nEND:VCARD`,
+            "ack": 0,
+            "from": msg.from,
+            "id": msg.id,
+            "local": true,
+            "isNewMsg": true,
+            "t": msg.t,
+            "to": msg.to,
+            "ephemeralDuration": 0
+        }
+
+        // Instância para o envio
+        var WAWebSendMsgChatAction = require('WAWebSendMsgChatAction')
+        const response = await WAWebSendMsgChatAction.addAndSendMsgToChat(chat, msgData);
+        const result  = await response[1];
+        const success = result.messageSendResult === "OK";
+
+        return {success: success, message: (success ? "Vcard enviado com sucesso" : "Erro ao enviar vcard")};
+    } catch (error) {
+        return { success: false, message: 'Erro ao enviar vcard', error: error.message };
+    }
+}
+
+// Transforma o arquivo em base64
+window.WAPIWU.fileToBase64 = async (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader(); // Cria uma instância do FileReader
+
+        // Define a função de callback para quando a leitura do arquivo estiver concluída
+        reader.onload = () => {
+            resolve(reader.result); // Retorna a string Base64 com o tipo MIME
+        };
+
+        // Define a função de callback para erros
+        reader.onerror = (error) => {
+            reject(error); // Rejeita a promessa com o erro
+        };
+
+        reader.readAsDataURL(file); // Inicia a leitura do arquivo como uma URL de dados (Base64)
+    });
+};
+
+window.WAPIWU.resizeImage = async (file, sizes) => {
+    const reader = new FileReader();
+    
+    // Ler o arquivo de imagem como Data URL usando Promises
+    const dataUrl = await new Promise((resolve) => {
+      reader.onload = (event) => resolve(event.target.result);
+      reader.readAsDataURL(file);
+    });
+  
+    const img = new Image();
+    img.src = dataUrl;
+  
+    await new Promise((resolve) => (img.onload = resolve));
+  
+    const resizedFiles = await Promise.all(
+      sizes.map((size) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+  
+        // Calcula a nova largura e altura mantendo a proporção
+        let width = img.width;
+        let height = img.height;
+  
+        if (width > height) {
+          if (width > size) {
+            height *= size / width;
+            width = size;
+          }
+        } else {
+          if (height > size) {
+            width *= size / height;
+            height = size;
+          }
+        }
+  
+        // Define o tamanho do canvas
+        canvas.width = width;
+        canvas.height = height;
+  
+        // Desenha a imagem redimensionada no canvas
+        ctx.drawImage(img, 0, 0, width, height);
+  
+        // Converte o canvas para Blob e cria um arquivo redimensionado
+        return new Promise((resolve) =>
+          canvas.toBlob(
+            (blob) => {
+              const resizedFile = new File([blob], `${size}x${size}_${file.name}`, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+              resolve(resizedFile);
+            },
+            file.type
+          )
+        );
+      })
+    );
+  
+    return resizedFiles;
+}
+
+// Altera a foto de um grupo
+window.WAPIWU.changeGroupPhoto = async (chatId, inputUsed) => {
+    try {
+        // Pega o arquivo
+        var fileSend = document.querySelector(inputUsed).files[0];
+
+        // Redimensiona a imagem
+        var filesResized = await window.WAPIWU.resizeImage(fileSend, [96, 640]);
+
+        // Transforma o arquivo em base64
+        var file96  = await window.WAPIWU.fileToBase64(filesResized[0]);
+        var file640 = await window.WAPIWU.fileToBase64(filesResized[1]);
+
+        // Cria o wid do grupo
+        var WAWebWidFactoryLocal = require("WAWebWidFactory");
+        var groupWid = WAWebWidFactoryLocal.createWid(chatId);
+
+        // Altera a foto do grupo
+        var response = await require("WAWebContactProfilePicThumbBridge").sendSetPicture(groupWid, file96, file640);
+        const success = response.status == 200;
+
+        return {
+            success: success,
+            message: (success ? "Foto alterada com sucesso" : "Erro ao alterar a foto"),
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: "Erro ao alterar a foto",
+            error: error.message,
+        };
+    }
+};
+
+// Altera a foto de um grupo
+window.WAPIWU.removeGroupPhoto = async (chatId) => {
+    try {
+        // Cria o wid do grupo
+        var WAWebWidFactoryLocal = require("WAWebWidFactory");
+        var groupWid = WAWebWidFactoryLocal.createWid(chatId);
+
+        // Altera a foto do grupo
+        var response = await require("WAWebContactProfilePicThumbBridge").requestDeletePicture(groupWid);
+        const success = response.status == 200;
+
+        return {
+            success: success,
+            message: (success ? "Foto removida com sucesso" : "Erro ao remover a foto"),
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: "Erro ao remover a foto",
+            error: error.message,
+        };
+    }
+}
 
 // Adiciona as funções customizadas que substitui as originais do webwhatsapp
 @include('whatsapp-functions.injected-functionscustom-wa')

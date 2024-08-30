@@ -114,6 +114,9 @@ RUN useradd -G www-data,root -u $WWWGROUP -d /home/$WWWUSER $WWWUSER && \
     chown -R $WWWUSER:root /home/$WWWUSER && \
     usermod -aG sudo $WWWUSER
 
+# Criar a pasta /storage e definir permissões
+RUN mkdir -p /storage && chmod 777 /storage
+
 # Copiar o script de inicialização e configurar permissões
 COPY start-container /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container

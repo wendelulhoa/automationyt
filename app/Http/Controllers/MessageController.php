@@ -101,7 +101,7 @@ class MessageController extends Controller
             // Define o status code da resposta
             $statusCode = $content['success'] ? 200 : 400;
 
-            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.'), 'response' => $content], $statusCode);
+            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.')], $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
@@ -114,8 +114,35 @@ class MessageController extends Controller
      * @param string $sessionId
      * @return JsonResponse
      */
-    // public function sendVcard(Request $request): JsonResponse
-    // {}
+    public function sendVcard(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $params = $request->validate([
+                'chatId'  => 'required|string',
+                'title'   => 'required|string',
+                'contact' => 'required|string'
+            ]);
+
+            // Pega o chatId e o texto
+            [$chatId, $title, $contact] = [$params['chatId'], $params['title'], $params['contact']];
+
+            // Aguarda 1 segundo
+            sleep(1);
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Executa o script no navegador
+            $content = $page->evaluate("window.WAPIWU.sendVcard('$chatId', '$title', '$contact');")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.')], $statusCode);
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+        }
+    }
 
     /**
      * Envia uma imagem
