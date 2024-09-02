@@ -71,11 +71,12 @@ Class Browser {
         // Faz a requisição para obter a URL do socket
         $tries = 0;
         $response = null;
+        
+        // Pega a porta do arquivo
+        $this->port = file_get_contents($pathPort);
+
         while (true) {
             try {
-                // Pega a porta do arquivo
-                $this->port = file_get_contents($pathPort);
-
                 // Faz a requisição para obter a URL do socket
                 $response = Http::get("http://127.0.0.1:{$this->port}/json/version");
             } catch (\Throwable $th) {
@@ -91,7 +92,7 @@ Class Browser {
             // Verifica se tentou mais de 3 vezes
             $tries++;
         }
-
+        dd($response, $this->port);
         return $response->json()['webSocketDebuggerUrl'];
     }
 
@@ -179,6 +180,7 @@ Class Browser {
 
             // Define uma porta e um número de display disponíveis
             $port = $this->getAvailablePort($basePort, $this->sessionId);
+            $this->port = $port;
 
             // Armazena a porta e o display em arquivos
             file_put_contents($pathPort, $port);
@@ -228,8 +230,29 @@ Class Browser {
      * 
      * @return integer
      */
-    private function getAvailablePort(int $basePort, string $sessionId): int
+    private function getAvailablePort(): int
     {
-        return $basePort + intval(substr($sessionId, -1));
+        do {
+            $port = random_int(9224, 9499);
+        } while ($this->isPortInUse($port));
+
+        return $port;
+    }
+
+    /**
+     * Verifica se a porta está em uso
+     *
+     * @param integer $port
+     * 
+     * @return boolean
+     */
+    private function isPortInUse(int $port): bool
+    {
+        $connection = @fsockopen('localhost', $port);
+        if (is_resource($connection)) {
+            fclose($connection);
+            return true;
+        }
+        return false;
     }
 }
