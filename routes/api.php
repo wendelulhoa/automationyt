@@ -46,5 +46,6 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [WaitRequestMiddleware
         Route::post('/send-linkpreview', [MessageController::class, 'sendLinkPreview']);
         Route::post('/send-poll', [MessageController::class, 'sendPoll']);
         Route::post('/send-vcard', [MessageController::class, 'sendVcard']);
+        Route::post('/send-audio', [MessageController::class, 'sendAudio']);
     });
 });
