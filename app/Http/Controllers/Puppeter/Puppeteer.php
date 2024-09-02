@@ -33,10 +33,10 @@ class Puppeteer extends Controller
         }   
 
         // Verifica se é para recarregar a página
-        // if($reload) {
-        //     $page->reload();
-        //     sleep(2);
-        // }
+        if($reload) {
+            $page->reload();
+            sleep(2);
+        }
 
         // Verifica se a função existe
         if(($page->evaluate($existsFn)['result']['result']['type'] ?? '') == 'undefined' || empty($existsFn)) {

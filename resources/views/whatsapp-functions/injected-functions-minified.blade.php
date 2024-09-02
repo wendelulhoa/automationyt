@@ -227,20 +227,44 @@ window.WAPIWU.getLinkPreview = async (url) => {
     };
 }
 
+// Monta a lista de mentions
+window.WAPIWU.mountAllMention = async (chatId) => {
+    // Busca os participantes do grupo
+    var participants = await window.WAPIWU.getGroupParticipants(chatId);
+    var WAWebWidFactoryLocal = require("WAWebWidFactory");
+    
+    // Inicializa a lista de mentions
+    var mentions = [];
+
+    // Monta a lista a ser mencionada
+    participants.participants.forEach((contact) => {
+        mentions.push(WAWebWidFactoryLocal.createWid(contact));   
+    })
+
+    return mentions;
+}
+
 // Enviar uma mensagem para um chat
-window.WAPIWU.sendText = async (chatId, text) => {
+window.WAPIWU.sendText = async (chatId, text, mention = false) => {
     try {
         var sendMessageText = require("WAWebSendTextMsgChatAction");
 
         // Busca as informações de todos os grupos
         var webCollection = require("WAWebCollections");
 
-        // Response
+        // Envia o texto
         var response = await sendMessageText.sendTextMsgToChat(
             webCollection.Chat.get(chatId),
             text,
-            {}
+            {
+                "linkPreview": null,
+                "mentionedJidList": mention ? await window.WAPIWU.mountAllMention(chatId) : [],
+                "groupMentions": [],
+                "botMsgBodyType": null
+            }
         );
+
+        // Verifica se deu sucesso
         var success = response.messageSendResult == "OK";
 
         return {
@@ -581,6 +605,47 @@ window.WAPIWU.sendPoll = async (chatId, title, options, selectableCount = 0) => 
     }
 };
 
+// Função para enviar enquete
+window.WAPIWU.sendAudio = async (chatId, inputUsed) => {
+    try {
+        // Pega o arquivo
+        var fileSend = document.querySelector(inputUsed).files[0];
+
+        // Busca as informações de todos os grupos
+        var WAWebCollections = require('WAWebCollections')
+        var chat = WAWebCollections.Chat.get(chatId)
+
+        // Monta o MediaCollection
+        var WAWebAttachMediaCollection = require('WAWebAttachMediaCollection')
+        var WAWebAttachMediaCollection = new WAWebAttachMediaCollection({chatParticipantCount: chat.getParticipantCount()});
+
+        // Prepara o arquivo para envio
+        var files = [{
+            "file": fileSend,
+            "filename": `${window.WAPIWU.generateRandomCode(10)}.ogg`,
+            "mimetype": "audio/ogg",
+            "type": "audio"
+        }]
+
+        // Processa o arquivo
+        await WAWebAttachMediaCollection.processAttachments(files, 1, chat)
+
+        // Pega o media
+        var media = WAWebAttachMediaCollection.getModelsArray()[0];
+        media.mediaPrep._mediaData.type = 'ptt';
+        
+        // Envia o arquivo
+        const response = await media.mediaPrep.sendToChat(chat, {})
+
+        // Verifica se deu sucesso
+        const success = response.messageSendResult === "OK";
+
+        return {success: success, message: (success ? "Áudio enviado com sucesso" : "Erro ao enviar áudio")};
+    } catch (error) {
+        return { success: false, message: 'Erro ao enviar áudio', error: error.message };
+    }
+};
+
 // Busca o número de telefone
 window.WAPIWU.getPhoneNumber = async () => {
     try {
@@ -801,61 +866,68 @@ window.WAPIWU.resizeImage = async (file, sizes) => {
     
     // Ler o arquivo de imagem como Data URL usando Promises
     const dataUrl = await new Promise((resolve) => {
-      reader.onload = (event) => resolve(event.target.result);
-      reader.readAsDataURL(file);
+        reader.onload = (event) => resolve(event.target.result);
+        reader.readAsDataURL(file);
     });
-  
+
     const img = new Image();
     img.src = dataUrl;
-  
+
     await new Promise((resolve) => (img.onload = resolve));
-  
+
     const resizedFiles = await Promise.all(
-      sizes.map((size) => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-  
-        // Calcula a nova largura e altura mantendo a proporção
-        let width = img.width;
-        let height = img.height;
-  
-        if (width > height) {
-          if (width > size) {
-            height *= size / width;
-            width = size;
-          }
-        } else {
-          if (height > size) {
-            width *= size / height;
-            height = size;
-          }
-        }
-  
-        // Define o tamanho do canvas
-        canvas.width = width;
-        canvas.height = height;
-  
-        // Desenha a imagem redimensionada no canvas
-        ctx.drawImage(img, 0, 0, width, height);
-  
-        // Converte o canvas para Blob e cria um arquivo redimensionado
-        return new Promise((resolve) =>
-          canvas.toBlob(
-            (blob) => {
-              const resizedFile = new File([blob], `${size}x${size}_${file.name}`, {
-                type: file.type,
-                lastModified: Date.now(),
-              });
-              resolve(resizedFile);
-            },
-            file.type
-          )
-        );
-      })
+        sizes.map((size) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Calcula a nova largura e altura mantendo a proporção
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > size) {
+                    height *= size / width;
+                    width = size;
+                }
+            } else {
+                if (height > size) {
+                    width *= size / height;
+                    height = size;
+                }
+            }
+
+            // Define o tamanho do canvas
+            canvas.width = width;
+            canvas.height = height;
+
+            // Desenha a imagem redimensionada no canvas
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Determina o novo tipo de arquivo como JPEG
+            const outputType = file.type === 'image/png' ? 'image/jpeg' : file.type;
+
+            // Converte o canvas para Blob e cria um arquivo redimensionado
+            return new Promise((resolve) =>
+                canvas.toBlob(
+                    (blob) => {
+                        const resizedFile = new File(
+                            [blob], 
+                            `${size}x${size}_${file.name.replace(/\.[^.]+$/, '.jpg')}`, // Substitui a extensão por .jpg
+                            {
+                                type: outputType,
+                                lastModified: Date.now(),
+                            }
+                        );
+                        resolve(resizedFile);
+                    },
+                    outputType
+                )
+            );
+        })
     );
-  
+
     return resizedFiles;
-}
+};
 
 // Altera a foto de um grupo
 window.WAPIWU.changeGroupPhoto = async (chatId, inputUsed) => {
@@ -913,7 +985,24 @@ window.WAPIWU.removeGroupPhoto = async (chatId) => {
             error: error.message,
         };
     }
-}
+};
+
+// Verifica se o número é válido ou não
+window.WAPIWU.checkNumber = async (number) => {
+    try {
+        // Cria o wid do contato
+        var WAWebWidFactoryLocal = require("WAWebWidFactory");
+        var contactWid = WAWebWidFactoryLocal.createWid(number);
+
+        // Verifica se o número é válido
+        var isValid = await require("WAWebQueryExistsJob").queryWidExists(contactWid);
+        var success = isValid == null ? false : true;
+
+        return { success: success, message: (success ? "Número válido" : "Número inválido") };
+    } catch (error) {
+        return { success: false, message: "Erro ao verificar o número", error: error.message };
+    }
+};
 
 // Adiciona as funções customizadas que substitui as originais do webwhatsapp
 @include('whatsapp-functions.injected-functionscustom-wa')

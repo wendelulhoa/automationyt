@@ -92,7 +92,7 @@ Class Browser {
             // Verifica se tentou mais de 3 vezes
             $tries++;
         }
-        dd($response, $this->port);
+
         return $response->json()['webSocketDebuggerUrl'];
     }
 
@@ -214,7 +214,7 @@ Class Browser {
             }
 
             // Sobe o navegador
-            exec($command);
+            dd(exec($command), $command);
 
             return true;
         } catch (\Throwable $th) {

@@ -434,7 +434,7 @@ class GroupController extends Controller
             [$groupId, $path] = [$data['groupId'], $data['path'] ?? ''];
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU.changeGroupPhoto');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
             // Verificar se o arquivo já foi enviado anteriormente
             $fileSend = Filesend::where('hash', md5($path))->first();

@@ -25,11 +25,12 @@ class MessageController extends Controller
         try {
             $params = $request->validate([
                 'chatId' => 'required|string',
-                'text' => 'required|string'
+                'text' => 'required|string',
+                'mention' => 'int'
             ]);
 
             // Pega o chatId e o texto
-            [$chatId, $text] = [$params['chatId'], $params['text']];
+            [$chatId, $text, $mention] = [$params['chatId'], $params['text'], $params['mention'] ?? 0];
 
             // Aguarda 1 segundo
             sleep(1);
@@ -41,11 +42,8 @@ class MessageController extends Controller
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
 
-            // Seta o script para enviar a imagem
-            $script = "window.WAPIWU.sendText('$chatId', localStorage.getItem('$randomNameVar'));";
-
             // Executa o script no navegador
-            $content = $page->evaluate($script)['result']['result']['value'];
+            $content = $page->evaluate("window.WAPIWU.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);")['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
@@ -53,7 +51,7 @@ class MessageController extends Controller
             // Define o status code da resposta
             $statusCode = $content['success'] ? 200 : 400;
 
-            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.'), 'response' => $content], $statusCode);
+            return response()->json(['success' => $content['success'], 'message' => $content['message'], 'response' => $content], $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
@@ -157,7 +155,7 @@ class MessageController extends Controller
         try {
             $data = $request->validate([
                 'chatId' => 'required|string',
-                'caption' => 'string',
+                'caption' => 'nullable|string',
                 'path' => 'required|string'
             ]);
 
@@ -243,6 +241,98 @@ class MessageController extends Controller
             $statusCode = $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Imagem enviada com sucesso.' : 'Erro ao enviar a imagem.')], $statusCode);
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage(), 'response' => $response ?? null], 400);
+        }
+    }
+
+    /**
+     * Envia uma imagem
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function sendAudio(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'chatId' => 'required|string',
+                'path' => 'required|string',
+            ]);
+
+            // Aguarda 1 segundos
+            sleep(1);
+
+            // Pega o chatId e a legenda
+            [$chatId, $path] = [$data['chatId'], $data['path']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWUa');
+
+            // Verificar se o arquivo já foi enviado anteriormente
+            $fileSend = Filesend::where('hash', md5($path))->first();
+            $fileName = $fileSend->path ?? null;
+            
+            // Verifica se o arquivo existe
+            if(!file_exists("/storage/$fileName")) {
+                Filesend::where('hash', md5($path))->delete();
+                $fileName = null;
+            }
+
+            // Verificar se o arquivo já foi enviado anteriormente
+            if(empty($fileSend)) {
+                // Baixar o conteúdo do arquivo
+                $fileContent = file_get_contents($path);
+        
+                // Verificar se o conteúdo foi baixado com sucesso
+                if ($fileContent === FALSE) {
+                    return response()->json(['error' => 'Não foi possível baixar o arquivo'], 500);
+                }
+        
+                // Determinar o mimetype do arquivo
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mimeType = $finfo->buffer($fileContent);
+        
+                // Determinar a extensão do arquivo com base no mimetype
+                $extension = $this->getExtensionFromMimeType($mimeType);
+        
+                // Gerar um nome aleatório para o arquivo
+                $randomFileName = strtolower(Str::random(10));
+        
+                // Nome completo do arquivo com extensão
+                $fileName = "$randomFileName.$extension";
+                Filesend::create([
+                    'path' => $fileName,
+                    'hash' => md5($path),
+                    'type' => $mimeType,
+                    'forget_in' => now()->addMinutes(120)
+                ]);
+
+                // Salva o arquivo na raiz do container
+                file_put_contents("/storage/$fileName", $fileContent);
+
+                // Define as permissões para 777
+                chmod("/storage/$fileName", 0777);
+            }
+
+            // Adiciona o input file no DOM
+            [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+
+            // Seta o arquivo no input
+            $page->setFileInput($backendNodeId, "/storage/$fileName");
+
+            // Executa o script no navegador
+            $content  = $page->evaluate("window.WAPIWU.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
+
+            // Deleta a variável temporária e o input file
+            $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
+
+            // Define o status code da resposta
+            $statusCode = $content['success'] ? 200 : 400;
+
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage(), 'response' => $response ?? null], 400);
         }

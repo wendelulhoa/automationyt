@@ -11,6 +11,7 @@ RUN apt update -y && \
       alien \
       libaio1 \
       wget \
+      cron \
       telnet \
       openvpn \
       brotli \
@@ -114,12 +115,18 @@ RUN useradd -G www-data,root -u $WWWGROUP -d /home/$WWWUSER $WWWUSER && \
     chown -R $WWWUSER:root /home/$WWWUSER && \
     usermod -aG sudo $WWWUSER
 
+# Configuração do cron
+COPY --chown=www-data:www-data --chmod=644 cron/scheduler /etc/cron.d/scheduler
+
 # Criar a pasta /storage e definir permissões
 RUN mkdir -p /storage && chmod 777 /storage
 
 # Copiar o script de inicialização e configurar permissões
 COPY start-container /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container
+
+## Scheduler no cron
+RUN crontab /etc/cron.d/scheduler
 
 # Expor a porta
 EXPOSE 80

@@ -23,7 +23,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU', true);
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU', false);
 
                // Pega o qrcode
                $content = $page->evaluate("window.WAPIWU.getQrCode();")['result']['result']['value'];
@@ -264,6 +264,46 @@ class WhatsappController extends Controller
                     'success' => $content['success'],
                     'message' => $content['message'],
                     'hash'    => ['apikey' => 'teste']
+               ], $statusCode);
+          } catch (\Throwable $th) {
+               // Em caso de erro, retorna uma resposta de falha
+               return response()->json([
+                    'success' => false,
+                    'message' => $th->getMessage()
+               ], 400);
+          }
+     }
+
+     /**
+      * Verifica o número é válido
+      *
+      * @param Request $request
+      * @param string $sessionId
+      * @return Json
+      */
+     public function checkNumber(Request $request, string $sessionId)
+     {
+          try {
+               $data = $request->validate([
+                    'number' => 'required|string'
+               ]);
+
+               // Pega o número
+               [$number] = [$data['number']];
+
+               // Cria uma nova página e navega até a URL
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+               // Verifica a conexão
+               $content = $page->evaluate("window.WAPIWU.checkNumber('$number');")['result']['result']['value'];
+
+               // Define o status code da resposta
+               $statusCode = $content['success'] ? 200 : 400;
+
+               // Retorna o resultado em JSON
+               return response()->json([
+                    'success' => $content['success'],
+                    'message' => $content['message']
                ], $statusCode);
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha
