@@ -75,34 +75,6 @@ window.WAPIWU.getAllGroups = async () => {
     }
 };
 
-// Adiciona um participante a um grupo
-window.WAPIWU.addParticipantToGroup = (groupId, contact) => {
-    try {
-        // Seta as variáveis
-        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
-        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
-
-        // Pega o contato
-        var collections = require('WAWebCollections')
-        var contact     = groupInfo.participants.get(number);
-        var group       = collections.Chat.get(groupId);
-
-        // Verifica se o participante é admin
-        if(contact) {
-            return { success: true, message: 'Participante está adicionado'};      
-        }
-
-        // Pega o contato
-        var contact = collections.Contact.get(contact);
-
-        await WAWebModifyParticipantsGroupAction.addParticipants(group, [contact]);
-
-        return {success: true, message: "Participante adicionado com sucesso"};
-    } catch(error) {
-        return {success: false, message: "Erro ao adicionar o participante", error: error.message};
-    }
-}
-
 // Setar o título de um grupo
 window.WAPIWU.setGroupSubject = async (groupId, subject) => {
     try {
@@ -739,24 +711,27 @@ window.WAPIWU.addParticipant = async (groupId, number) => {
     try {
         // Seta as variáveis
         var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
-        var participants = await window.WAPIWU.getGroupParticipants(groupId);
+        var groupInfo = window.WAPIWU.getGroupParticipants(groupId);
 
         // Pega o contato
         var collections = require('WAWebCollections')
-        var contact     = collections.Contact.get(number);
+        var contact     = groupInfo.participants.get(number);
         var group       = collections.Chat.get(groupId);
 
         // Verifica se o participante é admin
-        if(participants.participants.includes(number)) {
+        if(contact) {
             return { success: true, message: 'Participante está adicionado'};      
         }
+
+        // Pega o contato
+        contact = collections.Contact.get(number);
 
         // promover o participante
         await WAWebModifyParticipantsGroupAction.addParticipants(group, [contact]);
 
         return { success: true, message: 'Participante Adicionado com sucesso'};
     } catch (error) {
-        return { success: false, message: 'Erro ao adicionar o participante', error: error.message };
+        return { success: false, message: 'Erro ao adicionar o participantes', error: error.message, groupId: groupId, number: number };    
     }
 };
 

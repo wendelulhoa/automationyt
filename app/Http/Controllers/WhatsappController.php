@@ -8,6 +8,8 @@ use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
+
 class WhatsappController extends Controller
 {
      /**
@@ -37,11 +39,6 @@ class WhatsappController extends Controller
                          ->setMargin(2)
                          ->setOutfile($fullPath)
                          ->svg();
-                    // return $qrCode = QRCode::text(trim($content['qrCode']))
-                    //      ->setSize(6)
-                    //      ->setMargin(2)
-                    //      // ->setOutfile($fullPath)
-                    //      ->svg();
                     
                     // Lê o conteúdo do arquivo
                     $fileContent = File::get($fullPath);
