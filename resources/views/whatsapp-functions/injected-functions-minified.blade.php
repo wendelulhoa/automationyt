@@ -77,14 +77,30 @@ window.WAPIWU.getAllGroups = async () => {
 
 // Adiciona um participante a um grupo
 window.WAPIWU.addParticipantToGroup = (groupId, contact) => {
-    // Pega o contato
-    var collections = require('WAWebCollections')
-    var contact = collections.Contact.get('556196406283@c.us');
-    var group = collections.Chat.get(groupId);
+    try {
+        // Seta as variáveis
+        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
+        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
 
-    var addParticipants = require("WAWebModifyParticipantsGroupAction")
+        // Pega o contato
+        var collections = require('WAWebCollections')
+        var contact     = groupInfo.participants.get(number);
+        var group       = collections.Chat.get(groupId);
 
-    addParticipants.addParticipants(group, [contact])
+        // Verifica se o participante é admin
+        if(contact) {
+            return { success: true, message: 'Participante está adicionado'};      
+        }
+
+        // Pega o contato
+        var contact = collections.Contact.get(contact);
+
+        await WAWebModifyParticipantsGroupAction.addParticipants(group, [contact]);
+
+        return {success: true, message: "Participante adicionado com sucesso"};
+    } catch(error) {
+        return {success: false, message: "Erro ao adicionar o participante", error: error.message};
+    }
 }
 
 // Setar o título de um grupo

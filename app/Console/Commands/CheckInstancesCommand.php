@@ -35,7 +35,7 @@ class CheckInstancesCommand extends Command
             // Extrai o nome da sessão
             $sessionId = basename($instance);
             $pidFile = "$instance/pids/chrome-$sessionId.pid";
-            return;
+
             // Verifica se o arquivo PID existe
             if (file_exists($pidFile)) {
                 $pid = file_get_contents($pidFile);

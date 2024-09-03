@@ -60,8 +60,11 @@ Class Browser {
      */
     public function getUrlSocket(): string 
     {
+        // Define o caminho do diretório público
+        $publicPath = public_path('');
+
         // Pega o caminho do arquivo que contém a porta
-        $pathPort = "./chrome-sessions/$this->sessionId/port.txt";
+        $pathPort = "$publicPath/chrome-sessions/$this->sessionId/port.txt";
 
         // Cria os diretórios caso não existam
         if (!file_exists($pathPort)) {
@@ -161,11 +164,14 @@ Class Browser {
     public function start()
     {
         try {
-            exec("chmod -R 777 ./chrome-sessions/");
-            $pathData = "./chrome-sessions/{$this->sessionId}/userdata";
-            $pathLogs = "./chrome-sessions/{$this->sessionId}/logs";
-            $pathPids = "./chrome-sessions/{$this->sessionId}/pids";
-            $pathPort = "./chrome-sessions/{$this->sessionId}/port.txt";
+            // Define o caminho do diretório público
+            $publicPath = public_path('');
+
+            exec("chmod -R 777 $publicPath/chrome-sessions/");
+            $pathData = "$publicPath/chrome-sessions/{$this->sessionId}/userdata";
+            $pathLogs = "$publicPath/chrome-sessions/{$this->sessionId}/logs";
+            $pathPids = "$publicPath/chrome-sessions/{$this->sessionId}/pids";
+            $pathPort = "$publicPath/chrome-sessions/{$this->sessionId}/port.txt";
 
             // Cria os diretórios caso não existam
             if (!file_exists($pathLogs)) {
@@ -175,19 +181,16 @@ Class Browser {
                 mkdir($pathPids, 0777, true);
             }
 
-            // Define a porta e o número do display base
-            $basePort = 9224;
-
             // Define uma porta e um número de display disponíveis
-            $port = $this->getAvailablePort($basePort, $this->sessionId);
+            $port = $this->getAvailablePort();
             $this->port = $port;
 
             // Armazena a porta e o display em arquivos
             file_put_contents($pathPort, $port);
 
-            exec("chmod -R 777 ./chrome-sessions/");
-            exec("chmod -R 777 ./chrome-sessions/{$this->sessionId}/");
-            exec("chown -R root:root ./chrome-sessions/");
+            exec("chmod -R 777 $publicPath/chrome-sessions/");
+            exec("chmod -R 777 $publicPath/chrome-sessions/{$this->sessionId}/");
+            exec("chown -R root:root $publicPath/chrome-sessions/");
             exec("chmod -R 777 /root/.local");
   
             // Comando para iniciar o navegador

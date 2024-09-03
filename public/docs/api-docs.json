@@ -1,0 +1,59 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "API WhatsApp",
+      "version": "1.0.0",
+      "description": "API para interação com o WhatsApp"
+    },
+    "paths": {
+      "/api/{sessionId}/getqrcode": {
+        "get": {
+          "summary": "Obtém o QR Code do WhatsApp",
+          "tags": ["WhatsApp"],
+          "parameters": [
+            {
+              "name": "sessionId",
+              "in": "path",
+              "description": "ID da sessão do WhatsApp",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "QR Code gerado com sucesso",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean", "example": true },
+                      "qrcode": { "type": "string", "example": "data:image/svg+xml;base64,..." },
+                      "status": { "type": "string", "example": "Conectado" }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Erro ao gerar o QR Code",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean", "example": false },
+                      "status": { "type": "string", "example": "Erro ao conectar" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

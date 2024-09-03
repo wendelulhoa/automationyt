@@ -125,19 +125,25 @@ class WhatsappController extends Controller
 
                // Verifica a conexão
                $content = $page->evaluate("window.WAPIWU.disconnect();")['result']['result']['value'];
+               
+               // Aguarde um momento para garantir que o processo foi finalizado
+               sleep(2);
+
+               // Define o caminho do diretório público
+               $publicPath = public_path('');
 
                // Caso tenha um processo em execução, mata o processo
-               if (file_exists("./chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
-                    $pid = file_get_contents("./chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid");
+               if (file_exists("$publicPath/chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
+                    $pid = file_get_contents("$publicPath/chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid");
                     exec("kill $pid");
                     // Aguarde um momento para garantir que o processo foi finalizado
                     sleep(1);
                }
 
                // Exclui a pasta da sessão
-               exec("rm -rf ./chrome-sessions/{$sessionId}");
-               exec("chmod -R 777 ./chrome-sessions/");
-               exec("chown -R root:root ./chrome-sessions/");
+               exec("rm -rf $publicPath/chrome-sessions/{$sessionId}");
+               exec("chmod -R 777 $publicPath/chrome-sessions/");
+               exec("chown -R root:root $publicPath/chrome-sessions/");
 
                // Define o status code da resposta
                $statusCode = $content['success'] ? 200 : 400;
@@ -167,22 +173,8 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $browser = (new Browser($sessionId));
-
-               // Pega a primeira página
-               $page = $browser->getFirstPage();
-
-               // Verifica se a URL atual é diferente da URL do WhatsApp
-               if(!(strpos($page->getCurrentUrl(), 'https://web.whatsapp.com') !== false)) {
-                    // Navega até a URL
-                    $page->navigate('https://web.whatsapp.com');
-               }
-
-               // Seta o script que irá verificar a conexão
-               $page->evaluate(view('whatsapp-functions.injected-functions-minified')->render());
-
-               // Verifica a conexão
-               $content = $page->evaluate("window.WAPIWU.screenShot();")['result']['result']['value'];
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $content = [];
 
                // Define o status code da resposta
                $statusCode = $content['success'] ? 200 : 400;
