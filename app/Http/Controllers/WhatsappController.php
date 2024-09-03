@@ -7,9 +7,7 @@ use App\Http\Controllers\Puppeter\Puppeteer;
 use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Http\Request;
 class WhatsappController extends Controller
 {
      /**
@@ -119,26 +117,27 @@ class WhatsappController extends Controller
 
       * @return JsonResponse
       */
-     public function disconnect(string $sessionId)
+     public function disconnect(string $sessionId): JsonResponse
      {
           try {
                // Cria uma nova página e navega até a URL
-               $browser = (new Browser($sessionId));
-
-               // Pega a primeira página
-               $page = $browser->getFirstPage();
-
-               // Verifica se a URL atual é diferente da URL do WhatsApp
-               if(!(strpos($page->getCurrentUrl(), 'https://web.whatsapp.com') !== false)) {
-                    // Navega até a URL
-                    $page->navigate('https://web.whatsapp.com');
-               }
-
-               // Seta o script que irá verificar a conexão
-               $page->evaluate(view('whatsapp-functions.injected-functions-minified')->render());
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
                // Verifica a conexão
                $content = $page->evaluate("window.WAPIWU.disconnect();")['result']['result']['value'];
+
+               // Caso tenha um processo em execução, mata o processo
+               if (file_exists("./chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
+                    $pid = file_get_contents("./chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid");
+                    exec("kill $pid");
+                    // Aguarde um momento para garantir que o processo foi finalizado
+                    sleep(1);
+               }
+
+               // Exclui a pasta da sessão
+               exec("rm -rf ./chrome-sessions/{$sessionId}");
+               exec("chmod -R 777 ./chrome-sessions/");
+               exec("chown -R root:root ./chrome-sessions/");
 
                // Define o status code da resposta
                $statusCode = $content['success'] ? 200 : 400;
@@ -146,15 +145,13 @@ class WhatsappController extends Controller
                // Retorna o resultado em JSON
                return response()->json([
                     'success' => $content['success'],
-                    'message' => $content['message'],
-                    'status'  => $content['status']
+                    'message' => $content['message']
                ], $statusCode);
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha
                return response()->json([
                     'success' => false,
-                    'message' => $th->getMessage(),
-                    'status'  => null
+                    'message' => $th->getMessage()
                ], 400);
           }
      }
@@ -255,6 +252,9 @@ class WhatsappController extends Controller
 
                // Verifica a conexão
                $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
+
+               // Coloca para esperar 1 segundo
+               sleep(1);
 
                // Define o status code da resposta
                $statusCode = $content['success'] ? 200 : 400;

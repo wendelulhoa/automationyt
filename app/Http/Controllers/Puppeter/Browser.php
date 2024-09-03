@@ -214,7 +214,7 @@ Class Browser {
             }
 
             // Sobe o navegador
-            dd(exec($command), $command);
+            exec($command);
 
             return true;
         } catch (\Throwable $th) {

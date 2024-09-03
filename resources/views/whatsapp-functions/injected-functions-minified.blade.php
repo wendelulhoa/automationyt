@@ -1004,5 +1004,17 @@ window.WAPIWU.checkNumber = async (number) => {
     }
 };
 
+// Função para fazer logout do whatsapp
+window.WAPIWU.disconnect = async () => {
+    try {
+        // Faz o logout
+        await require("WAWebSocketModel").Socket.logout();
+
+        return { success: true, message: "Logout feito com sucesso" };
+    } catch (error) {
+        return { success: false, message: "Erro ao fazer logout", error: error.message };
+    }
+};
+
 // Adiciona as funções customizadas que substitui as originais do webwhatsapp
 @include('whatsapp-functions.injected-functionscustom-wa')

@@ -13,6 +13,8 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [WaitRequestMiddleware
     Route::get('/start-session', [WhatsappController::class, 'startSession'])->name('wapiwu.startsession');
     Route::get('/checkconnection', [WhatsappController::class, 'checkConnection'])->name('wapiwu.checkconnection');
     Route::get('/getphonenumber', [WhatsappController::class, 'getPhoneNumber'])->name('wapiwu.getphonenumber');
+    Route::delete('/disconnect', [WhatsappController::class, 'disconnect'])->name('wapiwu.disconnect');
+    Route::post('/checknumber', [WhatsappController::class, 'checkNumber'])->name('wapiwu.checknumber');
 
     // Rotas de grupos
     Route::group(['prefix' => 'group'], function() {
