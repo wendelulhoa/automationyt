@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Puppeter\Browser;
 use App\Http\Controllers\Puppeter\Puppeteer;
 use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redis;
 
 class WhatsappController extends Controller
 {

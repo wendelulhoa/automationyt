@@ -474,15 +474,14 @@ window.WAPIWU.createGroup = async (name, participants = []) => {
         const response = await createGroup.createGroup(configs, participants);
         const success = response.server == "g.us";
 
-        // Busca as informações de um grupo
-        const metadata = await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(response._serialized);
-
         return {
             success: success,
             message: success
                 ? "Grupo criado com sucesso"
                 : "Erro ao criar grupo",
-            metadata: metadata,
+            metadata: {
+                id: response._serialized,
+            },
         };
     } catch (error) {
         return { success: false, message: "Erro ao criar grupo", error: error };
@@ -711,7 +710,7 @@ window.WAPIWU.addParticipant = async (groupId, number) => {
     try {
         // Seta as variáveis
         var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
-        var groupInfo = window.WAPIWU.getGroupParticipants(groupId);
+        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
 
         // Pega o contato
         var collections = require('WAWebCollections')
