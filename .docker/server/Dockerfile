@@ -120,6 +120,7 @@ COPY --chown=www-data:www-data --chmod=644 cron/scheduler /etc/cron.d/scheduler
 
 # Criar a pasta /storage e definir permissões
 RUN mkdir -p /storage && chmod 777 /storage
+RUN mkdir -p /.local && chmod 777 /.local
 
 # Copiar o script de inicialização e configurar permissões
 COPY start-container /usr/local/bin/start-container
