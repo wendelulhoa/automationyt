@@ -32,10 +32,10 @@ class WhatsappController extends Controller
                     $fullPath = public_path("$sessionId-qrcode.svg");
 
                     // Gera o QR code em SVG
-                    $qrCode = QRCode::text(trim($content['qrCode']))
+                    return $qrCode = QRCode::text(trim($content['qrCode']))
                          ->setSize(6)
                          ->setMargin(2)
-                         ->setOutfile($fullPath)
+                         // ->setOutfile($fullPath)
                          ->svg();
                     
                     // Lê o conteúdo do arquivo

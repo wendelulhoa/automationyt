@@ -179,4 +179,23 @@ Class Page {
             ]
         ]);
     }
+
+    /**
+     * Método para limpar o cache do navegador
+     *
+     * @param int $nodeId
+     * 
+     * @return array
+     */
+    public function clearCache() {
+        $clearCache = $this->connection()->connWebSocket([
+            'id' => 1,
+            'method' => 'Network.clearBrowserCache',
+        ]);
+        
+        $clearCookies = $this->connection()->connWebSocket([
+            'id' => 1,
+            'method' => 'Network.clearBrowserCookies',
+        ]);
+    }
 }

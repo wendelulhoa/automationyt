@@ -167,11 +167,11 @@ Class Browser {
             // Define o caminho do diretório público
             $publicPath = public_path('');
 
-            exec("chmod -R 777 $publicPath/chrome-sessions/");
-            $pathData = "$publicPath/chrome-sessions/{$this->sessionId}/userdata";
-            $pathLogs = "$publicPath/chrome-sessions/{$this->sessionId}/logs";
-            $pathPids = "$publicPath/chrome-sessions/{$this->sessionId}/pids";
-            $pathPort = "$publicPath/chrome-sessions/{$this->sessionId}/port.txt";
+            exec("chmod -R 777 ./chrome-sessions/");
+            $pathData = "./chrome-sessions/{$this->sessionId}/userdata";
+            $pathLogs = "./chrome-sessions/{$this->sessionId}/logs";
+            $pathPids = "./chrome-sessions/{$this->sessionId}/pids";
+            $pathPort = "./chrome-sessions/{$this->sessionId}/port.txt";
 
             // Cria os diretórios caso não existam
             if (!file_exists($pathLogs)) {
@@ -188,24 +188,42 @@ Class Browser {
             // Armazena a porta e o display em arquivos
             file_put_contents($pathPort, $port);
 
-            exec("chmod -R 777 $publicPath/chrome-sessions/");
-            exec("chmod -R 777 $publicPath/chrome-sessions/{$this->sessionId}/");
-            exec("chown -R root:root $publicPath/chrome-sessions/");
+            exec("chmod -R 777 ./chrome-sessions/");
+            exec("chmod -R 777 ./chrome-sessions/{$this->sessionId}/");
+            exec("chown -R root:root ./chrome-sessions/");
             exec("chmod -R 777 /root/.local");
-  
+            
+            // Pega a versão instalada no momento
+            $versionChrome = explode(" ", shell_exec("google-chrome --version"))[2];
+
             // Comando para iniciar o navegador
             $command = "
-                nohup google-chrome --headless \
-                    --disable-gpu \
-                    --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36' \
-                    --remote-debugging-port=$port \
-                    --disable-dev-shm-usage \
-                    --remote-allow-origins=* \
-                    --user-data-dir=$pathData \
-                    --no-sandbox \
-                    --lang=pt-BR \
-                    > $pathLogs/chrome-{$this->sessionId}.log 2>&1 & \
-                    echo $! > $pathPids/chrome-{$this->sessionId}.pid
+               nohup google-chrome --headless \
+                --disable-gpu \
+                --disable-software-rasterizer \
+                --disable-cache \
+                --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/$versionChrome Safari/537.36' \
+                --remote-debugging-port=$port \
+                --disable-dev-shm-usage \
+                --remote-allow-origins=* \
+                --user-data-dir=$pathData \
+                --no-sandbox \
+                --lang=pt-BR \
+                --no-first-run \
+                --window-size=1920,1080 \
+                --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints \
+                --disable-background-networking \
+                --disable-domain-reliability \
+                --disable-renderer-backgrounding \
+                --disable-background-timer-throttling \
+                --disable-client-side-phishing-detection \
+                --disable-component-extensions-with-background-pages \
+                --disable-breakpad \
+                --metrics-recording-only \
+                --disable-gl-drawing-for-tests \
+                --disable-web-security \
+                > $pathLogs/chrome-{$this->sessionId}.log 2>&1 & \
+                echo $! > $pathPids/chrome-{$this->sessionId}.pid
             ";
 
             // Caso tenha um processo em execução, mata o processo

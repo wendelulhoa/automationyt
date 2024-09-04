@@ -41,8 +41,8 @@ class Puppeteer extends Controller
         // Verifica se a função existe
         if(($page->evaluate($existsFn)['result']['result']['type'] ?? '') == 'undefined' || empty($existsFn)) {
             // Seta o script que irá buscar o qrcode
+            $page->evaluate($script);
         }
-        $page->evaluate($script);
 
         return $page;
     }
