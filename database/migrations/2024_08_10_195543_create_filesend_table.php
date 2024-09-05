@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('filesend', function (Blueprint $table) {
             $table->id();
-            $table->string('path');
-            $table->string('type');
-            $table->string('hash');
-            $table->date('forget_in');
+            $table->string('path')->comment('Caminho do arquivo');
+            $table->string('type')->comment('Tipo do arquivo');
+            $table->string('hash')->comment('Hash do arquivo');
+            $table->timestamp('forget_in')->comment('Tempo para esquecer o arquivo');
             $table->timestamps();
         });
     }

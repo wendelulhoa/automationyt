@@ -15,6 +15,11 @@ class GroupController extends Controller
     use UtilWhatsapp;
 
     /**
+     * Tempo de espera 0,5s
+     */
+    const SLEEP_TIME = 500000;
+
+    /**
      * Cria um grupo
      *
      * @param Request $request
@@ -29,6 +34,9 @@ class GroupController extends Controller
                 'subject' => 'required|string',
                 'participants' => 'array'
             ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Adiciona o id e o participante do grupo
             [$subject, $participants] = [$params['subject'], $params['participants']];
@@ -76,7 +84,7 @@ class GroupController extends Controller
             $statusCode = $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com os grupos obtidos
-            return response()->json(['success' => $content['success'], 'message' => $content['message'] ?? '', 'groups' => $content['groups']], $statusCode);
+            return response()->json(['success' => $content['success'], 'message' => $content['message'], 'groups' => $content['groups']], $statusCode);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -99,6 +107,9 @@ class GroupController extends Controller
                 'active'   => 'required|int'
             ]);
 
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
+
             // Tipos de propriedades
             $typeProperties = [
                 'announcement' => 1,
@@ -119,7 +130,7 @@ class GroupController extends Controller
             $statusCode = $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
-            return response()->json(['success' => $content['success'], 'message' => $content['response']], $statusCode);
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -139,6 +150,9 @@ class GroupController extends Controller
                 'groupId'  => 'required|string',
                 'subject' => 'required|string'
             ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Adiciona o id e o título do grupo
             [$groupId, $subject] = [$params['groupId'], $params['subject']];
@@ -177,10 +191,14 @@ class GroupController extends Controller
     public function setGroupDescription(Request $request, string $sessionId)
     {
         try {
+            // Valida os dados da requisição
             $params = $request->validate([
                 'groupId'  => 'required|string',
                 'description' => 'required|string'
             ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Adiciona o id e a descrição do grupo
             [$groupId, $description] = [$params['groupId'], $params['description']];
@@ -244,9 +262,13 @@ class GroupController extends Controller
     public function findGroupInfo(Request $request, string $sessionId)
     {
         try {
+            // Valida os dados da requisição
             $params = $request->validate([
                     'groupId' => 'required|string'
             ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -289,6 +311,9 @@ class GroupController extends Controller
                 'number'  => 'required|string'
             ]);
 
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
+
             // Adiciona o id e o participante do grupo
             [$groupId, $number] = [$params['groupId'], $params['number']];
 
@@ -319,10 +344,14 @@ class GroupController extends Controller
     public function demoteParticipant(Request $request, string $sessionId)
     {
         try {
+            // Valida os dados da requisição
             $params = $request->validate([
                 'groupId' => 'required|string',
                 'number'  => 'required|string'
             ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Adiciona o id e o participante do grupo
             [$groupId, $number] = [$params['groupId'], $params['number']];
@@ -354,10 +383,14 @@ class GroupController extends Controller
     public function addParticipant(Request $request, string $sessionId)
     {
         try {
+            // Valida os dados da requisição
             $params = $request->validate([
                 'groupId' => 'required|string',
                 'number'  => 'required|string'
             ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Adiciona o id e o participante do grupo
             [$groupId, $number] = [$params['groupId'], $params['number']];
@@ -386,13 +419,17 @@ class GroupController extends Controller
      * 
      * @return JsonResponse
      */
-    public function removeParticipant(Request $request, string $sessionId)
+    public function removeParticipant(Request $request, string $sessionId): JsonResponse
     {
         try {
+            // Valida os dados da requisição
             $params = $request->validate([
                 'groupId' => 'required|string',
                 'number'  => 'required|string'
             ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Adiciona o id e o participante do grupo
             [$groupId, $number] = [$params['groupId'], $params['number']];
@@ -424,13 +461,14 @@ class GroupController extends Controller
     public function changeGroupPhoto(Request $request, string $sessionId): JsonResponse
     {
         try {
+            // Valida os dados da requisição
             $data = $request->validate([
                 'groupId' => 'required|string',
                 'path' => 'required|string'
             ]);
 
-            // Aguarda 1 segundos
-            sleep(1);
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Pega o groupId e a legenda
             [$groupId, $path] = [$data['groupId'], $data['path'] ?? ''];

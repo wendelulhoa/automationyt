@@ -1,7 +1,7 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "title": "API WhatsApp",
+      "title": "WAPIWU WhatsApp",
       "version": "1.0.0",
       "description": "API para interação com o WhatsApp"
     },
@@ -9,7 +9,7 @@
       "/api/{sessionId}/getqrcode": {
         "get": {
           "summary": "Obtém o QR Code do WhatsApp",
-          "tags": ["WhatsApp"],
+          "tags": ["Gerenciar Instância"],
           "parameters": [
             {
               "name": "sessionId",
@@ -46,6 +46,440 @@
                     "properties": {
                       "success": { "type": "boolean", "example": false },
                       "status": { "type": "string", "example": "Erro ao conectar" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/api/{sessionId}/group/create": { 
+        "post": {
+          "summary": "Cria um grupo",
+          "tags": ["Grupos"],
+          "parameters": [
+            {
+              "name": "sessionId",
+              "in": "path",
+              "required": true,
+              "description": "ID da sessão do usuário",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "type": "string",
+                      "description": "Nome do grupo"
+                    },
+                    "participants": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Lista de participantes"
+                    }
+                  },
+                  "required": ["subject"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Grupo criado com sucesso",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "metadata": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Erro na criação do grupo",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/api/{sessionId}/group/setgroupsubject": {
+        "post": {
+          "summary": "Definir o assunto de um grupo do WhatsApp",
+          "description": "Modifica o assunto de um grupo específico no WhatsApp.",
+          "tags": ["Grupos"],
+          "parameters": [
+            {
+              "name": "sessionId",
+              "in": "path",
+              "required": true,
+              "description": "ID da sessão da instância do Puppeteer.",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groupId": {
+                      "type": "string",
+                      "example": "123456@g.us"
+                    },
+                    "subject": {
+                      "type": "string",
+                      "example": "Novo Assunto do Grupo"
+                    }
+                  },
+                  "required": ["groupId", "subject"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Assunto do grupo atualizado com sucesso",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": true
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Assunto atualizado com sucesso."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Requisição inválida ou parâmetros incorretos",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Assunto inválido ou grupo não encontrado."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Erro interno do servidor",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Ocorreu um erro inesperado."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/api/{sessionId}/group/setgroupdescription": {
+        "post": {
+          "summary": "Definir a descrição de um grupo do WhatsApp",
+          "description": "Modifica a descrição de um grupo específico no WhatsApp.",
+          "tags": ["Grupos"],
+          "parameters": [
+            {
+              "name": "sessionId",
+              "in": "path",
+              "required": true,
+              "description": "ID da sessão da instância do Puppeteer.",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groupId": {
+                      "type": "string",
+                      "example": "123456@g.us"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Descrição atualizada do grupo"
+                    }
+                  },
+                  "required": ["groupId", "description"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Descrição do grupo atualizada com sucesso",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": true
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Descrição atualizada com sucesso."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Requisição inválida ou parâmetros incorretos",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Descrição inválida ou grupo não encontrado."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Erro interno do servidor",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Ocorreu um erro inesperado."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/api/{sessionId}/group/getallgroups": {
+        "get": {
+          "summary": "Pega todos os grupos da instância",
+          "tags": ["Grupos"],
+          "parameters": [
+            {
+              "name": "sessionId",
+              "in": "path",
+              "required": true,
+              "description": "ID da sessão do usuário",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Lista de grupos obtida com sucesso",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "groups": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Erro ao obter grupos",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "/api/{sessionId}/group/setgroupproperty": {
+        "post": {
+          "summary": "Definir propriedade de um grupo do WhatsApp",
+          "description": "Altera uma propriedade específica de um grupo do WhatsApp, como anúncio, efêmero ou restrito.",
+          "tags": ["Grupos"],
+          "parameters": [
+            {
+              "name": "sessionId",
+              "in": "path",
+              "required": true,
+              "description": "ID da sessão da instância do Puppeteer.",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groupId": {
+                      "type": "string",
+                      "example": "123456@g.us"
+                    },
+                    "property": {
+                      "type": "string",
+                      "example": "announcement"
+                    },
+                    "active": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  },
+                  "required": ["groupId", "property", "active"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Propriedade atualizada com sucesso",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": true
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Propriedade atualizada com sucesso."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Requisição inválida ou parâmetros incorretos",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Valor de propriedade inválido."
+                      }
                     }
                   }
                 }

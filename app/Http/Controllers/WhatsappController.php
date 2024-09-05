@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Puppeter\Puppeteer;
+use App\Models\Instance;
 use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class WhatsappController extends Controller
 {
@@ -124,6 +127,9 @@ class WhatsappController extends Controller
                // Aguarde um momento para garantir que o processo foi finalizado
                sleep(2);
 
+               // Cria ou atualiza a instância
+               Instance::initInstance(['session_id' => $sessionId, 'token' => '', 'connected' => false]);
+
                // Define o caminho do diretório público
                $publicPath = public_path('');
 
@@ -162,24 +168,17 @@ class WhatsappController extends Controller
       *
       * @param string $sessionId
       * 
-      * @return JsonResponse
+      * @return File
       */
      public function screenShot(string $sessionId)
      {
           try {
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
-               $content = [];
+               $screenshot = base64_decode($page->screenShot()['result']['data']);
 
-               // Define o status code da resposta
-               $statusCode = $content['success'] ? 200 : 400;
-
-               // Retorna o resultado em JSON
-               return response()->json([
-                    'success' => $content['success'],
-                    'message' => $content['message'],
-                    'status'  => $content['status']
-               ], $statusCode);
+               // Retorna a imagem PNG como resposta
+               return response($screenshot, 200)->header('Content-Type', 'image/png');
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha
                return response()->json([
@@ -231,14 +230,20 @@ class WhatsappController extends Controller
       * 
       * @return JsonResponse
       */
-     public function startSession(string $sessionId)
+     public function startSession(Request $request, string $sessionId)
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU.startSession');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
                // Verifica a conexão
                $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
+
+               // Gerar um token de autenticação
+               $token = Hash::make(Str::random(50));
+
+               // Cria ou atualiza a instância
+               Instance::initInstance(['session_id' => $sessionId, 'token' => $token, 'webhook' => $request->webhook, 'connected' => true]);
 
                // Coloca para esperar 1 segundo
                sleep(1);
@@ -250,7 +255,7 @@ class WhatsappController extends Controller
                return response()->json([
                     'success' => $content['success'],
                     'message' => $content['message'],
-                    'hash'    => ['apikey' => 'teste']
+                    'hash'    => ['apikey' => $token]
                ], $statusCode);
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha

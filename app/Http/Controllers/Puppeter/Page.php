@@ -61,6 +61,11 @@ Class Page {
         ]);
     }
 
+    /**
+     * Método para capturar um screenshot da página
+     *
+     * @return array
+     */
     public function screenShot()
     {
         return $this->connection()->connWebSocket( [
@@ -72,8 +77,8 @@ Class Page {
                 'clip' => [         // Captura apenas uma área específica (opcional)
                     'x' => 0,
                     'y' => 0,
-                    'width' => 1280,
-                    'height' => 720,
+                    'width' => 1920,
+                    'height' => 1080,
                     'scale' => 1
                 ]
             ]

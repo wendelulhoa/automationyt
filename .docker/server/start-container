@@ -27,3 +27,5 @@ exec /usr/sbin/apache2ctl -D FOREGROUND
 mkdir /storage
 cd /storage/
 chmod -R 777 ./
+# crontab /etc/cron.d/scheduler
+nohup php /var/www/html/wapiwuphp/artisan schedule:work >> ./schedule 2>&1

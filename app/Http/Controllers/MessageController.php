@@ -16,6 +16,11 @@ class MessageController extends Controller
     use UtilWhatsapp;
 
     /**
+     * Tempo de espera 0,5s
+     */
+    const SLEEP_TIME = 500000;
+
+    /**
      * Envia uma mensagem de texto
      *
      * @param Request $request
@@ -35,8 +40,8 @@ class MessageController extends Controller
             // Pega o chatId e o texto
             [$chatId, $text, $mention] = [$params['chatId'], $params['text'], $params['mention'] ?? 0];
 
-            // Aguarda 1 segundo
-            sleep(1);
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -80,8 +85,8 @@ class MessageController extends Controller
             // Pega o chatId e o texto
             [$chatId, $text, $link] = [$params['chatId'], $params['text'], $params['link']];
 
-            // Aguarda 1 segundo
-            sleep(1);
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -127,8 +132,8 @@ class MessageController extends Controller
             // Pega o chatId e o texto
             [$chatId, $title, $contact] = [$params['chatId'], $params['title'], $params['contact']];
 
-            // Aguarda 1 segundo
-            sleep(1);
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -162,8 +167,8 @@ class MessageController extends Controller
                 'path' => 'required|string'
             ]);
 
-            // Aguarda 1 segundos
-            sleep(1);
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Pega o chatId e a legenda
             [$chatId, $caption] = [$data['chatId'], $data['caption'] ?? ''];
@@ -199,7 +204,7 @@ class MessageController extends Controller
             // Define o status code da resposta
             $statusCode = $content['success'] ? 200 : 400;
 
-            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Imagem enviada com sucesso.' : 'Erro ao enviar a imagem.')], $statusCode);
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage(), 'response' => $response ?? null], 400);
         }
@@ -218,11 +223,11 @@ class MessageController extends Controller
         try {
             $data = $request->validate([
                 'chatId' => 'required|string',
-                'path' => 'required|string',
+                'path'   => 'required|string',
             ]);
 
-            // Aguarda 1 segundos
-            sleep(1);
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Pega o chatId e a legenda
             [$chatId, $path] = [$data['chatId'], $data['path']];
@@ -270,8 +275,8 @@ class MessageController extends Controller
                 'poll' => 'required|array',
             ]);
 
-            // Aguarda 1 segundos
-            sleep(1);
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
 
             // Pega o chatId e a legenda
             [$chatId, $poll] = [$data['chatId'], $data['poll']];
@@ -306,7 +311,7 @@ class MessageController extends Controller
             // Define o status code da resposta
             $statusCode = $content['success'] ? 200 : 400;
 
-            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Enquete enviada com sucesso.' : 'Erro ao enviar a enquete.'), "teste" => $page->evaluate($script)], $statusCode);
+            return response()->json(['success' => $content['success'], 'message' => $content['message'], "teste" => $page->evaluate($script)], $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
