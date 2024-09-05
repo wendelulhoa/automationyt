@@ -6,4 +6,4 @@ use Illuminate\Support\Facades\Schedule;
 // Registra os comando de console
 // Schedule::command(CheckInstancesCommand::class)->everyFifteenSeconds();
 
-Schedule::command(RemoveFilesSendCommand::class)->everySecond();
+Schedule::command(RemoveFilesSendCommand::class)->everyFiveSeconds();

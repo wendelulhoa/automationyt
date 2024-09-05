@@ -246,7 +246,7 @@ class WhatsappController extends Controller
                Instance::initInstance(['session_id' => $sessionId, 'token' => $token, 'webhook' => $request->webhook, 'connected' => true]);
 
                // Coloca para esperar 1 segundo
-               sleep(1);
+               sleep(3);
 
                // Define o status code da resposta
                $statusCode = $content['success'] ? 200 : 400;

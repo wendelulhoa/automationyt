@@ -196,6 +196,11 @@ Class Browser {
             // Pega a versão instalada no momento
             $versionChrome = explode(" ", shell_exec("google-chrome --version"))[2];
 
+            // Remove os dados do usuário que antes estavam em execução
+            exec("rm -rf $publicPath/{$this->sessionId}/userdata/SingletonLock");
+            exec("rm -rf $publicPath/{$this->sessionId}/userdata/SingletonSocket");
+            exec("rm -rf $publicPath/{$this->sessionId}/userdata/SingletonCookie");
+
             // Comando para iniciar o navegador
             $command = "
                nohup google-chrome --headless \
@@ -206,12 +211,12 @@ Class Browser {
                 --remote-debugging-port=$port \
                 --disable-dev-shm-usage \
                 --remote-allow-origins=* \
-                --user-data-dir=$pathData \
+                --user-data-dir='$pathData' \
                 --no-sandbox \
                 --lang=pt-BR \
                 --no-first-run \
                 --window-size=1920,1080 \
-                --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints \
+                --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,UseDBus \
                 --disable-background-networking \
                 --disable-domain-reliability \
                 --disable-renderer-backgrounding \
@@ -222,16 +227,27 @@ Class Browser {
                 --metrics-recording-only \
                 --disable-gl-drawing-for-tests \
                 --disable-web-security \
-                > $pathLogs/chrome-{$this->sessionId}.log 2>&1 & \
-                echo $! > $pathPids/chrome-{$this->sessionId}.pid
+                > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
+                echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";
 
             // Caso tenha um processo em execução, mata o processo
             if (file_exists("$pathPids/chrome-{$this->sessionId}.pid")) {
                 $pid = file_get_contents("$pathPids/chrome-{$this->sessionId}.pid");
-                exec("kill $pid");
-                // Aguarde um momento para garantir que o processo foi finalizado
-                sleep(1);
+
+                // Verifica se o processo está em execução
+                $psOutput = shell_exec("ps -p $pid");
+                $psArray = explode(" ", $psOutput);
+                $psArray = array_values(array_filter($psArray, function($value) {
+                    return $value !== '';
+                }));
+
+                if (isset($psArray[4]) && $psArray[4] == $pid) {
+                    // Mata o processo se estiver em execução
+                    exec("kill $pid");
+                    // Aguarde um momento para garantir que o processo foi finalizado
+                    sleep(1);
+                }
             }
 
             // Sobe o navegador

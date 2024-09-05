@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\Puppeter\Puppeteer;
+use App\Models\Instance;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -29,12 +30,11 @@ class CheckInstancesCommand extends Command
     {
         // Verifica se o processo está ativo
         $directory = public_path('chrome-sessions');
-        $instances = glob($directory . '/*');
+        $instances = Instance::where(['connected' => true])->pluck('session_id')->toArray();
 
-        foreach ($instances as $instance) {
+        foreach ($instances as $sessionId) {
             // Extrai o nome da sessão
-            $sessionId = basename($instance);
-            $pidFile = "$instance/pids/chrome-$sessionId.pid";
+            $pidFile = "$directory/$sessionId/pids/chrome-$sessionId.pid";
 
             // Verifica se o arquivo PID existe
             if (file_exists($pidFile)) {
@@ -43,10 +43,17 @@ class CheckInstancesCommand extends Command
                 // Verifica se o processo está ativo e sobe a instância
                 if (!$this->isProcessRunning($pid)) {
                     // Sobe a instância
-                    (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+                    $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
                     
+                    // Verifica a conexão
+                    $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
+                    
+                    // Atualiza o status da instância
+                    $active = ($content['success'] ?? false) ? 'ativo' : 'inativo';
+
                     // Loga a ação
-                    Log::info("Processo com PID $pid ($sessionId) está ativo.");
+                    Log::info("Processo com PID $pid ($sessionId) está $active.");
+                    sleep(2);
                 }
             } else {
                 Log::warning("Arquivo PID não encontrado para a sessão $sessionId.");

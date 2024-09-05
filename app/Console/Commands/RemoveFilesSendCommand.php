@@ -33,8 +33,7 @@ class RemoveFilesSendCommand extends Command
 
         // Busca os registros que atendem à condição
         $filesToRemove = Filesend::where('forget_in', '<=', $timeLimit)->get();
-        $filesToRemove = Filesend::all();
-        Log::info("Arquivos encontrados: {$filesToRemove->count()} aqui");
+
         // Remove os arquivos e os registros do banco de dados
         foreach ($filesToRemove as $file) {
 
@@ -45,10 +44,10 @@ class RemoveFilesSendCommand extends Command
 
                 // Remove o arquivo do sistema de arquivos
                 unlink("/storage/{$file->path}");
-
-                // Remove o registro do banco de dados
-                $file->delete();
             }
+            
+            // Remove o registro do banco de dados
+            $file->delete();
         }
 
         // Exibe uma mensagem de sucesso

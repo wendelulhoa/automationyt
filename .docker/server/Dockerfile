@@ -129,6 +129,10 @@ RUN chmod +x /usr/local/bin/start-container
 ## Scheduler no cron
 RUN crontab /etc/cron.d/scheduler
 
+# Criar pasta para cache do fontconfig
+RUN mkdir -p /var/www/.cache/fontconfig && chmod -R 777 /var/www/.cache/fontconfig
+RUN mkdir -p /var/www/.cache/dconf && chmod -R 777 /var/www/.cache/dconf
+
 # Expor a porta
 EXPOSE 80
 
