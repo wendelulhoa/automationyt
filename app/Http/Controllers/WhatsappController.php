@@ -131,14 +131,25 @@ class WhatsappController extends Controller
                Instance::initInstance(['session_id' => $sessionId, 'token' => '', 'connected' => false]);
 
                // Define o caminho do diretório público
-               $publicPath = public_path('');
+               $publicPath = public_path('chrome-sessions');
 
                // Caso tenha um processo em execução, mata o processo
-               if (file_exists("$publicPath/chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
-                    $pid = file_get_contents("$publicPath/chrome-sessions/{$sessionId}/pids/chrome-{$sessionId}.pid");
-                    exec("kill $pid");
-                    // Aguarde um momento para garantir que o processo foi finalizado
-                    sleep(1);
+               if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
+                    $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
+
+                    // Verifica se o processo está em execução
+                    $psOutput = shell_exec("ps -p $pid");
+                    $psArray = explode(" ", $psOutput);
+                    $psArray = array_values(array_filter($psArray, function($value) {
+                         return $value !== '';
+                    }));
+
+                    if (isset($psArray[4]) && $psArray[4] == $pid) {
+                         // Mata o processo se estiver em execução
+                         exec("kill $pid");
+                         // Aguarde um momento para garantir que o processo foi finalizado
+                         sleep(1);
+                    }
                }
 
                // Exclui a pasta da sessão
