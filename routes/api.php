@@ -11,10 +11,10 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::cl
     // Rotas de inicialização
     Route::get('/getqrcode', [WhatsappController::class, 'getQrcode'])->name('wapiwu.getqrcode');
     Route::post('/start-session', [WhatsappController::class, 'startSession'])->name('wapiwu.startsession');
+    Route::get('/checkconnection', [WhatsappController::class, 'checkConnection'])->name('wapiwu.checkconnection');
     
     Route::group(['prefix' => '', 'middleware' => [VerifyInstanceToken::class]], function() {
         // Rotas gerais que precisam de autenticação
-        Route::get('/checkconnection', [WhatsappController::class, 'checkConnection'])->name('wapiwu.checkconnection');
         Route::get('/getphonenumber', [WhatsappController::class, 'getPhoneNumber'])->name('wapiwu.getphonenumber');
         Route::delete('/disconnect', [WhatsappController::class, 'disconnect'])->name('wapiwu.disconnect');
         Route::post('/checknumber', [WhatsappController::class, 'checkNumber'])->name('wapiwu.checknumber');

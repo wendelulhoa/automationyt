@@ -55,7 +55,7 @@ class GroupController extends Controller
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message'], 'metadata' => $content['metadata']], $statusCode);
@@ -81,7 +81,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.getAllGroups();")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com os grupos obtidos
             return response()->json(['success' => $content['success'], 'message' => $content['message'], 'groups' => $content['groups']], $statusCode);
@@ -127,7 +127,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.setGroupProperty('$groupId', $typeProperties[$property], $active)")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
@@ -171,7 +171,7 @@ class GroupController extends Controller
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
@@ -217,7 +217,7 @@ class GroupController extends Controller
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
@@ -243,7 +243,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.getGroupInviteLink('$groupId');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com os grupos obtidos
             return response()->json(['success' => $content['success'], 'message' => $content['message'], 'link' => $content['link']], $statusCode);
@@ -277,7 +277,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.findGroupInfo('{$params['groupId']}');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna o resultado em JSON
             return response()->json([
@@ -324,7 +324,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.promoteParticipants('$groupId', '$number');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
@@ -363,7 +363,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.demoteParticipants('$groupId', '$number');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
@@ -402,7 +402,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.addParticipant('$groupId', '$number');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
@@ -441,7 +441,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.removeParticipant('$groupId', '$number');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
@@ -492,7 +492,7 @@ class GroupController extends Controller
             $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
         } catch (\Throwable $th) {

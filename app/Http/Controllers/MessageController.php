@@ -57,7 +57,7 @@ class MessageController extends Controller
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => $content['message'], 'response' => $content], $statusCode);
         } catch (\Throwable $th) {
@@ -105,7 +105,7 @@ class MessageController extends Controller
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.')], $statusCode);
         } catch (\Throwable $th) {
@@ -142,7 +142,7 @@ class MessageController extends Controller
             $content = $page->evaluate("window.WAPIWU.sendVcard('$chatId', '$title', '$contact');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.')], $statusCode);
         } catch (\Throwable $th) {
@@ -202,7 +202,7 @@ class MessageController extends Controller
             $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
         } catch (\Throwable $th) {
@@ -251,7 +251,7 @@ class MessageController extends Controller
             $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
         } catch (\Throwable $th) {
@@ -309,7 +309,7 @@ class MessageController extends Controller
             $page->evaluate("localStorage.removeItem(`$randomNameVarOptions`);");
 
             // Define o status code da resposta
-            $statusCode = $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => $content['message'], "teste" => $page->evaluate($script)], $statusCode);
         } catch (\Throwable $th) {

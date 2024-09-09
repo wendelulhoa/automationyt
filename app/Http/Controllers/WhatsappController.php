@@ -24,7 +24,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU', false);
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU.getQrCode', false);
 
                // Pega o qrcode
                $content = $page->evaluate("window.WAPIWU.getQrCode();")['result']['result']['value'];
@@ -84,7 +84,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU.checkConnection');
 
                // Verifica a conexão
                $content = $page->evaluate("window.WAPIWU.checkConnection();")['result']['result']['value'];
@@ -119,7 +119,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU.disconnect');
 
                // Verifica a conexão
                $content = $page->evaluate("window.WAPIWU.disconnect();")['result']['result']['value'];
@@ -158,7 +158,7 @@ class WhatsappController extends Controller
                exec("chown -R root:root $publicPath/chrome-sessions/");
 
                // Define o status code da resposta
-               $statusCode = $content['success'] ? 200 : 400;
+               $statusCode = (bool) $content['success'] ? 200 : 400;
 
                // Retorna o resultado em JSON
                return response()->json([
@@ -217,7 +217,7 @@ class WhatsappController extends Controller
                $content = $page->evaluate("window.WAPIWU.getPhoneNumber();")['result']['result']['value'];
 
                // Define o status code da resposta
-               $statusCode = $content['success'] ? 200 : 400;
+               $statusCode = (bool) $content['success'] ? 200 : 400;
 
                // Retorna o resultado em JSON
                return response()->json([
@@ -245,7 +245,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU.startSession');
 
                // Verifica a conexão
                $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
@@ -254,13 +254,13 @@ class WhatsappController extends Controller
                $token = Hash::make(Str::random(50));
 
                // Cria ou atualiza a instância
-               Instance::initInstance(['session_id' => $sessionId, 'token' => $token, 'webhook' => $request->webhook, 'connected' => true]);
+               Instance::initInstance(['session_id' => $sessionId, 'token' => $token, 'webhook' => $request->webhook ?? false, 'connected' => true]);
 
                // Coloca para esperar 1 segundo
                sleep(3);
 
                // Define o status code da resposta
-               $statusCode = $content['success'] ? 200 : 400;
+               $statusCode = (bool) $content['success'] ? 200 : 400;
 
                // Retorna o resultado em JSON
                return response()->json([
@@ -301,7 +301,7 @@ class WhatsappController extends Controller
                $content = $page->evaluate("window.WAPIWU.checkNumber('$number');")['result']['result']['value'];
 
                // Define o status code da resposta
-               $statusCode = $content['success'] ? 200 : 400;
+               $statusCode = (bool) $content['success'] ? 200 : 400;
 
                // Retorna o resultado em JSON
                return response()->json([

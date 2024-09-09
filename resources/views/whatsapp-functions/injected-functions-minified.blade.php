@@ -1015,5 +1015,22 @@ window.WAPIWU.disconnect = async () => {
     }
 };
 
+// Função para apagar uma mensagem
+window.WAPIWU.deleteMessage = async function(msgId) {
+   try {
+        var webCollection = require('WAWebCollections');
+        var Msg           = webCollection.Msg.get(msgId);
+        
+        // Deleta a mensagem
+        Msg.delete();
+        const success = webCollection.get(msgId) == undefined;
+
+        // Verifica se a mensagem foi apagada
+        return { success: success, message: (success ? 'Mensagem apagada com sucesso' : 'Erro ao apagar a mensagem') };
+   } catch (error) {
+        return { success: false, message: 'Erro ao apagar a mensagem', error: error.message };
+   }
+};
+
 // Adiciona as funções customizadas que substitui as originais do webwhatsapp
 @include('whatsapp-functions.injected-functionscustom-wa')
