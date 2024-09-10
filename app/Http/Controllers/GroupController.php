@@ -83,6 +83,22 @@ class GroupController extends Controller
             // Define o status code da resposta
             $statusCode = (bool) $content['success'] ? 200 : 400;
 
+            foreach (($content['groups'] ?? []) as $key => $group) {
+                // Seta que não é comunidade
+                $content['groups'][$key]['isCommunity'] = false;
+
+                // Se tem o parentGroup então é uma comunidade.
+                if(isset($group['parentGroup'])) {
+                    $content['metadata']['id']              = str_replace("@g.us", "", ($content['metadata']['id'] ."_". $content['metadata']['parentGroup']));
+                    $content['groups'][$key]['isCommunity'] = true;
+                }
+
+                // Os grupos de aviso não são retornados
+                if((isset($group['isParentGroup']) && $group['isParentGroup']) || !isset($group['restrict'])) {
+                    unset($content['groups'][$key]);
+                }
+            }
+
             // Retorna a resposta JSON com os grupos obtidos
             return response()->json(['success' => $content['success'], 'message' => $content['message'], 'groups' => $content['groups']], $statusCode);
         } catch (\Exception $e) {
@@ -118,7 +134,7 @@ class GroupController extends Controller
             ];
 
             // Adiciona o id e o título do grupo
-            [$groupId, $property, $active] = [$params['groupId'], $params['property'], $params['active']];
+            [$groupId, $property, $active] = [$this->getWhatsappGroupId($params['groupId'], false, true), $params['property'], $params['active']];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -155,7 +171,7 @@ class GroupController extends Controller
             usleep(self::SLEEP_TIME);
 
             // Adiciona o id e o título do grupo
-            [$groupId, $subject] = [$params['groupId'], $params['subject']];
+            [$groupId, $subject] = [$this->getWhatsappGroupId($params['groupId'], true, true), $params['subject']];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -201,7 +217,7 @@ class GroupController extends Controller
             usleep(self::SLEEP_TIME);
 
             // Adiciona o id e a descrição do grupo
-            [$groupId, $description] = [$params['groupId'], $params['description']];
+            [$groupId, $description] = [$this->getWhatsappGroupId($params['groupId'], true, true), $params['description']];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -239,6 +255,9 @@ class GroupController extends Controller
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
             
+            // Formata o groupId
+            $groupId = $this->getWhatsappGroupId($groupId, true, true);
+
             // Seta os grupos
             $content = $page->evaluate("window.WAPIWU.getGroupInviteLink('$groupId');")['result']['result']['value'];
 
@@ -264,7 +283,7 @@ class GroupController extends Controller
         try {
             // Valida os dados da requisição
             $params = $request->validate([
-                    'groupId' => 'required|string'
+                'groupId' => 'required|string'
             ]);
 
             // Seta um tempo de espera
@@ -273,8 +292,17 @@ class GroupController extends Controller
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
+            // Adiciona o id e o participante do grupo
+            [$groupId] = [$this->getWhatsappGroupId($params['groupId'], false, true)];
+
             // Verifica a conexão
-            $content = $page->evaluate("window.WAPIWU.findGroupInfo('{$params['groupId']}');")['result']['result']['value'];
+            $content = $page->evaluate("window.WAPIWU.findGroupInfo('{$groupId}');")['result']['result']['value'];
+
+            // Se tem o parentGroup então é uma comunidade.
+            if(isset($content['metadata']['parentGroup'])) {
+                $content['metadata']['isCommunity'] = true;
+                $content['metadata']['id']          = str_replace("@g.us", "", ($content['metadata']['id'] ."_". $content['metadata']['parentGroup']));
+            }
 
             // Define o status code da resposta
             $statusCode = (bool) $content['success'] ? 200 : 400;
@@ -314,14 +342,17 @@ class GroupController extends Controller
             // Seta um tempo de espera
             usleep(self::SLEEP_TIME);
 
+            // Verifica se é comunidade
+            $isCommunity = (strpos($params['groupId'], '_') !== false) ? 1 : 0;
+
             // Adiciona o id e o participante do grupo
-            [$groupId, $number] = [$params['groupId'], $params['number']];
+            [$groupId, $number] = [$this->getWhatsappGroupId($params['groupId'], true, true), $params['number']];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
-            
+
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.promoteParticipants('$groupId', '$number');")['result']['result']['value'];
+            $content = $page->evaluate("window.WAPIWU.promoteParticipants('$groupId', '$number', $isCommunity);")['result']['result']['value'];
 
             // Define o status code da resposta
             $statusCode = (bool) $content['success'] ? 200 : 400;
@@ -353,14 +384,17 @@ class GroupController extends Controller
             // Seta um tempo de espera
             usleep(self::SLEEP_TIME);
 
+            // Verifica se é comunidade
+            $isCommunity = (strpos($params['groupId'], '_') !== false) ? 1 : 0;
+
             // Adiciona o id e o participante do grupo
-            [$groupId, $number] = [$params['groupId'], $params['number']];
+            [$groupId, $number] = [$this->getWhatsappGroupId($params['groupId'], true, true), $params['number']];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.demoteParticipants('$groupId', '$number');")['result']['result']['value'];
+            $content = $page->evaluate("window.WAPIWU.demoteParticipants('$groupId', '$number', $isCommunity);")['result']['result']['value'];
 
             // Define o status code da resposta
             $statusCode = (bool) $content['success'] ? 200 : 400;
@@ -393,10 +427,10 @@ class GroupController extends Controller
             usleep(self::SLEEP_TIME);
 
             // Adiciona o id e o participante do grupo
-            [$groupId, $number] = [$params['groupId'], $params['number']];
+            [$groupId, $number] = [$this->getWhatsappGroupId($params['groupId'], false, true), $params['number']];
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU.a');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
             // Seta os grupos
             $content = $page->evaluate("window.WAPIWU.addParticipant('$groupId', '$number');")['result']['result']['value'];
@@ -462,7 +496,7 @@ class GroupController extends Controller
     {
         try {
             // Valida os dados da requisição
-            $data = $request->validate([
+            $params = $request->validate([
                 'groupId' => 'required|string',
                 'path' => 'required|string'
             ]);
@@ -471,7 +505,7 @@ class GroupController extends Controller
             usleep(self::SLEEP_TIME);
 
             // Pega o groupId e a legenda
-            [$groupId, $path] = [$data['groupId'], $data['path'] ?? ''];
+            [$groupId, $path] = [$this->getWhatsappGroupId($params['groupId'], true, true), $params['path'] ?? ''];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');

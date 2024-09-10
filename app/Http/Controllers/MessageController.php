@@ -38,7 +38,7 @@ class MessageController extends Controller
             ]);
 
             // Pega o chatId e o texto
-            [$chatId, $text, $mention] = [$params['chatId'], $params['text'], $params['mention'] ?? 0];
+            [$chatId, $text, $mention] = [$this->getWhatsappGroupId($params['chatId'], false, true), $params['text'], $params['mention'] ?? 0];
 
             // Seta um tempo de espera
             usleep(self::SLEEP_TIME);
@@ -83,7 +83,7 @@ class MessageController extends Controller
             ]);
 
             // Pega o chatId e o texto
-            [$chatId, $text, $link] = [$params['chatId'], $params['text'], $params['link']];
+            [$chatId, $text, $link] = [$this->getWhatsappGroupId($params['chatId'], false, true), $params['text'], $params['link']];
 
             // Seta um tempo de espera
             usleep(self::SLEEP_TIME);
@@ -130,7 +130,7 @@ class MessageController extends Controller
             ]);
 
             // Pega o chatId e o texto
-            [$chatId, $title, $contact] = [$params['chatId'], $params['title'], $params['contact']];
+            [$chatId, $title, $contact] = [$this->getWhatsappGroupId($params['chatId'], false, true), $params['title'], $params['contact']];
 
             // Seta um tempo de espera
             usleep(self::SLEEP_TIME);
@@ -161,7 +161,7 @@ class MessageController extends Controller
     public function sendFile(Request $request, string $sessionId): JsonResponse
     {
         try {
-            $data = $request->validate([
+            $params = $request->validate([
                 'chatId' => 'required|string',
                 'caption' => 'nullable|string',
                 'path' => 'required|string'
@@ -171,13 +171,13 @@ class MessageController extends Controller
             usleep(self::SLEEP_TIME);
 
             // Pega o chatId e a legenda
-            [$chatId, $caption] = [$data['chatId'], $data['caption'] ?? ''];
+            [$chatId, $caption] = [$this->getWhatsappGroupId($params['chatId'], false, true), $params['caption'] ?? ''];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
-            $fileName = $this->downloadFileAndSet($data['path']);
+            $fileName = $this->downloadFileAndSet($params['path']);
 
             // Adiciona o input file no DOM
             [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
@@ -221,7 +221,7 @@ class MessageController extends Controller
     public function sendAudio(Request $request, string $sessionId): JsonResponse
     {
         try {
-            $data = $request->validate([
+            $params = $request->validate([
                 'chatId' => 'required|string',
                 'path'   => 'required|string',
             ]);
@@ -230,10 +230,10 @@ class MessageController extends Controller
             usleep(self::SLEEP_TIME);
 
             // Pega o chatId e a legenda
-            [$chatId, $path] = [$data['chatId'], $data['path']];
+            [$chatId, $path] = [$this->getWhatsappGroupId($params['chatId'], false, true), $params['path']];
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWUa');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
@@ -270,7 +270,7 @@ class MessageController extends Controller
     public function sendPoll(Request $request, string $sessionId): JsonResponse
     {
         try {
-            $data = $request->validate([
+            $params = $request->validate([
                 'chatId' => 'required|string',
                 'poll' => 'required|array',
             ]);
@@ -279,7 +279,7 @@ class MessageController extends Controller
             usleep(self::SLEEP_TIME);
 
             // Pega o chatId e a legenda
-            [$chatId, $poll] = [$data['chatId'], $data['poll']];
+            [$chatId, $poll] = [$this->getWhatsappGroupId($params['chatId'], false, true), $params['poll']];
 
             // Monta as opções
             $auxOptions = [];
@@ -312,6 +312,43 @@ class MessageController extends Controller
             $statusCode = (bool) $content['success'] ? 200 : 400;
 
             return response()->json(['success' => $content['success'], 'message' => $content['message'], "teste" => $page->evaluate($script)], $statusCode);
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+        }
+    }
+
+    /**
+     * Deleta uma mensagem
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function deleteMessage(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $params = $request->validate([
+                'chatId' => 'required|string',
+                'messageId' => 'required|string',
+            ]);
+
+            // Seta um tempo de espera
+            usleep(self::SLEEP_TIME);
+
+            // Pega o chatId e a legenda
+            [$chatId, $messageId] = [$this->getWhatsappGroupId($params['chatId'], false, true), $params['messageId']];
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+
+            // Executa o script no navegador
+            $content = $page->evaluate("window.WAPIWU.deleteMessage('$chatId', '$messageId');")['result']['result']['value'];
+
+            // Define o status code da resposta
+            $statusCode = (bool) $content['success'] ? 200 : 400;
+
+            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }

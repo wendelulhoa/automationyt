@@ -126,4 +126,35 @@ trait UtilWhatsapp
 
         return $mimeTypes[$mimeType] ?? 'bin';
     }
+
+    /**
+     * Pega o id do grupo conforme a regra.
+     *
+     * @param string|array $whatsappGroupId
+     * @param boolean $getChildren
+     * @param boolean $setJid
+     * 
+     * @return string|array
+     */
+    function getWhatsappGroupId($whatsappGroupId, bool $getChildren = false, bool $setJid = false)
+    {
+        // Busca o id do grupo conforme a regra.
+        $fn_getId = function($id) use ($getChildren, $setJid) {
+            // Caso tenha o "_" é comunidade
+            $id = str_replace('@g.us', '', $id);
+            $id = strpos($id, '_') !== false ? explode('_', $id) : $id;
+        
+            // Caso seja array pega o pai ou o filho
+            if(is_array($id)) {
+                $id = $getChildren ? $id[1] : $id[0];
+            }
+
+            return $setJid ? "$id@g.us" : $id;
+        };
+
+        // Convertendo o id para o formato correto
+        $whatsappGroupId = $fn_getId($whatsappGroupId);
+
+        return $whatsappGroupId;
+    }
 }

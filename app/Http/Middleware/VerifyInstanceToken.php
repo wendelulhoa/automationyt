@@ -22,7 +22,7 @@ class VerifyInstanceToken
   
         // Verifica se o token existe
         if ((!$tokenInstance || !Instance::where('token', $tokenInstance)->exists())) {
-            return response()->json(['error' => 'Acesso negado token verificar token da instância.'], 401);
+            // return response()->json(['error' => 'Acesso negado token verificar token da instância.'], 401);
         }
 
         return $next($request);

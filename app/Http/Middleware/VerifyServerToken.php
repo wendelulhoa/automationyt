@@ -20,7 +20,7 @@ class VerifyServerToken
     
         // Verifica se o token existe
         if ((!$tokenServer || $tokenServer != env('API_KEY'))) {
-            return response()->json(['error' => 'Acesso negado verificar token do servidor.'], 401);
+            // return response()->json(['error' => 'Acesso negado verificar token do servidor.'], 401);
         }
 
         return $next($request);

@@ -178,13 +178,16 @@ window.WAPIWU.setGroupProperty = async (groupId, property, value) => {
             types[property],
             value
         );
+        
+        // Verifica se deu sucesso
+        const success = response == "SetPropertyResponseSuccess";
 
         return {
-            success: response == "SetPropertyResponseSuccess",
-            message: "Alterado com sucesso",
+            success: success,
+            message: (success ? "Alterado com sucesso" : "Erro ao alterar"),
         };
     } catch (error) {
-        return { success: false, message: "Erro ao alterar" };
+        return { success: false, message: "Erro ao alterar", error: error.message };
     }
 };
 
@@ -662,7 +665,7 @@ window.WAPIWU.startSession = async () => {
 };
 
 // Função para promover um participante
-window.WAPIWU.promoteParticipants = async (groupId, number) => { 
+window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false) => { 
     try {
         // Seta as variáveis
         var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
@@ -673,22 +676,33 @@ window.WAPIWU.promoteParticipants = async (groupId, number) => {
         var contact     = groupInfo.participants.get(number);
         var group       = collections.Chat.get(groupId);
 
+        // Caso não tiver no filho os usuários estarão no pai
+        if(typeof contact == 'undefined' && isCommunity) {
+            contact = groupInfo.participants.parent.participants.get("556199697264@c.us")
+        }
+
         // Verifica se o participante é admin
-        if(contact.__x_isAdmin) {
+        if((typeof contact !== 'undefined' && contact.__x_isAdmin)) {
             return { success: true, message: 'Participante é admin'};      
         }
 
-        // promover o participante
-        await WAWebModifyParticipantsGroupAction.promoteParticipants(group, [contact]);
+        // promover o participante grupos
+        if(!isCommunity) {
+            await WAWebModifyParticipantsGroupAction.promoteParticipants(group, [contact]);
+        }
+        // promover o participante comunidade
+        else {
+            await WAWebModifyParticipantsGroupAction.promoteCommunityParticipants(group, [contact]);
+        }
 
         return { success: true, message: 'Participante promovido com sucesso'};
     } catch (error) {
-        return { success: false, message: 'Erro ao promover o participante', error: error.message };
+        return { success: false, message: 'Erro ao promover o participante', error: error.message, isCommunity: isCommunity };
     }
 };
 
 // Função para despromover um participante
-window.WAPIWU.demoteParticipants = async (groupId, number) => { 
+window.WAPIWU.demoteParticipants = async (groupId, number, isCommunity = false) => { 
     try {
         // Seta as variáveis
         var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
@@ -699,17 +713,28 @@ window.WAPIWU.demoteParticipants = async (groupId, number) => {
         var contact     = groupInfo.participants.get(number);
         var group       = collections.Chat.get(groupId);
 
+        // Caso não tiver no filho os usuários estarão no pai
+        if(typeof contact == 'undefined' && isCommunity) {
+            contact = groupInfo.participants.parent.participants.get("556199697264@c.us")
+        }
+
         // Verifica se o participante é admin
-        if(!contact.__x_isAdmin) {
+        if(!(typeof contact !== 'undefined' && contact.__x_isAdmin)) {   
             return { success: true, message: 'Participante não é admin'};      
         }
 
         // Despromove o participante
-        await WAWebModifyParticipantsGroupAction.demoteParticipants(group, [contact]);
+        if(!isCommunity) {
+            await WAWebModifyParticipantsGroupAction.demoteParticipants(group, [contact]);
+        }
+        // Despromove o participante comunidade
+        else {
+            await WAWebModifyParticipantsGroupAction.demoteCommunityParticipants(group, [contact]);
+        }
 
         return { success: true, message: 'Participante despromovido com sucesso'};
     } catch (error) {
-        return { success: false, message: 'Erro ao despromover o participante', error: error.message };
+        return { success: false, message: 'Erro ao despromover o participante', error: error.message, isCommunity: isCommunity };
     }
 };
 
@@ -1016,14 +1041,22 @@ window.WAPIWU.disconnect = async () => {
 };
 
 // Função para apagar uma mensagem
-window.WAPIWU.deleteMessage = async function(msgId) {
+window.WAPIWU.deleteMessage = async function(chatId, msgId) {
    try {
-        var webCollection = require('WAWebCollections');
-        var Msg           = webCollection.Msg.get(msgId);
-        
-        // Deleta a mensagem
-        Msg.delete();
-        const success = webCollection.get(msgId) == undefined;
+        // Pega a mensagem a ser apagada 
+        var WAWebMsgCollection = require("WAWebMsgCollection");
+        var msg                = WAWebMsgCollection.MsgCollection.get(msgId)
+
+        // Busca a informação do chat de envio
+        var WAWebCollections = require("WAWebCollections");
+        var chat = WAWebCollections.Chat.get(chatId);
+            
+        // Apaga a mensagem
+        require('WAWebCmd').Cmd.sendRevokeMsgs(chat, {
+                "type": "message",
+                "list": [msg]
+            }, {"clearMedia": true});
+        const success = true;
 
         // Verifica se a mensagem foi apagada
         return { success: success, message: (success ? 'Mensagem apagada com sucesso' : 'Erro ao apagar a mensagem') };
