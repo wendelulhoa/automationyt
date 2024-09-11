@@ -40,7 +40,7 @@ class RemoveFilesSendCommand extends Command
             // Remove o arquivo do sistema de arquivos
             if (file_exists("/storage/{$file->path}")) {
                 // Adiciona que será removido
-                Log::info("Removendo arquivo: {$file->path}");
+                Log::channel('daily')->info("Removendo arquivo: {$file->path}");
 
                 // Remove o arquivo do sistema de arquivos
                 unlink("/storage/{$file->path}");

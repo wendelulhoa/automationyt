@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\WhatsappController;
@@ -43,6 +44,11 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::cl
             // Participantes promove/despromove
             Route::put('/demote-participant-group', [GroupController::class, 'demoteParticipant'])->name('wapiwu.group.demoteparticipant');
             Route::put('/promote-participant-group', [GroupController::class, 'promoteParticipant'])->name('wapiwu.group.promoteparticipant');
+        });
+
+        // Rotas de comunidades
+        Route::group(['prefix' => 'community'], function() {
+            Route::post('/create', [CommunityController::class, 'createCommunity'])->name('wapiwu.community.createcommunity');
         });
     
         // Envio de mensagens

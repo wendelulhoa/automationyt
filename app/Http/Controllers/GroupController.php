@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Puppeter\Puppeteer;
-use App\Models\Filesend;
 use App\Traits\UtilWhatsapp;
-use finfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -69,9 +67,9 @@ class GroupController extends Controller
      *
      * @param string $sessionId 
      * 
-     * @return JsonResponse
+     * @return JsonResponse|Array
      */
-    public function getAllGroups(string $sessionId) 
+    public function getAllGroups(string $sessionId, bool $returnArr = false): JsonResponse|Array
     {
         try {
             // Cria uma nova página e navega até a URL
@@ -89,8 +87,8 @@ class GroupController extends Controller
 
                 // Se tem o parentGroup então é uma comunidade.
                 if(isset($group['parentGroup'])) {
-                    $content['metadata']['id']              = str_replace("@g.us", "", ($content['metadata']['id'] ."_". $content['metadata']['parentGroup']));
-                    $content['groups'][$key]['isCommunity'] = true;
+                    $content['groups'][$key]['id'] = str_replace("@g.us", "", ($group['id'] ."_". $group['parentGroup']));
+                    $content['groups'][$key]['isCommunity']    = true;
                 }
 
                 // Os grupos de aviso não são retornados
@@ -100,9 +98,9 @@ class GroupController extends Controller
             }
 
             // Retorna a resposta JSON com os grupos obtidos
-            return response()->json(['success' => $content['success'], 'message' => $content['message'], 'groups' => $content['groups']], $statusCode);
+            return $returnArr ? ['success' => $content['success'], 'message' => $content['message'], 'groups' => $content['groups']] : response()->json(['success' => $content['success'], 'message' => $content['message'], 'groups' => $content['groups']], $statusCode);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return $returnArr ? ['success' => false, 'message' => $e->getMessage()] : response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -436,7 +434,7 @@ class GroupController extends Controller
             $content = $page->evaluate("window.WAPIWU.addParticipant('$groupId', '$number');")['result']['result']['value'];
 
             // Define o status code da resposta
-            $statusCode = (bool) $content['success'] ? 200 : 400;
+            $statusCode = (bool) $content['success'] ? 200 : ($content['status'] == '403' ? 403 : 400);
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);

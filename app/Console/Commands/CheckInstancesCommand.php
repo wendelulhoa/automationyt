@@ -52,7 +52,7 @@ class CheckInstancesCommand extends Command
                     $active = ($content['success'] ?? false) ? 'ativo' : 'inativo';
 
                     // Loga a ação
-                    Log::info("Processo com PID $pid ($sessionId) está $active.");
+                    Log::channel('daily')->info("Processo com PID $pid ($sessionId) está $active.");
                     sleep(2);
                 }
             } else {

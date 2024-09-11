@@ -24,7 +24,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU', false);
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU', true);
 
                // Pega o qrcode
                $content = $page->evaluate("window.WAPIWU.getQrCode();")['result']['result']['value'];
