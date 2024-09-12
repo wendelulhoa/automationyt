@@ -38,9 +38,8 @@ class Puppeteer extends Controller
             sleep(2);
         }
 
-        // Verifica se a função existe
+        // Verifica se a função existe e seta os scripts
         if(($page->evaluate("typeof $existsFn")['result']['result']['value'] ?? '') == 'undefined' || empty($existsFn)) {
-            // Seta o script que irá buscar o qrcode
             $page->evaluate($script);
         }
 
