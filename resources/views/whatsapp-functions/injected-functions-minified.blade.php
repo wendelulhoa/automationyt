@@ -494,14 +494,6 @@ window.WAPIWU.getQrCode = async () => {
     const interval = 1000; // 1 segundo
     let elapsedTime = 0;
 
-    // Caso o qrcode tenha vencido faz o reload
-    var selectorImg = document.querySelector('canvas');
-    var selectorUrl = selectorImg.closest('[data-ref]');
-    var buttonReload = selectorUrl.querySelector('button');
-    if (buttonReload != null) {
-        buttonReload.click();
-    }
-
     while (elapsedTime < maxWaitTime) {
         try {
             var path = `//*/div/div[2]/div[3]/div[1]/div/div/div[2]/div`;
