@@ -7,9 +7,9 @@ source .env
 # npm install && npm start
 
 ## Define usuário e Permissões dos arquivos
-chown $WWWUSER:www-data -R /var/www/html/wapiwuphp
+chown $WWWUSER:www-data -R /var/www/html/wuapi
 
-chmod 775 -R /var/www/html/wapiwuphp
+chmod 775 -R /var/www/html/wuapi
 
 ### Instala os pacotes do composer
 composer install --no-interaction --no-dev
@@ -18,7 +18,7 @@ composer install --no-interaction --no-dev
 php artisan clear-compiled && php artisan optimize:clear
 
 ## GIT
-git config --system --add safe.directory /var/www/html/wapiwuphp
+git config --system --add safe.directory /var/www/html/wuapi
 git config --system user.name "$GITNAME"
 git config --system user.email "$GITEMAIL"
 

@@ -22,7 +22,7 @@ export async function sendFile(sessionId, chatId, caption, filename) {
 
         try {
             // Caminho relativo
-            const relativePath = `/var/www/html/wapiwuphp/storage/app/${filename}`;
+            const relativePath = `/var/www/html/wuapi/storage/app/${filename}`;
 
             // Caminho absoluto
             const filePath = path.join('', relativePath);

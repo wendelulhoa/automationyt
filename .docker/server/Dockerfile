@@ -98,13 +98,13 @@ RUN git clone https://github.com/Imagick/imagick.git && \
 RUN a2enmod rewrite && \
     phpenmod mbstring && \
     chmod -R 775 /var/www/html/ && \
-    echo "ServerName dev-wapiwuphp" >> /etc/apache2/apache2.conf
+    echo "ServerName dev-wuapi" >> /etc/apache2/apache2.conf
 
 # Adicionar arquivos de configuração
 ADD ./config/php-apache.ini /etc/php/8.3/apache2/php.ini
 ADD ./config/php.ini /etc/php/8.3/cli/php.ini
-ADD ./apache/000-default.conf /etc/apache2/sites-available/docker.wapiwuphp.loc.conf
-RUN a2ensite docker.wapiwuphp.loc.conf && \
+ADD ./apache/000-default.conf /etc/apache2/sites-available/docker.wuapi.loc.conf
+RUN a2ensite docker.wuapi.loc.conf && \
     a2dissite 000-default.conf
 
 # Configuração do usuário
