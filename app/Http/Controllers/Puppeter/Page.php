@@ -31,10 +31,10 @@ Class Page {
      * 
      * @return array
      */
-    public function evaluate(string $expression): array
+    public function evaluate(string $expression, bool $recursive = false): array
     {
         
-        return $this->connection()->connWebSocket([
+        $result = $this->connection()->connWebSocket([
             'id' => 1,
             'method' => 'Runtime.evaluate',
             'params' => [
@@ -43,6 +43,17 @@ Class Page {
                 'awaitPromise' => true,
             ]
         ]);
+
+        // Caso o resultado é de erro tenta injetar o script novamente
+        if(!$recursive && isset($result['result']['exceptionDetails'])) {
+            // Faz a injeção dos scripts
+            $this->evaluate(view('whatsapp-functions.injected-functions-minified')->render(), true);
+
+            // Tenta executar o script novamente
+            return $this->evaluate($expression, true);
+        }
+
+        return $result;
     }
 
     /**
