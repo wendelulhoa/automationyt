@@ -124,49 +124,60 @@ window.WAPIWU.setGroupDescription = async (groupId, description) => {
  * 
  * @param {*} groupId
  * @param {*} property
- * @param {*} value
+ * @param {*} active
  */
-window.WAPIWU.setGroupProperty = async (groupId, property, value) => {
+window.WAPIWU.setGroupProperty = async (groupId, property, active) => {
     try {
-        const constantsType = require("WAWebGroupConstants");
-        const types = {
-            1: constantsType.GROUP_SETTING_TYPE.ANNOUNCEMENT,
-            2: constantsType.GROUP_SETTING_TYPE.EPHEMERAL,
-            3: constantsType.GROUP_SETTING_TYPE.RESTRICT,
-            4: constantsType.GROUP_SETTING_TYPE.ALLOW_NON_ADMIN_SUB_GROUP_CREATION,
-            5: constantsType.GROUP_SETTING_TYPE.MEMBERSHIP_APPROVAL_MODE,
-            6: constantsType.GROUP_SETTING_TYPE.NO_FREQUENTLY_FORWARDED,
-            7: constantsType.GROUP_SETTING_TYPE.REPORT_TO_ADMIN_MODE,
-        };
+        var configs = {};
 
-        // Se for ephemeral, multiplica por 86400
-        if(property == 2) {
-            value = value ? 604800 : 0;
+        // Seta as configurações a serem alteradas
+        switch (property) {
+            case '1': // Seta que somente os admins podem enviar mensagens
+                configs = {
+                    "hasAnnouncement": active,
+                    "hasNotAnnouncement": !active,
+                    "iqTo": groupId
+                };
+                break;
+            case '2': // Desativa as mensagens temporárias 
+                configs = {
+                    "hasNotEphemeral": true,
+                    "iqTo": groupId
+                };
+                break;
+            case '3': // Seta que somente os admins podem editar o grupo
+                configs = {
+                    "hasLocked": active,
+                    "hasUnlocked": !active,
+                    "iqTo": groupId
+                };
+                break;
+        }
+        
+        // Ativa as mensagens temporárias
+        if(property == 2 && active) {
+            configs = {
+                "hasNotEphemeral": false,
+                "ephemeralArgs": {
+                    "ephemeralExpiration": 604800
+                },
+                "iqTo": groupId
+            };
         }
 
-        // Seta as variáveis
-        var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
-        var WAWebWidFactoryLocal = require("WAWebWidFactory");
-
-        // Cria o grupo wid
-        var group = WAWebWidFactoryLocal.createWid(groupId);
-
         // Faz a requisição para setar a propriedade
-        const response = await setJobConfigGroup.setGroupProperty(
-            group,
-            types[property],
-            value
-        );
-        
+        const response = await require("WASmaxGroupsSetPropertyRPC").sendSetPropertyRPC(configs);
+
         // Verifica se deu sucesso
-        const success = response == "SetPropertyResponseSuccess";
+        const success = response.name == "SetPropertyResponseSuccess";
 
         return {
             success: success,
             message: (success ? "Alterado com sucesso" : "Erro ao alterar"),
+            response: response
         };
     } catch (error) {
-        return { success: false, message: "Erro ao alterar", error: error.message };
+        return { success: false, message: "Erro ao alterar", error: error.message, response: null};
     }
 };
 

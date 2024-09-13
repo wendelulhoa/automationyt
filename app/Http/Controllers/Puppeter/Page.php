@@ -184,8 +184,6 @@ Class Page {
      */
     public function setFileInput(int $backendNodeId, string $path)
     {
-        // $nodeId = $this->querySelector($selector)['result']['nodeId'];
-
         return $this->connection()->connWebSocket([
             'id' => 1,
             'method' => 'DOM.setFileInputFiles',
@@ -204,12 +202,12 @@ Class Page {
      * @return array
      */
     public function clearCache() {
-        $clearCache = $this->connection()->connWebSocket([
+        $this->connection()->connWebSocket([
             'id' => 1,
             'method' => 'Network.clearBrowserCache',
         ]);
         
-        $clearCookies = $this->connection()->connWebSocket([
+        $this->connection()->connWebSocket([
             'id' => 1,
             'method' => 'Network.clearBrowserCookies',
         ]);
