@@ -124,13 +124,6 @@ class GroupController extends Controller
             // Seta um tempo de espera
             usleep(self::SLEEP_TIME);
 
-            // Tipos de propriedades
-            $typeProperties = [
-                'announcement' => 1,
-                'ephemeral'    => 2,
-                'restrict'     => 3,
-            ];
-
             // Adiciona o id e o título do grupo
             [$groupId, $property, $active] = [$this->getWhatsappGroupId($params['groupId'], false, true), $params['property'], $params['active']];
 
@@ -138,7 +131,7 @@ class GroupController extends Controller
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.setGroupProperty('$groupId', $typeProperties[$property], $active)")['result']['result']['value'];
+            $content = $page->evaluate("window.WAPIWU.setGroupProperty('$groupId', '$property', $active)")['result']['result']['value'];
 
             // Define o status code da resposta
             $statusCode = (bool) $content['success'] ? 200 : 400;

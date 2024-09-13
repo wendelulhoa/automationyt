@@ -129,23 +129,25 @@ window.WAPIWU.setGroupDescription = async (groupId, description) => {
 window.WAPIWU.setGroupProperty = async (groupId, property, active) => {
     try {
         var configs = {};
+        // Garante
+        property =`${property}`;
 
         // Seta as configurações a serem alteradas
         switch (property) {
-            case '1': // Seta que somente os admins podem enviar mensagens
+            case 'announcement': // Seta que somente os admins podem enviar mensagens
                 configs = {
                     "hasAnnouncement": active,
                     "hasNotAnnouncement": !active,
                     "iqTo": groupId
                 };
                 break;
-            case '2': // Desativa as mensagens temporárias 
+            case 'ephemeral': // Desativa as mensagens temporárias 
                 configs = {
                     "hasNotEphemeral": true,
                     "iqTo": groupId
                 };
                 break;
-            case '3': // Seta que somente os admins podem editar o grupo
+            case 'restrict': // Seta que somente os admins podem editar o grupo
                 configs = {
                     "hasLocked": active,
                     "hasUnlocked": !active,
@@ -155,7 +157,7 @@ window.WAPIWU.setGroupProperty = async (groupId, property, active) => {
         }
         
         // Ativa as mensagens temporárias
-        if(property == 2 && active) {
+        if(property == 'ephemeral' && active) {
             configs = {
                 "hasNotEphemeral": false,
                 "ephemeralArgs": {
