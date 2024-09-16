@@ -78,26 +78,14 @@ window.WAPIWU.getAllGroups = async () => {
 // Setar o título de um grupo
 window.WAPIWU.setGroupSubject = async (groupId, subject) => {
     try {
-        var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
-        var WAWebWidFactoryLocal = require("WAWebWidFactory");
-        var group = WAWebWidFactoryLocal.createWid(groupId);
+        // Faz a requisição para setar o título
+        const response = await require("WASmaxGroupsSetSubjectRPC").sendSetSubjectRPC({
+            iqTo: groupId,
+            subjectElementValue: subject
+        });
 
-        // Seta o título do grupo
-        await setJobConfigGroup.setGroupSubject(group, subject);
-
-        // Tentar buscar o metadata no máximo 5 vezes
-        let attempts = 0;
-        let success = false;
-        let metadata;
-
-        while (attempts < 5 && !success) {
-            attempts++;
-            await window.WAPIWU.sleep(500); // Espera 0.5 segundos
-
-            // Busca as informações do grupo
-            metadata = await window.WAPIWU.getGroupMetadata(groupId);
-            success = metadata.subject.trim() === subject.trim();
-        }
+        // Verifica se deu sucesso
+        const success = response.name === "SetSubjectResponseSuccess";
 
         return { success: success, message: (success ? "Alterado com sucesso" : "Erro ao alterar") };
     } catch (error) {
@@ -108,33 +96,22 @@ window.WAPIWU.setGroupSubject = async (groupId, subject) => {
 // Seta a descrição de um grupo
 window.WAPIWU.setGroupDescription = async (groupId, description) => {
     try {
-        // Seta as variáveis
-        var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
-        var WAWebWidFactoryLocal = require("WAWebWidFactory");
-        var group = WAWebWidFactoryLocal.createWid(groupId);
-
+        // Busca o metadata do grupo
         var c = await require("WAWebDBGroupsGroupMetadata").getGroupMetadata(groupId);
 
-        await setJobConfigGroup.setGroupDescription(
-            group,
-            description,
-            require("WAHex").randomHex(8),
-            c.descId
-        );
+        // Faz a requisição para setar a descrição
+        const response = await require("WASmaxGroupsSetDescriptionRPC").sendSetDescriptionRPC({
+            bodyArgs: {
+                bodyElementValue: (description || " ")
+            },
+            iqTo: groupId,
+            descriptionId: require("WAHex").randomHex(8),
+            descriptionPrev: c.descId,
+            hasDescriptionDeleteTrue: !1
+        });
 
-        // Tentar buscar o metadata no máximo 5 vezes
-        let attempts = 0;
-        let success = false;
-        let metadata;
-
-        while (attempts < 5 && !success) {
-            attempts++;
-            await window.WAPIWU.sleep(500); // Espera 0.5 segundos
-
-            // Busca as informações do grupo
-            metadata = await window.WAPIWU.getGroupMetadata(groupId);
-            success = metadata.desc.trim() === description.trim();
-        }
+        // Verifica se deu sucesso
+        const success = response.name == "SetDescriptionResponseSuccess"
 
         return { success: success, message: (success ? "Alterado com sucesso" : "Erro ao alterar") };
     } catch (error) {
@@ -147,72 +124,103 @@ window.WAPIWU.setGroupDescription = async (groupId, description) => {
  * 
  * @param {*} groupId
  * @param {*} property
- * @param {*} value
+ * @param {*} active
  */
-window.WAPIWU.setGroupProperty = async (groupId, property, value) => {
+window.WAPIWU.setGroupProperty = async (groupId, property, active) => {
     try {
-        const constantsType = require("WAWebGroupConstants");
-        const types = {
-            1: constantsType.GROUP_SETTING_TYPE.ANNOUNCEMENT,
-            2: constantsType.GROUP_SETTING_TYPE.EPHEMERAL,
-            3: constantsType.GROUP_SETTING_TYPE.RESTRICT,
-            4: constantsType.GROUP_SETTING_TYPE.ALLOW_NON_ADMIN_SUB_GROUP_CREATION,
-            5: constantsType.GROUP_SETTING_TYPE.MEMBERSHIP_APPROVAL_MODE,
-            6: constantsType.GROUP_SETTING_TYPE.NO_FREQUENTLY_FORWARDED,
-            7: constantsType.GROUP_SETTING_TYPE.REPORT_TO_ADMIN_MODE,
-        };
+        var configs = {};
+        // Garante
+        property =`${property}`;
 
-        // Se for ephemeral, multiplica por 86400
-        if(property == 2) {
-            value = value ? 604800 : 0;
+        // Seta as configurações a serem alteradas
+        switch (property) {
+            case 'announcement': // Seta que somente os admins podem enviar mensagens
+                configs = {
+                    "hasAnnouncement": active,
+                    "hasNotAnnouncement": !active,
+                    "iqTo": groupId
+                };
+                break;
+            case 'ephemeral': // Desativa as mensagens temporárias 
+                configs = {
+                    "hasNotEphemeral": true,
+                    "iqTo": groupId
+                };
+                break;
+            case 'restrict': // Seta que somente os admins podem editar o grupo
+                configs = {
+                    "hasLocked": active,
+                    "hasUnlocked": !active,
+                    "iqTo": groupId
+                };
+                break;
+        }
+        
+        // Ativa as mensagens temporárias
+        if(property == 'ephemeral' && active) {
+            configs = {
+                "hasNotEphemeral": false,
+                "ephemeralArgs": {
+                    "ephemeralExpiration": 604800
+                },
+                "iqTo": groupId
+            };
         }
 
-        var setJobConfigGroup = require("WAWebGroupModifyInfoJob");
+        // Faz a requisição para setar a propriedade
+        const response = await require("WASmaxGroupsSetPropertyRPC").sendSetPropertyRPC(configs);
 
-        var WAWebWidFactoryLocal = require("WAWebWidFactory");
-
-        var group = WAWebWidFactoryLocal.createWid(groupId);
-
-        var response = await setJobConfigGroup.setGroupProperty(
-            group,
-            types[property],
-            value
-        );
+        // Verifica se deu sucesso
+        const success = response.name == "SetPropertyResponseSuccess";
 
         return {
-            success: response == "SetPropertyResponseSuccess",
-            message: "Alterado com sucesso",
+            success: success,
+            message: (success ? "Alterado com sucesso" : "Erro ao alterar"),
+            response: response
         };
     } catch (error) {
-        return { success: false, message: "Erro ao alterar" };
+        return { success: false, message: "Erro ao alterar", error: error.message, response: null};
     }
 };
 
 // Monta o link preview
 window.WAPIWU.getLinkPreview = async (url) => {
-    // Pega query
-    var query = require("WAWebMexFetchPlaintextLinkPreviewJobQuery.graphql");
+    try {
+        // Pega query
+        var query = require("WAWebMexFetchPlaintextLinkPreviewJobQuery.graphql");
 
-    // Pega a url
-    var urlQuery = {
-        "input": {
-            "url": url
-        }
-    };
+        // Pega a url
+        var urlQuery = {
+            "input": {
+                "url": url
+            }
+        };
 
-    var WAWebMexNativeClient = require('WAWebMexNativeClient');
-    var response = await WAWebMexNativeClient.fetchQuery(query, urlQuery);
-    var content  = response.xwa2_newsletter_link_preview;
+        // Faz a requisição
+        var WAWebMexNativeClient = require('WAWebMexNativeClient');
+        var response = await WAWebMexNativeClient.fetchQuery(query, urlQuery);
+        var content  = response.xwa2_newsletter_link_preview;
 
-    return {
-        "matchedText": url,
-        "title": content.title,
-        "description": content.description,
-        "richPreviewType": 0,
-        "doNotPlayInline": true,
-        "isLoading": false,
-        "thumbnail": content.thumb_data
-    };
+        return {
+            "matchedText": url,
+            "title": content.title,
+            "description": content.description,
+            "richPreviewType": 0,
+            "doNotPlayInline": true,
+            "isLoading": false,
+            "thumbnail": content.thumb_data
+        };
+    } catch (error) {
+        return {
+            "matchedText": url,
+            "title": url,
+            "description": url,
+            "richPreviewType": 0,
+            "doNotPlayInline": true,
+            "isLoading": false,
+            "thumbnail": undefined
+        };
+    }
 }
 
 // Monta a lista de mentions
@@ -260,16 +268,13 @@ window.WAPIWU.sendText = async (chatId, text, mention = false) => {
             message: success
                 ? "Enviado com sucesso"
                 : `Erro ao enviar: ${response}`,
-            chatId: chatId,
-            text: text,
             response: response,
         };
     } catch (error) {
         return {
             success: false,
             message: `Erro ao enviar catch: ${error.message}`,
-            chatId: chatId,
-            text: text,
+            response: null,
         };
     }
 };
@@ -301,7 +306,6 @@ window.WAPIWU.sendLinkPreview = async (chatId, text, link) => {
                 ? "Enviado com sucesso"
                 : `Erro ao enviar: ${response}`,
             chatId: chatId,
-            text: text,
             response: response,
         };
     } catch (error) {
@@ -309,7 +313,7 @@ window.WAPIWU.sendLinkPreview = async (chatId, text, link) => {
             success: false,
             message: `Erro ao enviar catch: ${error.message}`,
             chatId: chatId,
-            text: text,
+            response: null,
         };
     }
 };
@@ -499,14 +503,6 @@ window.WAPIWU.getQrCode = async () => {
     const interval = 1000; // 1 segundo
     let elapsedTime = 0;
 
-    // Caso o qrcode tenha vencido faz o reload
-    var selectorImg = document.querySelector('canvas');
-    var selectorUrl = selectorImg.closest('[data-ref]');
-    var buttonReload = selectorUrl.querySelector('button');
-    if (buttonReload != null) {
-        buttonReload.click();
-    }
-
     while (elapsedTime < maxWaitTime) {
         try {
             var path = `//*/div/div[2]/div[3]/div[1]/div/div/div[2]/div`;
@@ -662,83 +658,102 @@ window.WAPIWU.startSession = async () => {
 };
 
 // Função para promover um participante
-window.WAPIWU.promoteParticipants = async (groupId, number) => { 
+window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false) => { 
     try {
-        // Seta as variáveis
-        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
-        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
+        // Seta a variável de sucesso
+        var success = false;
 
-        // Pega o contato
-        var collections = require('WAWebCollections')
-        var contact     = groupInfo.participants.get(number);
-        var group       = collections.Chat.get(groupId);
+        // promover o participante grupos
+        if(!isCommunity) {
+            const response = await require("WASmaxGroupsPromoteDemoteRPC").sendPromoteDemoteRPC({
+                promoteArgs: {
+                  participantArgs: [{participantJid: number}]
+                },
+                iqTo: groupId,
+            });
 
-        // Verifica se o participante é admin
-        if(contact.__x_isAdmin) {
-            return { success: true, message: 'Participante é admin'};      
+            // Verifica se deu sucesso
+            success = response.value.promoteParticipant[0].error == null;
+        }
+        // promover o participante comunidade
+        else {
+            const response = await require("WASmaxGroupsPromoteDemoteAdminRPC").sendPromoteDemoteAdminRPC({
+                promoteArgs: {
+                  participantArgs: [{participantJid: number}]
+                },
+                iqTo: groupId,
+            });
+
+            // verifica se deu sucesso
+            success = response.value.adminParticipant[0].error == undefined
         }
 
-        // promover o participante
-        await WAWebModifyParticipantsGroupAction.promoteParticipants(group, [contact]);
-
-        return { success: true, message: 'Participante promovido com sucesso'};
+        return { success: success, message: (success ? 'Participante promovido com sucesso' : 'Erro ao promover o participante'), isCommunity: isCommunity };
     } catch (error) {
-        return { success: false, message: 'Erro ao promover o participante', error: error.message };
+        return { success: success, message: 'Erro ao promover o participante', error: error.message, isCommunity: isCommunity };
     }
 };
 
 // Função para despromover um participante
-window.WAPIWU.demoteParticipants = async (groupId, number) => { 
+window.WAPIWU.demoteParticipants = async (groupId, number, isCommunity = false) => { 
     try {
-        // Seta as variáveis
-        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
-        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
-
-        // Pega o contato
-        var collections = require('WAWebCollections')
-        var contact     = groupInfo.participants.get(number);
-        var group       = collections.Chat.get(groupId);
-
-        // Verifica se o participante é admin
-        if(!contact.__x_isAdmin) {
-            return { success: true, message: 'Participante não é admin'};      
-        }
+        // Seta a variável de sucesso
+        var success = false;
 
         // Despromove o participante
-        await WAWebModifyParticipantsGroupAction.demoteParticipants(group, [contact]);
+        if(!isCommunity) {
+            const response = await require("WASmaxGroupsPromoteDemoteRPC").sendPromoteDemoteRPC({
+                promoteArgs: {
+                    participantArgs: [{participantJid: number}]
+                },
+                iqTo: groupId,
+            });
 
-        return { success: true, message: 'Participante despromovido com sucesso'};
+            // Verifica se deu sucesso
+            success = response.value.demoteParticipant[0].error == undefined
+        }
+        // Despromove o participante comunidade
+        else {
+            const response = await require("WASmaxGroupsPromoteDemoteAdminRPC").sendPromoteDemoteAdminRPC({
+                demoteArgs: {
+                  participantArgs: [{participantJid: number}]
+                },
+                iqTo: groupId,
+            });
+
+            // verifica se deu sucesso
+            success = response.value.adminParticipant[0].error == undefined
+        }
+
+        return { success: success, message: (success ? 'Participante despromovido com sucesso' : 'Erro ao despromover o participante'), isCommunity: isCommunity };
     } catch (error) {
-        return { success: false, message: 'Erro ao despromover o participante', error: error.message };
+        return { success: false, message: 'Erro ao despromover o participante', error: error.message, isCommunity: isCommunity };
     }
 };
 
 // Função para promover um participante
 window.WAPIWU.addParticipant = async (groupId, number) => { 
     try {
-        // Seta as variáveis
-        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
-        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
+        // Adiciona o participante
+        const response = await require("WASmaxGroupsAddParticipantsRPC").sendAddParticipantsRPC({
+            participantArgs: [{participantJid: number}],
+            iqTo: groupId,
+        });
+        
+        // Pega o retorno
+        const addParticipantsParticipantMixins = response.value.addParticipant[0].addParticipantsParticipantAddedOrNonRegisteredWaUserParticipantErrorLidResponseMixinGroup.value.addParticipantsParticipantMixins;
+        
+        // Verifica se deu sucesso
+        const success = addParticipantsParticipantMixins == null;
 
-        // Pega o contato
-        var collections = require('WAWebCollections')
-        var contact     = groupInfo.participants.get(number);
-        var group       = collections.Chat.get(groupId);
-
-        // Verifica se o participante é admin
-        if(contact) {
-            return { success: true, message: 'Participante está adicionado'};      
+        // Verifica se deu erro
+        if(addParticipantsParticipantMixins != null) {
+            return { success: false, message: 'Erro ao adicionar o participante', error: addParticipantsParticipantMixins.name , status: addParticipantsParticipantMixins.value.error};
         }
 
-        // Pega o contato
-        contact = collections.Contact.get(number);
-
-        // promover o participante
-        await WAWebModifyParticipantsGroupAction.addParticipants(group, [contact]);
-
-        return { success: true, message: 'Participante Adicionado com sucesso'};
+        return { success: success, message: (success ? 'Participante Adicionado com sucesso' : 'Erro ao adicionar o participante'), groupId: groupId, number: number, status: 200};
     } catch (error) {
-        return { success: false, message: 'Erro ao adicionar o participantes', error: error.message, groupId: groupId, number: number };    
+        return { success: false, message: 'Erro ao adicionar o participante', error: error.message, groupId: groupId, number: number, error: error.message, status: 400 };    
     }
 };
 
@@ -746,25 +761,28 @@ window.WAPIWU.addParticipant = async (groupId, number) => {
 window.WAPIWU.removeParticipant = async (groupId, number) => { 
     try {
         // Seta as variáveis
-        var WAWebModifyParticipantsGroupAction = require("WAWebModifyParticipantsGroupAction");
         var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
 
         // Pega o contato
-        var collections = require('WAWebCollections')
         var contact     = groupInfo.participants.get(number);
-        var group       = collections.Chat.get(groupId);
 
         // Verifica se o participante é admin
         if(!contact) {
             return { success: true, message: 'Participante não está adicionado'};      
         }
 
-        // promover o participante
-        await WAWebModifyParticipantsGroupAction.removeParticipants(group, [contact]);
+        // Remove participante
+        const response = await require("WASmaxGroupsRemoveParticipantsRPC").sendRemoveParticipantsRPC({
+            participantArgs: [{participantJid: number}],
+            iqTo: groupId,
+            hasRemoveLinkedGroupsTrue: !1,
+        });
 
-        return { success: true, message: 'Participante removido com sucesso'};
+        // Verifica se deu sucesso
+        const success = response.value.removeParticipant[0].participantNotInGroupOrParticipantNotAllowedOrParticipantNotAcceptableOrRemoveParticipantsLinkedGroupsServerErrorMixinGroup == null;
+
+        return { success: success, message: (success ? 'Participante removido com sucesso' : 'Erro ao remover o participante')};
     } catch (error) {
-        console.log(error);
         return { success: false, message: 'Erro ao remover o participante', error: error };
     }
 };
@@ -1039,3 +1057,40 @@ window.WAPIWU.deleteMessage = async function(chatId, msgId) {
         return { success: false, message: 'Erro ao apagar a mensagem', error: error.message };
    }
 };
+
+// Criar nova comunidade
+window.WAPIWU.createCommunity = async (name) => {
+    try {
+        // Ação que irá criar o grupo
+        var createCommunity = require("WAWebGroupCommunityJob");
+
+        // Configurações do grupo
+        const configs = {
+            "name": name,
+            "desc": "",
+            "closed": true,
+            "hasAllowNonAdminSubGroupCreation": true,
+            "shouldCreateGeneralChat": false
+        };
+
+        // Cria o grupo
+        const response = await createCommunity.sendCreateCommunity(configs);
+        const success = response.wid.server == "g.us";
+
+        return {
+            success: success,
+            message: success
+                ? "Comunidade criada com sucesso"
+                : "Erro ao criar comunidade",
+            metadata: {
+                id: response.wid._serialized,
+            },
+            response: response
+        };
+    } catch (error) {
+        return { success: false, message: "Erro ao criar comunidade", error: error.message, response: null, metadata: null};
+    }
+};
+
+// Adiciona as funções customizadas que substitui as originais do webwhatsapp
+@include('whatsapp-functions.injected-functionscustom-wa')
