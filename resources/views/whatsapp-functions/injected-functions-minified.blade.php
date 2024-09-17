@@ -692,7 +692,7 @@ window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false)
             });
 
             // Verifica se deu sucesso
-            success = response.value.promoteParticipant.length > 1 && response.value.promoteParticipant[0].error == null || response.value.promoteParticipant.length == 0;
+            success = response.value.promoteParticipant.length >= 1 && response.value.promoteParticipant[0].error == null || response.value.promoteParticipant.length == 0;
         }
         // promover o participante comunidade
         else {
@@ -704,7 +704,7 @@ window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false)
             });
 
             // verifica se deu sucesso
-            success = response.value.adminParticipant.length > 1 && response.value.adminParticipant[0].error == undefined || response.value.adminParticipant.length == 0
+            success = response.value.adminParticipant.length >= 1 && response.value.adminParticipant[0].error == undefined || response.value.adminParticipant.length == 0
         }
 
         return { success: success, message: (success ? 'Participante promovido com sucesso' : 'Erro ao promover o participante'), isCommunity: isCommunity, response: response, number: number, groupId: groupId };
@@ -723,14 +723,14 @@ window.WAPIWU.demoteParticipants = async (groupId, number, isCommunity = false) 
         // Despromove o participante
         if(!isCommunity) {
             response = await require("WASmaxGroupsPromoteDemoteRPC").sendPromoteDemoteRPC({
-                promoteArgs: {
+                demoteArgs: {
                     participantArgs: [{participantJid: number}]
                 },
                 iqTo: groupId,
             });
 
             // Verifica se deu sucesso
-            success = response.value.demoteParticipant[0].error == undefined
+            success = response.value.demoteParticipant.length >= 1 || response.value.demoteParticipant[0].error == undefined || response.value.demoteParticipant.length == 0
         }
         // Despromove o participante comunidade
         else {
@@ -740,8 +740,9 @@ window.WAPIWU.demoteParticipants = async (groupId, number, isCommunity = false) 
                 },
                 iqTo: groupId,
             });
+            
             // verifica se deu sucesso
-            success = response.value.adminParticipant.length > 1 && response.value.adminParticipant[0].error == undefined || response.value.adminParticipant.length == 0
+            success = response.value.adminParticipant.length >= 1 && response.value.adminParticipant[0].error == undefined || response.value.adminParticipant.length == 0
         }
 
         return { success: success, message: (success ? 'Participante despromovido com sucesso' : 'Erro ao despromover o participante'), isCommunity: isCommunity, response: response, number: number, groupId: groupId };

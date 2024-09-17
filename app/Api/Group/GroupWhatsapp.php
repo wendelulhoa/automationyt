@@ -272,14 +272,14 @@ class GroupWhatsapp
     public function promoteParticipant(string $sessionId, string $groupId, string $number): array
     {
         try {
-            // Pega o groupId
-            $groupId = $this->getWhatsappGroupId($groupId, true, true);
-
             // Seta um tempo de espera
             usleep($this->sleepTime);
 
             // Verifica se é comunidade
             $isCommunity = (strpos($groupId, '_') !== false) ? 1 : 0;
+
+            // Pega o groupId
+            $groupId = $this->getWhatsappGroupId($groupId, true, true);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
