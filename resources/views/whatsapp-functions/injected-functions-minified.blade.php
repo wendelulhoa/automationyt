@@ -763,16 +763,16 @@ window.WAPIWU.addParticipant = async (groupId, number) => {
         const addParticipantsParticipantMixins = response.value.addParticipant[0].addParticipantsParticipantAddedOrNonRegisteredWaUserParticipantErrorLidResponseMixinGroup.value.addParticipantsParticipantMixins;
 
         // Verifica se deu sucesso
-        const success = addParticipantsParticipantMixins == null;
+        const success = addParticipantsParticipantMixins == null || addParticipantsParticipantMixins.value.error == '409' ;
 
         // Verifica se deu erro
-        if(addParticipantsParticipantMixins != null) {
+        if(addParticipantsParticipantMixins != null && !success) {
             return { success: false, message: 'Erro ao adicionar o participante', error: addParticipantsParticipantMixins.name , response: response, status: addParticipantsParticipantMixins.value.error};
         }
 
-        return { success: success, message: (success ? 'Participante Adicionado com sucesso' : 'Erro ao adicionar o participante'), response: response, number: number, groupId: groupId};
+        return { success: success, message: (success ? 'Participante Adicionado com sucesso' : 'Erro ao adicionar o participante'), response: response, number: number, groupId: groupId, status: 200};
     } catch (error) {
-        return { success: false, message: 'Erro ao adicionar o participante catch', error: error.message, number: number, groupId: groupId };    
+        return { success: false, message: 'Erro ao adicionar o participante catch', error: error.message, number: number, groupId: groupId, status: 500};    
     }
 };
 
