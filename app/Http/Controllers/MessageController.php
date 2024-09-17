@@ -107,7 +107,7 @@ class MessageController extends Controller
             // Define o status code da resposta
             $statusCode = (bool) $content['success'] ? 200 : 400;
 
-            return response()->json(['success' => $content['success'], 'message' => ($content['success'] ? 'Mensagem enviada com sucesso.' : 'Erro ao enviar a mensagem.')], $statusCode);
+            return response()->json($content, $statusCode);
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }

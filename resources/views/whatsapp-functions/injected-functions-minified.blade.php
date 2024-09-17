@@ -18,7 +18,7 @@ window.WAPIWU.findGroupInfo = async (groupId) => {
 
         return { success: true, message: 'Grupo encontrado com sucesso.', metadata: groupMetadata };
     } catch (error) {
-        return { success: false, message: "Erro ao buscar as informações do grupo" };
+        return { success: false, message: "Erro ao buscar as informações do grupo", error: error.message, groupId: groupId };
     }
 };
 
@@ -183,6 +183,27 @@ window.WAPIWU.setGroupProperty = async (groupId, property, active) => {
     }
 };
 
+// Busca o chat se não adiciona
+window.WAPIWU.getChat = (chatId) => {
+    try {
+        // Seta o que será utilizado para adicionar os chats
+        var WAWebWidFactoryLocal = require("WAWebWidFactory");
+        var webCollection = require("WAWebCollections");
+
+        // Busca o chat
+        var chat = webCollection.Chat.get(chatId);
+
+        // Adiciona o contato na lista de contatos.
+        if(!chat) {
+           chat = webCollection.Chat.gadd(WAWebWidFactoryLocal.createWid(chatId), {})
+        }
+
+        return chat;
+    } catch (error) {
+        return undefined;
+    }
+};
+
 // Monta o link preview
 window.WAPIWU.getLinkPreview = async (url) => {
     try {
@@ -245,12 +266,9 @@ window.WAPIWU.sendText = async (chatId, text, mention = false) => {
     try {
         var sendMessageText = require("WAWebSendTextMsgChatAction");
 
-        // Busca as informações de todos os grupos
-        var webCollection = require("WAWebCollections");
-
         // Envia o texto
         var response = await sendMessageText.sendTextMsgToChat(
-            webCollection.Chat.get(chatId),
+            window.WAPIWU.getChat(chatId),
             text,
             {
                 "linkPreview": null,
@@ -268,16 +286,13 @@ window.WAPIWU.sendText = async (chatId, text, mention = false) => {
             message: success
                 ? "Enviado com sucesso"
                 : `Erro ao enviar: ${response}`,
-            chatId: chatId,
-            text: text,
             response: response,
         };
     } catch (error) {
         return {
             success: false,
             message: `Erro ao enviar catch: ${error.message}`,
-            chatId: chatId,
-            text: text,
+            response: null,
         };
     }
 };
@@ -287,12 +302,9 @@ window.WAPIWU.sendLinkPreview = async (chatId, text, link) => {
     try {
         var sendMessageText = require("WAWebSendTextMsgChatAction");
 
-        // Busca as informações de todos os grupos
-        var webCollection = require("WAWebCollections");
-
         // Response
         var response = await sendMessageText.sendTextMsgToChat(
-            webCollection.Chat.get(chatId),
+            window.WAPIWU.getChat(chatId),
             text,
             {
                 "linkPreview": await window.WAPIWU.getLinkPreview(link),
@@ -309,7 +321,6 @@ window.WAPIWU.sendLinkPreview = async (chatId, text, link) => {
                 ? "Enviado com sucesso"
                 : `Erro ao enviar: ${response}`,
             chatId: chatId,
-            text: text,
             response: response,
         };
     } catch (error) {
@@ -317,7 +328,7 @@ window.WAPIWU.sendLinkPreview = async (chatId, text, link) => {
             success: false,
             message: `Erro ao enviar catch: ${error.message}`,
             chatId: chatId,
-            text: text,
+            response: null,
         };
     }
 };
@@ -589,7 +600,7 @@ window.WAPIWU.sendPoll = async (chatId, title, options, selectableCount = 0) => 
         };
         
         // Envia a enquete
-        const response = await require('WAWebPollsSendPollCreationMsgAction').sendPollCreation({ poll: poll, chat: webCollection.Chat.get(chatId), quotedMsg: undefined });
+        const response = await require('WAWebPollsSendPollCreationMsgAction').sendPollCreation({ poll: poll, chat: window.WAPIWU.getChat(chatId), quotedMsg: undefined });
 
         // Verifica se deu sucesso
         const success = response[1].messageSendResult === "OK";
@@ -743,10 +754,10 @@ window.WAPIWU.addParticipant = async (groupId, number) => {
             participantArgs: [{participantJid: number}],
             iqTo: groupId,
         });
-        
+
         // Pega o retorno
         const addParticipantsParticipantMixins = response.value.addParticipant[0].addParticipantsParticipantAddedOrNonRegisteredWaUserParticipantErrorLidResponseMixinGroup.value.addParticipantsParticipantMixins;
-        
+
         // Verifica se deu sucesso
         const success = addParticipantsParticipantMixins == null;
 
@@ -755,9 +766,9 @@ window.WAPIWU.addParticipant = async (groupId, number) => {
             return { success: false, message: 'Erro ao adicionar o participante', error: addParticipantsParticipantMixins.name , status: addParticipantsParticipantMixins.value.error};
         }
 
-        return { success: success, message: (success ? 'Participante Adicionado com sucesso' : 'Erro ao adicionar o participante'), groupId: groupId, number: number, status: 200};
+        return { success: success, message: (success ? 'Participante Adicionado com sucesso' : 'Erro ao adicionar o participante'), response: response, number: number, groupId: groupId};
     } catch (error) {
-        return { success: false, message: 'Erro ao adicionar o participante', error: error.message, groupId: groupId, number: number, error: error.message, status: 400 };    
+        return { success: false, message: 'Erro ao adicionar o participante catch', error: error.message, response: (response || null), number: number, groupId: groupId };    
     }
 };
 
@@ -824,7 +835,7 @@ window.WAPIWU.sendVcard = async (chatId, title, contact) => {
     try {
         // Busca o chat
         var webCollection = require('WAWebCollections');
-        var chat          = webCollection.Chat.get(chatId);
+        var chat          = window.WAPIWU.getChat(chatId);
 
         // Monta as informações de envio
         var dataUtil = require('WAWebMsgDataUtils') 
@@ -856,9 +867,9 @@ window.WAPIWU.sendVcard = async (chatId, title, contact) => {
         const result  = await response[1];
         const success = result.messageSendResult === "OK";
 
-        return {success: success, message: (success ? "Vcard enviado com sucesso" : "Erro ao enviar vcard")};
+        return {success: success, message: (success ? "Vcard enviado com sucesso" : "Erro ao enviar vcard"), response: result, chatId: chatId};
     } catch (error) {
-        return { success: false, message: 'Erro ao enviar vcard', error: error.message };
+        return { success: false, message: 'Erro ao enviar vcard catch', error: error.message, line2: error, response: null, chatId: chatId };
     }
 }
 
@@ -1089,9 +1100,10 @@ window.WAPIWU.createCommunity = async (name) => {
             metadata: {
                 id: response.wid._serialized,
             },
+            response: response
         };
     } catch (error) {
-        return { success: false, message: "Erro ao criar comunidade", error: error.message };
+        return { success: false, message: "Erro ao criar comunidade", error: error.message, response: null, metadata: null};
     }
 };
 

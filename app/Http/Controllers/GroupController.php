@@ -430,7 +430,7 @@ class GroupController extends Controller
             $statusCode = (bool) $content['success'] ? 200 : ($content['status'] == '403' ? 403 : 400);
 
             // Retorna a resposta JSON com a mensagem de sucesso
-            return response()->json(['success' => $content['success'], 'message' => $content['message']], $statusCode);
+            return response()->json($content, $statusCode);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }

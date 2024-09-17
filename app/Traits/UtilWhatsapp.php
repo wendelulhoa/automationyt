@@ -149,7 +149,7 @@ trait UtilWhatsapp
                 $id = $getChildren ? $id[1] : $id[0];
             }
 
-            return $setJid ? "$id@g.us" : $id;
+            return $setJid && !(strpos($id, '@c.us') !== false) ? "$id@g.us" : $id;
         };
 
         // Convertendo o id para o formato correto
