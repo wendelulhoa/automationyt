@@ -127,14 +127,14 @@ class MessageWhatsapp {
     /**
      * Envia arquivos
      *
-     * @param string $sessionId = Id da sessão
-     * @param string $chatId    = Id do chat
-     * @param string $caption   = Legenda
-     * @param string $path      = Caminho do arquivo
+     * @param string      $sessionId = Id da sessão
+     * @param string      $chatId    = Id do chat
+     * @param string|null $caption   = Legenda
+     * @param string      $path      = Caminho do arquivo
      * 
      * @return array
      */
-    public function sendFile(string $sessionId, string $chatId, string $caption, string $path): array
+    public function sendFile(string $sessionId, string $chatId, string|null $caption, string $path): array
     {
         try {
             // Pega o chatId
