@@ -678,12 +678,13 @@ window.WAPIWU.startSession = async () => {
 // Função para promover um participante
 window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false) => { 
     try {
-        // Seta a variável de sucesso
-        var success = false;
+        // Seta a variável de sucesso/response
+        var success  = false;
+        var response = null;
 
         // promover o participante grupos
         if(!isCommunity) {
-            const response = await require("WASmaxGroupsPromoteDemoteRPC").sendPromoteDemoteRPC({
+            response = await require("WASmaxGroupsPromoteDemoteRPC").sendPromoteDemoteRPC({
                 promoteArgs: {
                   participantArgs: [{participantJid: number}]
                 },
@@ -691,11 +692,11 @@ window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false)
             });
 
             // Verifica se deu sucesso
-            success = response.value.promoteParticipant[0].error == null;
+            success = response.value.promoteParticipant.length > 1 && response.value.promoteParticipant[0].error == null || response.value.promoteParticipant.length == 0;
         }
         // promover o participante comunidade
         else {
-            const response = await require("WASmaxGroupsPromoteDemoteAdminRPC").sendPromoteDemoteAdminRPC({
+            response = await require("WASmaxGroupsPromoteDemoteAdminRPC").sendPromoteDemoteAdminRPC({
                 promoteArgs: {
                   participantArgs: [{participantJid: number}]
                 },
@@ -703,7 +704,7 @@ window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false)
             });
 
             // verifica se deu sucesso
-            success = response.value.adminParticipant[0].error == undefined
+            success = response.value.adminParticipant.length > 1 && response.value.adminParticipant[0].error == undefined || response.value.adminParticipant.length == 0
         }
 
         return { success: success, message: (success ? 'Participante promovido com sucesso' : 'Erro ao promover o participante'), isCommunity: isCommunity, response: response, number: number, groupId: groupId };
@@ -716,11 +717,12 @@ window.WAPIWU.promoteParticipants = async (groupId, number, isCommunity = false)
 window.WAPIWU.demoteParticipants = async (groupId, number, isCommunity = false) => { 
     try {
         // Seta a variável de sucesso
-        var success = false;
+        var success  = false;
+        var response = null;
 
         // Despromove o participante
         if(!isCommunity) {
-            const response = await require("WASmaxGroupsPromoteDemoteRPC").sendPromoteDemoteRPC({
+            response = await require("WASmaxGroupsPromoteDemoteRPC").sendPromoteDemoteRPC({
                 promoteArgs: {
                     participantArgs: [{participantJid: number}]
                 },
@@ -732,15 +734,14 @@ window.WAPIWU.demoteParticipants = async (groupId, number, isCommunity = false) 
         }
         // Despromove o participante comunidade
         else {
-            const response = await require("WASmaxGroupsPromoteDemoteAdminRPC").sendPromoteDemoteAdminRPC({
+            response = await require("WASmaxGroupsPromoteDemoteAdminRPC").sendPromoteDemoteAdminRPC({
                 demoteArgs: {
                   participantArgs: [{participantJid: number}]
                 },
                 iqTo: groupId,
             });
-
             // verifica se deu sucesso
-            success = response.value.adminParticipant[0].error == undefined
+            success = response.value.adminParticipant.length > 1 && response.value.adminParticipant[0].error == undefined || response.value.adminParticipant.length == 0
         }
 
         return { success: success, message: (success ? 'Participante despromovido com sucesso' : 'Erro ao despromover o participante'), isCommunity: isCommunity, response: response, number: number, groupId: groupId };
