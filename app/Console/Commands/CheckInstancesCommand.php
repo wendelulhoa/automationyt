@@ -42,18 +42,22 @@ class CheckInstancesCommand extends Command
 
                 // Verifica se o processo está ativo e sobe a instância
                 if (!$this->isProcessRunning($pid)) {
-                    // Sobe a instância
-                    $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
-                    
-                    // Verifica a conexão
-                    $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
-                    
-                    // Atualiza o status da instância
-                    $active = ($content['success'] ?? false) ? 'ativo' : 'inativo';
+                    try {
+                        // Sobe a instância
+                        $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+                        
+                        // Verifica a conexão
+                        $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
+                        
+                        // Atualiza o status da instância
+                        $active = ($content['success'] ?? false) ? 'ativo' : 'inativo';
 
-                    // Loga a ação
-                    Log::channel('daily')->info("Processo com PID $pid ($sessionId) está $active.");
-                    sleep(2);
+                        // Loga a ação
+                        Log::channel('daily')->info("Processo com PID $pid ($sessionId) está $active.");
+                        sleep(2);
+                    } catch (\Throwable $th) {
+                        Log::error("Erro ao verificar a instância $sessionId: " . $th->getMessage());
+                    }
                 }
             } else {
                 Log::warning("Arquivo PID não encontrado para a sessão $sessionId.");
