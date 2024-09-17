@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Api\Chat\CommunityWhatsapp;
+use App\Api\Community\CommunityWhatsapp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

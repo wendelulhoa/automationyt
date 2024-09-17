@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Api\Chat;
+namespace App\Api\Community;
 
+use App\Api\Group\GroupWhatsapp;
 use App\Http\Controllers\Puppeter\Puppeteer;
-use App\Traits\GroupWhatsapp;
 use App\Traits\UtilWhatsapp;
 use Illuminate\Support\Str;
 

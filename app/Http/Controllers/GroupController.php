@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Traits\GroupWhatsapp;
+use App\Api\Group\GroupWhatsapp;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
