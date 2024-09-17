@@ -278,8 +278,8 @@ class GroupWhatsapp
             // Verifica se é comunidade
             $isCommunity = (strpos($groupId, '_') !== false) ? 1 : 0;
 
-            // Pega o groupId
-            $groupId = $this->getWhatsappGroupId($groupId, true, true);
+            // Pega o groupId/number
+            [$groupId, $number] = [$this->getWhatsappGroupId($groupId, true, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -312,8 +312,8 @@ class GroupWhatsapp
             // Verifica se é comunidade
             $isCommunity = (strpos($groupId, '_') !== false) ? 1 : 0;
 
-            // Pega o groupId
-            $groupId = $this->getWhatsappGroupId($groupId, true, true);
+            // Pega o groupId/number
+            [$groupId, $number] = [$this->getWhatsappGroupId($groupId, true, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -343,8 +343,8 @@ class GroupWhatsapp
             // Seta um tempo de espera
             usleep($this->sleepTime);
 
-            // Pega o groupId
-            $groupId = $this->getWhatsappGroupId($groupId, false, true);
+            // Pega o groupId/number
+            [$groupId, $number] = [$this->getWhatsappGroupId($groupId, false, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
@@ -374,8 +374,9 @@ class GroupWhatsapp
             // Seta um tempo de espera
             usleep($this->sleepTime);
 
-            // Pega o groupId
-            $groupId = $this->getWhatsappGroupId($groupId, true, true);
+
+            // Pega o groupId/number
+            [$groupId, $number] = [$this->getWhatsappGroupId($groupId, true, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');

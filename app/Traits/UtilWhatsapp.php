@@ -149,6 +149,11 @@ trait UtilWhatsapp
                 $id = $getChildren ? $id[1] : $id[0];
             }
 
+            // Caso seja c.us é por que é número de telefone
+            if(strpos($id, '@c.us') !== false) {
+                $id = $this->removeNineDigit($id);
+            }
+
             return $setJid && !(strpos($id, '@c.us') !== false) ? "$id@g.us" : $id;
         };
 
@@ -156,5 +161,27 @@ trait UtilWhatsapp
         $whatsappGroupId = $fn_getId($whatsappGroupId);
 
         return $whatsappGroupId;
+    }
+
+
+    /**
+     * Remover o nono digito de um telefone caso ele seja o número 9
+     *
+     * @param string $fullNumber = número do telefone
+     * @return string
+     */
+    function removeNineDigit($fullNumber, $jid = true)
+    {
+        $fullNumber  = str_replace('@c.us', '', $fullNumber);
+        $codeCountry = substr($fullNumber, 0, 2);
+        $codeDdd     = substr($fullNumber, 2, 2);
+        $nineDigit   = substr($fullNumber, 4, 1);
+        $number      = substr($fullNumber, 5);
+
+        if ($nineDigit == '9' && $codeCountry == '55') {
+            $fullNumber = $codeCountry . $codeDdd . $number;
+        }
+
+        return ($codeCountry == '55' ? $fullNumber : $fullNumber) . ($jid ? "@c.us" : "");
     }
 }
