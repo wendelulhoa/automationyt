@@ -81,31 +81,30 @@ class SendWebookCommand extends Command
 
             // Envia os eventos para o webhook
             foreach ($events as $id => $event) {
+                
                 try {
+                    // Deleta o evento
+                    $page->evaluate("delete window.WAPIWU.webhookEvents['$id']")['result']['result']['value'];
+                    
                     // Sempre reseta os paramêtros
                     $params = [];
+                    $params['chatid']      = $event['id']['remote']['user'];
+                    $params['author']      = $event['author']['user'];
+                    $params['action']      = $this->getAction($event['subtype']);
+                    $params['participant'] = $this->getParticipantsNumber($event['recipients'])[0];
+                    $params['msgid']       = $params['action'] == 'msgreceived' ? $event['id']['_serialized'] : null;
+                    $params['content']     = $params['action'] == 'msgreceived' ? $event['body'] : null;
+                    $params['session']     = $sessionId;
 
+                    
                     // Monta os paramêtros do webhook
-                    if($sessionId == 'session5173' && isset($event['recipients'][0]) && !is_null($event['recipients'][0])) {
-                        $params['chatid']      = $event['id']['remote']['user'];
-                        $params['author']      = $event['author']['user'];
-                        $params['action']      = $this->getAction($event['subtype']);
-                        $params['participant'] = $this->getParticipantsNumber($event['recipients'])[0];
-                        $params['msgid']       = $params['action'] == 'msgreceived' ? $event['id']['_serialized'] : null;
-                        $params['content']     = $params['action'] == 'msgreceived' ? $event['body'] : null;
-                        $params['session']     = $sessionId;
-
+                    if(isset($event['recipients'][0]) && !is_null($event['recipients'][0])) {
                         // Faz o envio do webhook
-                        if($params['action'] == 'msgreceived') {
-                            $response = Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
-                        }
+                        $response = Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
                     }
                 } catch (\Throwable $th) {
                     Log::error("Erro webhook: {$th->getMessage()}");
                 }
-
-                // Deleta o evento
-                $page->evaluate("delete window.WAPIWU.webhookEvents['$id']")['result']['result']['value'];
             }
         }
     }

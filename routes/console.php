@@ -12,4 +12,4 @@ Schedule::command(CheckInstancesCommand::class)->everyFifteenSeconds();
 Schedule::command(RemoveFilesSendCommand::class)->everyFiveSeconds();
 
 // Envia os webhooks a cada 1 minuto
-Schedule::command(SendWebookCommand::class)->everyMinute();
+Schedule::command(SendWebookCommand::class)->everyFiveSeconds();
