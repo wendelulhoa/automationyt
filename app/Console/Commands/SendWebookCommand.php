@@ -96,6 +96,8 @@ class SendWebookCommand extends Command
 
                     // Sempre reseta os paramêtros
                     $params = [];
+
+                    // Seta os parametros do webhook
                     $params['chatid']      = $event['id']['remote']['user'];
                     $params['author']      = isset($event['author']) ? $event['author']['user'] : null;
                     $params['action']      = $this->getAction($event['subtype']);
