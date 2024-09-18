@@ -780,17 +780,6 @@ window.WAPIWU.addParticipant = async (groupId, number) => {
 // Função para promover um participante
 window.WAPIWU.removeParticipant = async (groupId, number) => { 
     try {
-        // Seta as variáveis
-        var groupInfo = require("WAWebGroupMetadataCollection").assertGet(groupId);
-
-        // Pega o contato
-        var contact     = groupInfo.participants.get(number);
-
-        // Verifica se o participante é admin
-        if(!contact) {
-            return { success: true, message: 'Participante não está adicionado'};      
-        }
-
         // Remove participante
         const response = await require("WASmaxGroupsRemoveParticipantsRPC").sendRemoveParticipantsRPC({
             participantArgs: [{participantJid: number}],
@@ -1070,14 +1059,21 @@ window.WAPIWU.deleteMessage = async function(chatId, msgId) {
         var chat = WAWebCollections.Chat.get(chatId);
             
         // Apaga a mensagem
-        require('WAWebCmd').Cmd.sendRevokeMsgs(chat, {
+        // require('WAWebCmd').Cmd.sendRevokeMsgs(chat, {
+        //         "type": "message",
+        //         "list": [msg]
+        //     }, {"clearMedia": true});
+        
+        // Apaga a mensagem
+        const response = await require('WAWebChatSendMessages').sendRevokeMsgs(chat, {
                 "type": "message",
                 "list": [msg]
-            }, {"clearMedia": true});
-        const success = true;
+            }, true);
+
+        const success = response[0].messageSendResult == "OK";
 
         // Verifica se a mensagem foi apagada
-        return { success: success, message: (success ? 'Mensagem apagada com sucesso' : 'Erro ao apagar a mensagem') };
+        return { success: success, message: (success ? 'Mensagem apagada com sucesso' : 'Erro ao apagar a mensagem'), response: response};
    } catch (error) {
         return { success: false, message: 'Erro ao apagar a mensagem', error: error.message };
    }

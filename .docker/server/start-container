@@ -31,3 +31,6 @@ chmod -R 777 ./
 mkdir /storage
 cd /storage/
 chmod -R 777 ./
+
+## Inicia o crontab
+/bin/php /var/www/html/wuapi/artisan schedule:work >> /dev/null 2>&1
