@@ -179,7 +179,7 @@ trait UtilWhatsapp
         $nineDigit   = substr($fullNumber, 4, 1);
         $number      = substr($fullNumber, 5);
 
-        if ($nineDigit == '9' && $codeCountry == '55') {
+        if ($nineDigit == '9' && $codeCountry == '55' && strlen($number) == 13) {
             $fullNumber = $codeCountry . $codeDdd . $number;
         }
 
