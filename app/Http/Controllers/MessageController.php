@@ -47,12 +47,12 @@ class MessageController extends Controller
         try {
             $params = $request->validate([
                 'chatId' => 'required|string',
-                'text' => 'required|string',
+                'text' => 'nullable|string',
                 'link' => 'required|string'
             ]);
 
             // Faz o envio da mensagem
-            $content = (new MessageWhatsapp)->sendLinkPreview($sessionId, $params['chatId'], $params['text'], $params['link']);
+            $content = (new MessageWhatsapp)->sendLinkPreview($sessionId, $params['chatId'], $params['text'] ?? '', $params['link']);
 
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
