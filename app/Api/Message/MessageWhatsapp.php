@@ -250,11 +250,8 @@ class MessageWhatsapp {
             $randomNameVarOptions = strtolower(Str::random(6));
             $page->evaluate("localStorage.setItem('$randomNameVarOptions', `" . json_encode($auxOptions) . "`);");
 
-            // Seta o script para enviar a imagem
-            $script = "window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});";
-
             // Executa o script no navegador
-            $content = $page->evaluate($script)['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});")['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
