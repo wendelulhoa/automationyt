@@ -310,4 +310,29 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'message' => $th->getMessage(), 'response' => $response ?? null], 400);
         }
     }
+
+    /**
+     * Busca informações de um grupo a partir de um link de convite
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function getGroupInfoFromInviteCode(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            // Valida os dados da requisição
+            $params = $request->validate([
+                'inviteCode' => 'required|string'
+            ]);
+
+            // Busca as informações do grupo
+            $content = (new GroupWhatsapp)->getGroupInfoFromInviteCode($sessionId, $params['inviteCode']);
+
+            return response()->json($content, ((bool) $content['success'] ? 200 : 400));
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
+        }
+    }
 }

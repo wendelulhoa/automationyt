@@ -34,14 +34,14 @@ class MessageWhatsapp {
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta o text temporário
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WAPIWU.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);")['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
@@ -72,14 +72,14 @@ class MessageWhatsapp {
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta o text temporário
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$text \n\n $link`);");
 
             // Seta o script para enviar a imagem
-            $script = "window.WAPIWU.sendLinkPreview('$chatId', localStorage.getItem('$randomNameVar'), '$link');";
+            $script = "window.WUAPI.sendLinkPreview('$chatId', localStorage.getItem('$randomNameVar'), '$link');";
 
             // Executa o script no navegador
             $content = $page->evaluate($script)['result']['result']['value'];
@@ -113,10 +113,10 @@ class MessageWhatsapp {
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WAPIWU.sendVcard('$chatId', '$title', '$contact');")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.sendVcard('$chatId', '$title', '$contact');")['result']['result']['value'];
 
             return $content;
         } catch (\Throwable $th) {
@@ -144,7 +144,7 @@ class MessageWhatsapp {
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
@@ -160,11 +160,11 @@ class MessageWhatsapp {
             $page->setFileInput($backendNodeId, "/storage/$fileName");
 
             // Executa o script no navegador
-            $content   = $page->evaluate("window.WAPIWU.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");")['result']['result']['value'];
+            $content   = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");")['result']['result']['value'];
 
             // Deleta a variável temporária e o input file
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
-            $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
+            $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
 
             return $content;
         } catch (\Throwable $th) {
@@ -192,7 +192,7 @@ class MessageWhatsapp {
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
@@ -204,10 +204,10 @@ class MessageWhatsapp {
             $page->setFileInput($backendNodeId, "/storage/$fileName");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WAPIWU.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
 
             // Deleta a variável temporária e o input file
-            $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
+            $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
 
             return $content;
         } catch (\Throwable $th) {
@@ -240,7 +240,7 @@ class MessageWhatsapp {
             }
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta o question temporário
             $randomNameVar = strtolower(Str::random(6));
@@ -251,7 +251,7 @@ class MessageWhatsapp {
             $page->evaluate("localStorage.setItem('$randomNameVarOptions', `" . json_encode($auxOptions) . "`);");
 
             // Seta o script para enviar a imagem
-            $script = "window.WAPIWU.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});";
+            $script = "window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});";
 
             // Executa o script no navegador
             $content = $page->evaluate($script)['result']['result']['value'];
@@ -285,10 +285,10 @@ class MessageWhatsapp {
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WAPIWU.deleteMessage('$chatId', '$messageId');")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.deleteMessage('$chatId', '$messageId');")['result']['result']['value'];
 
             return $content;
         } catch (\Throwable $th) {

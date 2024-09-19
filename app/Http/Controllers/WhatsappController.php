@@ -24,10 +24,10 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU', true);
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
 
                // Pega o qrcode
-               $content = $page->evaluate("window.WAPIWU.getQrCode();")['result']['result']['value'];
+               $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
 
                $qrCode = null;
                if($content['success']) {
@@ -84,10 +84,10 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
-               $content = $page->evaluate("window.WAPIWU.checkConnection();")['result']['result']['value'];
+               $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
 
                // Define o status code da resposta
                $statusCode = $content['success'] ? 200 : 500;
@@ -119,10 +119,10 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
-               $content = $page->evaluate("window.WAPIWU.disconnect();")['result']['result']['value'];
+               $content = $page->evaluate("window.WUAPI.disconnect();")['result']['result']['value'];
                
                // Aguarde um momento para garantir que o processo foi finalizado
                sleep(2);
@@ -185,7 +185,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
                $screenshot = base64_decode($page->screenShot()['result']['data']);
 
                // Retorna a imagem PNG como resposta
@@ -211,10 +211,10 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
-               $content = $page->evaluate("window.WAPIWU.getPhoneNumber();")['result']['result']['value'];
+               $content = $page->evaluate("window.WUAPI.getPhoneNumber();")['result']['result']['value'];
 
                // Define o status code da resposta
                $statusCode = (bool) $content['success'] ? 200 : 400;
@@ -245,10 +245,10 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
-               $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
+               $content = $page->evaluate("window.WUAPI.startSession();")['result']['result']['value'];
 
                // Gerar um token de autenticação
                $token = Hash::make(Str::random(50));
@@ -295,10 +295,10 @@ class WhatsappController extends Controller
                [$number] = [$data['number']];
 
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
-               $content = $page->evaluate("window.WAPIWU.checkNumber('$number');")['result']['result']['value'];
+               $content = $page->evaluate("window.WUAPI.checkNumber('$number');")['result']['result']['value'];
 
                // Define o status code da resposta
                $statusCode = (bool) $content['success'] ? 200 : 400;

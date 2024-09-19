@@ -44,10 +44,10 @@ class CheckInstancesCommand extends Command
                 if (!$this->isProcessRunning($pid)) {
                     try {
                         // Sobe a instância
-                        $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+                        $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
                         
                         // Verifica a conexão
-                        $content = $page->evaluate("window.WAPIWU.startSession();")['result']['result']['value'];
+                        $content = $page->evaluate("window.WUAPI.startSession();")['result']['result']['value'];
                         
                         // Atualiza o status da instância
                         $active = ($content['success'] ?? false) ? 'ativo' : 'inativo';

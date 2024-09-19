@@ -79,7 +79,7 @@ trait UtilWhatsapp
     {
         // Deleta a variável temporária
         $randomNameVar = strtolower(Str::random(6));
-        $page->evaluate("window.WAPIWU.addInputFile('$randomNameVar');");
+        $page->evaluate("window.WUAPI.addInputFile('$randomNameVar');");
 
         // Pega o body 
         $body = $page->getDocument()['result']['root']['children'][1]['children'][1];

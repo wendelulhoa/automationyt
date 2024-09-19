@@ -30,7 +30,8 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::cl
             Route::post('/getallgroups', [GroupController::class, 'getAllGroups'])->name('wapiwu.group.getallgroups');
             Route::post('/findgroupinfo', [GroupController::class, 'findGroupInfo'])->name('wapiwu.group.findgroupinfo');
             Route::get('/group-invite-link/{groupId}', [GroupController::class, 'getGroupInviteLink'])->name('wapiwu.group.getgroupinvitelink');
-           
+            Route::get('/group-info-from-invite-link', [GroupController::class, 'getGroupInfoFromInviteCode'])->name('wapiwu.group.getgroupinfofrominvitecode');
+            
             // Alterar dados do grupo
             Route::put('/setgroupsubject', [GroupController::class, 'setGroupSubject'])->name('wapiwu.group.setgroupsubject');
             Route::put('/setgroupdescription', [GroupController::class, 'setGroupDescription'])->name('wapiwu.group.setgroupdescription');

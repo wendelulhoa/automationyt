@@ -31,14 +31,14 @@ class CommunityWhatsapp
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
             
             // Seta o text temporário
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$subject`);");
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.createCommunity(localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.createCommunity(localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");

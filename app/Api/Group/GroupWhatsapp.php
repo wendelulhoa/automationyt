@@ -31,14 +31,14 @@ class GroupWhatsapp
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
             
             // Seta o text temporário
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$subject`);");
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.createGroup(localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.createGroup(localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
@@ -61,10 +61,10 @@ class GroupWhatsapp
     {
         try {
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.getAllGroups();")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.getAllGroups();")['result']['result']['value'];
 
             foreach (($content['groups'] ?? []) as $key => $group) {
                 // Seta que não é comunidade
@@ -109,10 +109,10 @@ class GroupWhatsapp
             $groupId = $this->getWhatsappGroupId($groupId, false, true);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.setGroupProperty('$groupId', '$property', $active)")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.setGroupProperty('$groupId', '$property', $active)")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -140,14 +140,14 @@ class GroupWhatsapp
             $groupId = $this->getWhatsappGroupId($groupId, true, true);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
             
             // Seta o text temporário
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$subject`);");
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.setGroupSubject('$groupId', localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.setGroupSubject('$groupId', localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
@@ -178,14 +178,14 @@ class GroupWhatsapp
             $groupId = $this->getWhatsappGroupId($groupId, true, true);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
             
             // Seta o text temporário
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$description`);");
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.setGroupDescription('$groupId', localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.setGroupDescription('$groupId', localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
@@ -209,13 +209,13 @@ class GroupWhatsapp
     {
         try {
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
             
             // Formata o groupId
             $groupId = $this->getWhatsappGroupId($groupId, true, true);
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.getGroupInviteLink('$groupId');")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.getGroupInviteLink('$groupId');")['result']['result']['value'];
 
             // Retorna a resposta JSON com os grupos obtidos
             return ['success' => $content['success'], 'message' => $content['message'], 'link' => $content['link']];
@@ -242,10 +242,10 @@ class GroupWhatsapp
             usleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Verifica a conexão
-            $content = $page->evaluate("window.WAPIWU.findGroupInfo('{$groupId}');")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.findGroupInfo('{$groupId}');")['result']['result']['value'];
 
             // Se tem o parentGroup então é uma comunidade.
             if(isset($content['metadata']['parentGroup'])) {
@@ -282,10 +282,10 @@ class GroupWhatsapp
             [$groupId, $number] = [$this->getWhatsappGroupId($groupId, true, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.promoteParticipants('$groupId', '$number', $isCommunity);")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.promoteParticipants('$groupId', '$number', $isCommunity);")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -316,10 +316,10 @@ class GroupWhatsapp
             [$groupId, $number] = [$this->getWhatsappGroupId($groupId, true, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.demoteParticipants('$groupId', '$number', $isCommunity);")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.demoteParticipants('$groupId', '$number', $isCommunity);")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -347,10 +347,10 @@ class GroupWhatsapp
             [$groupId, $number] = [$this->getWhatsappGroupId($groupId, false, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.addParticipant('$groupId', '$number');")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.addParticipant('$groupId', '$number');")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -379,10 +379,10 @@ class GroupWhatsapp
             [$groupId, $number] = [$this->getWhatsappGroupId($groupId, true, true), $this->removeNineDigit($number)];
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WAPIWU.removeParticipant('$groupId', '$number');")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.removeParticipant('$groupId', '$number');")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -410,7 +410,7 @@ class GroupWhatsapp
             $groupId = $this->getWhatsappGroupId($groupId, true, true);
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WAPIWU');
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
@@ -422,11 +422,41 @@ class GroupWhatsapp
             $page->setFileInput($backendNodeId, "/storage/$fileName");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WAPIWU.changeGroupPhoto(\"$groupId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.changeGroupPhoto(\"$groupId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
 
             // Deleta a variável temporária e o input file
-            $page->evaluate("window.WAPIWU.removeInputFile('$nameFileInput');");
+            $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
 
+            return $content;
+        } catch (\Throwable $th) {
+            return ['success' => false, 'message' => $th->getMessage()];
+        }
+    }
+
+    /**
+     * Busca informações de um grupo a partir de um inviteCode
+     *
+     * @param string $sessionId  = Id da sessão
+     * @param string $inviteCode = InviteCode
+     * 
+     * @return array
+     */
+    public function getGroupInfoFromInviteCode(string $sessionId, string $inviteCode): array
+    {
+        try {
+            // Seta um tempo de espera
+            usleep($this->sleepTime);
+
+            // Pega o inviteCode
+            $inviteCode = $this->getWhatsappGroupId($inviteCode, false, true);
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+
+            // Seta os grupos
+            $content = $page->evaluate("window.WUAPI.getGroupInfoFromInviteCode('$inviteCode');")['result']['result']['value'];
+
+            // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
         } catch (\Throwable $th) {
             return ['success' => false, 'message' => $th->getMessage()];
