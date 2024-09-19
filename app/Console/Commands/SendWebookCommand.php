@@ -91,9 +91,6 @@ class SendWebookCommand extends Command
                     // Adiciona o prefixo base64 correto, incluindo o tipo MIME
                     cache()->put($id, $id, now()->addMinutes(5));
 
-                    // Seta o log de inicio
-                    Log::channel('daily')->info("Evento:", $event);
-
                     // Sempre reseta os paramêtros
                     $params = [];
 
@@ -109,7 +106,10 @@ class SendWebookCommand extends Command
                     // Monta os paramêtros do webhook
                     if(!in_array($event['id']['remote']['user'], ['status'])) {
                         // Faz o envio do webhook
-                        $response = Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
+                        Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
+
+                        // Seta o log de inicio
+                        Log::channel('daily')->info("Enviou o webhook: {$params['action']}, Instância: {$sessionId}, evento:", $event);
                     }
                 } catch (\Throwable $th) {
                     Log::channel('daily')->error("Erro webhook: {$th->getMessage()}");
