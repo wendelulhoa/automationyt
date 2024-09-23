@@ -215,7 +215,7 @@ Class Browser {
                 --no-sandbox \
                 --lang=pt-BR \
                 --no-first-run \
-                --window-size=1920,1080 \
+                --window-size=1366,720 \
                 --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,UseDBus \
                 --disable-background-networking \
                 --disable-domain-reliability \
@@ -227,6 +227,8 @@ Class Browser {
                 --metrics-recording-only \
                 --disable-gl-drawing-for-tests \
                 --disable-web-security \
+                --mute-audio \
+                --disable-background-timer-throttling \
                 > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
                 echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";
