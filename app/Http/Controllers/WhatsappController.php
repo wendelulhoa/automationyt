@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class WhatsappController extends Controller
 {
@@ -23,6 +24,11 @@ class WhatsappController extends Controller
      public function getQrcode(string $sessionId)
      {
           try {
+               // Caso não exista faz uma desconexão.
+               if (!Cache::has("disconnect_$sessionId")) {
+                    // $this->disconnect($sessionId);
+               }
+
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
 
@@ -118,17 +124,25 @@ class WhatsappController extends Controller
      public function disconnect(string $sessionId): JsonResponse
      {
           try {
-               // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+               // Só desconecta se o browser estiver ativo
+               if((new Puppeteer)->browserIsActive($sessionId)) {
+                    // Cria uma nova página e navega até a URL
+                    $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+     
+                    // Verifica a conexão
+                    $page->evaluate("window.WUAPI.disconnect();");
+               }
 
-               // Verifica a conexão
-               $content = $page->evaluate("window.WUAPI.disconnect();")['result']['result']['value'];
-               
-               // Aguarde um momento para garantir que o processo foi finalizado
-               sleep(2);
+               // Adiciona no cache
+               Cache::remember("disconnect_$sessionId", now()->addMinutes(5), function () {
+                    return true;
+               });
+
+               // Caminho base.
+               $basePath = base_path();
 
                // Cria ou atualiza a instância
-               Instance::initInstance(['session_id' => $sessionId, 'token' => '', 'connected' => false]);
+               Instance::initInstance(['session_id' => $sessionId, 'connected' => false]);
 
                // Define o caminho do diretório público
                $publicPath = public_path('chrome-sessions');
@@ -137,34 +151,18 @@ class WhatsappController extends Controller
                if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
                     $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
 
-                    // Verifica se o processo está em execução
-                    $psOutput = shell_exec("ps -p $pid");
-                    $psArray = explode(" ", $psOutput);
-                    $psArray = array_values(array_filter($psArray, function($value) {
-                         return $value !== '';
-                    }));
-
-                    if (isset($psArray[4]) && $psArray[4] == $pid) {
-                         // Mata o processo se estiver em execução
-                         exec("kill $pid");
-                         // Aguarde um momento para garantir que o processo foi finalizado
-                         sleep(1);
-                    }
+                    // Mata o processo se estiver em execução
+                    shell_exec("kill $pid");
                }
 
-               // Exclui a pasta da sessão
-               exec("rm -rf $publicPath/chrome-sessions/{$sessionId}");
-               exec("chmod -R 777 $publicPath/chrome-sessions/");
-               exec("chown -R root:root $publicPath/chrome-sessions/");
-
-               // Define o status code da resposta
-               $statusCode = (bool) $content['success'] ? 200 : 400;
+               // Deleta a pasta da sessão
+               shell_exec("python3 $basePath/deleteSession.py $publicPath/{$sessionId}");
 
                // Retorna o resultado em JSON
                return response()->json([
-                    'success' => $content['success'],
-                    'message' => $content['message']
-               ], $statusCode);
+                    'success' => true,
+                    'message' => 'Desconectado com sucesso'
+               ], 200);
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha
                return response()->json([

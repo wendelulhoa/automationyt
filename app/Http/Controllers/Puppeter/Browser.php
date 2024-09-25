@@ -61,10 +61,10 @@ Class Browser {
     public function getUrlSocket(): string 
     {
         // Define o caminho do diretório público
-        $publicPath = public_path('');
+        $publicPath = public_path('chrome-sessions');
 
         // Pega o caminho do arquivo que contém a porta
-        $pathPort = "$publicPath/chrome-sessions/$this->sessionId/port.txt";
+        $pathPort = "$publicPath/{$this->sessionId}/port.txt";
 
         // Cria os diretórios caso não existam
         if (!file_exists($pathPort)) {
@@ -215,7 +215,7 @@ Class Browser {
                 --no-sandbox \
                 --lang=pt-BR \
                 --no-first-run \
-                --window-size=1366,720 \
+                --window-size=800,600 \
                 --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,UseDBus \
                 --disable-background-networking \
                 --disable-domain-reliability \
