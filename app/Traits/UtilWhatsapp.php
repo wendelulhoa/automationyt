@@ -123,6 +123,7 @@ trait UtilWhatsapp
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx', // Adicionado mimetype de xlsx
             'image/webp' => 'webp', // Adicionado mimetype de webp
             'text/plain' => 'txt',
+            'text/csv' => 'csv',
         ];
 
         return $mimeTypes[$mimeType] ?? 'bin';

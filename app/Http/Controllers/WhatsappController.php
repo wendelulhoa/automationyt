@@ -128,13 +128,13 @@ class WhatsappController extends Controller
                if((new Puppeteer)->browserIsActive($sessionId)) {
                     // Cria uma nova página e navega até a URL
                     $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-     
+
                     // Verifica a conexão
                     $page->evaluate("window.WUAPI.disconnect();");
                }
 
                // Adiciona no cache
-               Cache::remember("disconnect_$sessionId", now()->addMinutes(5), function () {
+               Cache::remember("disconnect_$sessionId", now()->addMinutes(2), function () {
                     return true;
                });
 

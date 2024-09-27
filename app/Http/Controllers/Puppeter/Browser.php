@@ -237,23 +237,12 @@ Class Browser {
             if (file_exists("$pathPids/chrome-{$this->sessionId}.pid")) {
                 $pid = file_get_contents("$pathPids/chrome-{$this->sessionId}.pid");
 
-                // Verifica se o processo está em execução
-                $psOutput = shell_exec("ps -p $pid");
-                $psArray = explode(" ", $psOutput);
-                $psArray = array_values(array_filter($psArray, function($value) {
-                    return $value !== '';
-                }));
-
-                if (isset($psArray[4]) && $psArray[4] == $pid) {
-                    // Mata o processo se estiver em execução
-                    exec("kill $pid");
-                    // Aguarde um momento para garantir que o processo foi finalizado
-                    sleep(1);
-                }
+                // Mata o processo se estiver em execução
+                shell_exec("kill $pid");
             }
 
             // Sobe o navegador
-            exec($command);
+            shell_exec($command);
 
             return true;
         } catch (\Throwable $th) {
