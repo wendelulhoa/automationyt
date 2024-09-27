@@ -202,10 +202,6 @@ Class Page {
      * @return array
      */
     public function clearCache() {
-        $this->connection()->connWebSocket([
-            'id' => 1,
-            'method' => 'Network.clearBrowserCache',
-        ]);
         
         $this->connection()->connWebSocket([
             'id' => 1,

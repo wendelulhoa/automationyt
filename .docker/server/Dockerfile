@@ -22,6 +22,7 @@ RUN apt update -y && \
       imagemagick \
       git \
       lsof \
+      xvfb \
       gnupg \
       software-properties-common \
       bash-completion \

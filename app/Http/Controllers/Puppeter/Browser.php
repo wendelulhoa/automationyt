@@ -203,7 +203,7 @@ Class Browser {
 
             // Comando para iniciar o navegador
             $command = "
-               nohup google-chrome --headless \
+               google-chrome --headless \
                 --disable-gpu \
                 --disable-software-rasterizer \
                 --disable-cache \

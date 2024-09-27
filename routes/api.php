@@ -60,6 +60,7 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::cl
             Route::post('/send-poll', [MessageController::class, 'sendPoll']);
             Route::post('/send-vcard', [MessageController::class, 'sendVcard']);
             Route::post('/send-audio', [MessageController::class, 'sendAudio']);
+            Route::post('/send-event', [MessageController::class, 'sendEvent']);
             Route::delete('/delete', [MessageController::class, 'deleteMessage']);
         });
     });

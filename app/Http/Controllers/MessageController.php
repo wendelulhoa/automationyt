@@ -185,4 +185,29 @@ class MessageController extends Controller
             return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
         }
     }
+
+    /**
+     * Envia um evento
+     *
+     * @param Request $request
+     * @param string $sessionId
+     * 
+     * @return JsonResponse
+     */
+    public function sendEvent(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $params = $request->validate([
+                'chatId'  => 'required|string',
+                'options' => 'required|array',
+            ]);
+
+            // Faz o envio da mensagem
+            $content = (new MessageWhatsapp)->sendEvent($sessionId, $params['chatId'], $params['options']);
+
+            return response()->json($content, ((bool) $content['success'] ? 200 : 400));
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
+        }
+    }
 }

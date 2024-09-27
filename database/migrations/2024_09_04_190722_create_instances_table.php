@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('instances', function (Blueprint $table) {
             $table->id();
-            $table->string('token')->unique()->comment('Token de autenticação');
+            $table->string('token')->unique()->nullable()->comment('Token de autenticação');
             $table->string('session_id')->unique()->comment('ID da sessão'); 
             $table->boolean('webhook')->default(false)->comment('Webhook ativo');
             $table->boolean('connected')->default(false)->comment('Está conectado?');

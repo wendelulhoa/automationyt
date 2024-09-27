@@ -292,4 +292,41 @@ class MessageWhatsapp {
             return ['success' => false, 'message' => $th->getMessage()];
         }
     }
+
+    /**
+     * Envia um evento
+     *
+     * @param string $sessionId = Id da sessão
+     * @param string $chatId    = Id do chat
+     * @param array  $options   = Opções
+     * 
+     * @return array
+     */
+    public function sendEvent(string $sessionId, string $chatId, array $options): array
+    {
+        try {
+            // Pega o chatId
+            $chatId = $this->getWhatsappGroupId($chatId, false, true);
+
+            // Seta um tempo de espera
+            usleep($this->sleepTime);
+
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+
+            // Seta o options temporário
+            $randomNameVarOptions = strtolower(Str::random(6));
+            $page->evaluate("localStorage.setItem('$randomNameVarOptions', `" . json_encode($options) . "`);");
+
+            // Executa o script no navegador
+            $content = $page->evaluate("window.WUAPI.sendMsgEvent('$chatId', JSON.parse(localStorage.getItem('$randomNameVarOptions')));")['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVarOptions`);");
+
+            return $content;
+        } catch (\Throwable $th) {
+            return ['success' => false, 'message' => $th->getMessage()];
+        }
+    }
 }

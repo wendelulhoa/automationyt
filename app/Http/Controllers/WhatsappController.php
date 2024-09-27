@@ -24,13 +24,11 @@ class WhatsappController extends Controller
      public function getQrcode(string $sessionId)
      {
           try {
-               // Caso não exista faz uma desconexão.
-               if (!Cache::has("disconnect_$sessionId")) {
-                    // $this->disconnect($sessionId);
-               }
-
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
+
+               // Limpa o cache
+               $page->clearCache();
 
                // Pega o qrcode
                $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
@@ -131,6 +129,7 @@ class WhatsappController extends Controller
 
                     // Verifica a conexão
                     $page->evaluate("window.WUAPI.disconnect();");
+                    sleep(2);
                }
 
                // Adiciona no cache
