@@ -24,6 +24,10 @@ class WhatsappController extends Controller
      public function getQrcode(string $sessionId)
      {
           try {
+               // Faz a desconexão caso já esteja conectado
+               $this->disconnect($sessionId);
+               sleep(1);
+
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
 
@@ -151,7 +155,7 @@ class WhatsappController extends Controller
                     $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
 
                     // Mata o processo se estiver em execução
-                    shell_exec("kill $pid");
+                    shell_exec("$basePath/stop_instance.sh $pid");
                }
 
                // Deleta a pasta da sessão

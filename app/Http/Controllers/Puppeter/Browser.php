@@ -173,6 +173,9 @@ Class Browser {
             $pathPids = "$publicPath/{$this->sessionId}/pids";
             $pathPort = "$publicPath/{$this->sessionId}/port.txt";
 
+            // Caminho base.
+            $basePath = base_path();
+
             // Cria os diretórios caso não existam
             if (!file_exists($pathLogs)) {
                 mkdir($pathLogs, 0777, true);
@@ -238,7 +241,7 @@ Class Browser {
                 $pid = file_get_contents("$pathPids/chrome-{$this->sessionId}.pid");
 
                 // Mata o processo se estiver em execução
-                shell_exec("kill $pid");
+                shell_exec("$basePath/stop_instance.sh $pid");
             }
 
             // Sobe o navegador
