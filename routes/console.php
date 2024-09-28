@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\CheckInstancesCommand;
+use App\Console\Commands\RecoveryInstancesCommand;
 use App\Console\Commands\RemoveFilesSendCommand;
 use App\Console\Commands\SendWebookCommand;
 use Illuminate\Support\Facades\Schedule;
@@ -13,3 +14,6 @@ Schedule::command(RemoveFilesSendCommand::class)->everyFiveSeconds();
 
 // Envia os webhooks a cada 1 minuto
 Schedule::command(SendWebookCommand::class)->everyFiveSeconds();
+
+// Recupera as instâncias que estão com problemas
+Schedule::command(RecoveryInstancesCommand::class)->everyFiveSeconds();
