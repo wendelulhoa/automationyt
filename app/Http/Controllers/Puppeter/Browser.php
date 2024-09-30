@@ -232,6 +232,19 @@ Class Browser {
                 --disable-web-security \
                 --mute-audio \
                 --disable-background-timer-throttling \
+                --aggressive-cache-discard \
+                --disable-application-cache \
+                --disable-offline-load-stale-cache \
+                --disk-cache-size=0 \
+                --disable-default-apps \
+                --disable-extensions \
+                --disable-sync \
+                --disable-translate \
+                --hide-scrollbars \
+                --safebrowsing-disable-auto-update \
+                --ignore-certificate-errors \
+                --ignore-ssl-errors \
+                --ignore-certificate-errors-spki-list
                 > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
                 echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";

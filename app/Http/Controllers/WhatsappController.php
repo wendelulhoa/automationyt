@@ -35,7 +35,7 @@ class WhatsappController extends Controller
                     $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
 
                     // Mata o processo se estiver em execução
-                    shell_exec("$basePath/stop_instance.sh $pid");
+                    shell_exec("$basePath/recovery_instance.sh $sessionId");
                     shell_exec("chmod -R 777 $publicPath/{$sessionId}/userdata/");
                     sleep(2);
                }

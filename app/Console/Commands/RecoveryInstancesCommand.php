@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Instance;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class RecoveryInstancesCommand extends Command
 {
@@ -34,6 +35,9 @@ class RecoveryInstancesCommand extends Command
 
         // Define o caminho do diretório público
         $publicPath = public_path('chrome-sessions');
+        
+        // Log de informação.
+        // Log::channel('daily')->info('Resolvendo problemas de permissão');
 
         foreach ($instances as $sessionId) {
             shell_exec("$basePath/recovery_instance.sh $sessionId");
