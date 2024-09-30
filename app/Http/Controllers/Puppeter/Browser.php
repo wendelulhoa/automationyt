@@ -206,6 +206,7 @@ Class Browser {
 
             // Comando para iniciar o navegador
             $command = "
+               Xvfb :$port -screen $port 1280x720x24 & DISPLAY=:$port
                google-chrome --headless \
                 --disable-gpu \
                 --disable-software-rasterizer \
@@ -244,7 +245,7 @@ Class Browser {
                 --safebrowsing-disable-auto-update \
                 --ignore-certificate-errors \
                 --ignore-ssl-errors \
-                --ignore-certificate-errors-spki-list
+                --ignore-certificate-errors-spki-list \
                 > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
                 echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";

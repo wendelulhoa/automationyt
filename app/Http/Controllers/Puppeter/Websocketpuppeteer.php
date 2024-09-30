@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Puppeter;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Ratchet\Client\Connector;
 use React\EventLoop\Loop;
 
