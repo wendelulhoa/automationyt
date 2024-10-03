@@ -7,7 +7,7 @@ use App\Console\Commands\SendWebookCommand;
 use Illuminate\Support\Facades\Schedule;
 
 // Registra os comando de console
-Schedule::command(CheckInstancesCommand::class)->everyFourMinutes();
+// Schedule::command(CheckInstancesCommand::class)->everyFourMinutes();
 
 // Remove os arquivos desnecessarios
 Schedule::command(RemoveFilesSendCommand::class)->everyFiveSeconds();

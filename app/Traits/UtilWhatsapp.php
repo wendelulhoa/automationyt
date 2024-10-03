@@ -29,7 +29,7 @@ trait UtilWhatsapp
         }
 
         // Verificar se o arquivo já foi enviado anteriormente
-        if(empty($fileSend)) {
+        if(!empty($fileSend)) {
             // Baixar o conteúdo do arquivo
             $fileContent = file_get_contents($path);
     
@@ -124,6 +124,7 @@ trait UtilWhatsapp
             'image/webp' => 'webp', // Adicionado mimetype de webp
             'text/plain' => 'txt',
             'text/csv' => 'csv',
+            'video/quicktime' => 'mov',
         ];
 
         return $mimeTypes[$mimeType] ?? 'bin';

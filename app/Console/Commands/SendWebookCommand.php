@@ -67,7 +67,7 @@ class SendWebookCommand extends Command
         $instances = Instance::where(['connected' => true])->get();
         
         // Seta o log de inicio
-        Log::channel('daily')->info("Começou o envio de webhook");
+        // Log::channel('daily')->info("Começou o envio de webhook");
 
         foreach ($instances as $instance) {
             // Extrai o nome da sessão

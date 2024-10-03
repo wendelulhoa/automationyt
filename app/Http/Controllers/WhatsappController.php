@@ -32,8 +32,6 @@ class WhatsappController extends Controller
 
                // Caso tenha um processo em execução, mata o processo
                if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
-                    $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
-
                     // Mata o processo se estiver em execução
                     shell_exec("$basePath/recovery_instance.sh $sessionId");
                     shell_exec("chmod -R 777 $publicPath/{$sessionId}/userdata/");
