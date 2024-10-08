@@ -22,15 +22,13 @@ git config --system --add safe.directory /var/www/html/wuapi
 git config --system user.name "$GITNAME"
 git config --system user.email "$GITEMAIL"
 
-exec /usr/sbin/apache2ctl -D FOREGROUND
-
-mkdir /.local
+mkdir -p /.local
 cd /.local/
 chmod -R 777 ./
 
-mkdir /storage
+mkdir -p /storage
 cd /storage/
 chmod -R 777 ./
 
-## Inicia o crontab
-/bin/php /var/www/html/wuapi/artisan schedule:work >> /dev/null 2>&1
+## Iniciar o Supervisor
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

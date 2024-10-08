@@ -7,25 +7,21 @@ RUN apt update -y && \
     apt upgrade -y && \
     apt install -y \
       nano \
-      vim \
-      alien \
       libaio1 \
       wget \
       cron \
       telnet \
-      openvpn \
       brotli \
       apache2 \
       curl \
       iputils-ping \
-      libmagickwand-dev \
-      imagemagick \
       git \
       lsof \
       xvfb \
       gnupg \
       software-properties-common \
       bash-completion \
+      supervisor \
       && rm -rf /var/lib/apt/lists/*
 
 # Adicionar repositório do Google Chrome e instalar o Chrome
@@ -85,16 +81,6 @@ RUN curl -sS https://getcomposer.org/installer | php && \
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
     apt install -y nodejs
 
-# Instalar e configurar Imagick
-RUN git clone https://github.com/Imagick/imagick.git && \
-    cd imagick && \
-    phpize && \
-    ./configure && \
-    make && \
-    make install && \
-    cd .. && \
-    rm -rf imagick
-
 # Configuração do Apache
 RUN a2enmod rewrite && \
     phpenmod mbstring && \
@@ -116,9 +102,6 @@ RUN useradd -G www-data,root -u $WWWGROUP -d /home/$WWWUSER $WWWUSER && \
     chown -R $WWWUSER:root /home/$WWWUSER && \
     usermod -aG sudo $WWWUSER
 
-# Configuração do cron
-COPY --chown=www-data:www-data --chmod=644 cron/scheduler /etc/cron.d/scheduler
-
 # Criar a pasta /storage e definir permissões
 RUN mkdir -p /storage && chmod 777 /storage
 RUN mkdir -p /.local && chmod 777 /.local
@@ -126,6 +109,10 @@ RUN mkdir -p /.local && chmod 777 /.local
 # Copiar o script de inicialização e configurar permissões
 COPY start-container /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container
+
+# Configuração do cron
+COPY --chown=www-data:www-data supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY --chown=www-data:www-data --chmod=644 cron/scheduler /etc/cron.d/scheduler
 
 ## Scheduler no cron
 RUN crontab /etc/cron.d/scheduler

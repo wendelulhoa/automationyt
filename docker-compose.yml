@@ -13,12 +13,6 @@ services:
             - mysql_data:/var/lib/mysql
         networks:
             - dev-wuapi
-
-    redis:
-        image: redis:latest
-        container_name: redis-wuapi
-        networks:
-            - dev-wuapi
     web:
         depends_on:
             - db-mysql
@@ -46,7 +40,7 @@ services:
             - NET_ADMIN
         links:
             - db-mysql
-        command: npm install && npm start
+        command: /usr/sbin/cron -f
 
 networks:
     dev-wuapi:
