@@ -163,6 +163,7 @@ class WhatsappController extends Controller
 
                     // Mata o processo se estiver em execução
                     shell_exec("$basePath/stop_instance.sh $pid");
+                    shell_exec("ps aux | grep $sessionId | grep -v grep | awk '{print $2}' | xargs kill -9");
                }
 
                // Deleta a pasta da sessão
