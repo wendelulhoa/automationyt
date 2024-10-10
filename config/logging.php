@@ -73,6 +73,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'whatsapp-message' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/whatsappmessages/laravel.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_DAILY_DAYS', 7),
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

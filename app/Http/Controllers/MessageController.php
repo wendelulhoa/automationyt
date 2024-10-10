@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Api\Message\MessageWhatsapp;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
@@ -27,6 +28,9 @@ class MessageController extends Controller
 
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->sendText($sessionId, $params['chatId'], $params['text'], (bool) ($params['mention'] ?? 0));
+
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("sendText: Enviou a mensagem para {$params['chatId']}", $content);
 
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
@@ -54,6 +58,9 @@ class MessageController extends Controller
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->sendLinkPreview($sessionId, $params['chatId'], $params['text'] ?? '', $params['link']);
 
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("sendLinkPreview: Enviou a mensagem para {$params['chatId']}", $content);
+
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
@@ -78,6 +85,9 @@ class MessageController extends Controller
 
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->sendVcard($sessionId, $params['chatId'], $params['title'], $params['contact']);
+
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("sendVcard: Enviou a mensagem para {$params['chatId']}", $content);
 
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
@@ -105,6 +115,9 @@ class MessageController extends Controller
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->sendFile($sessionId, $params['chatId'], $params['caption'], $params['path']);
 
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("sendFile: Enviou a mensagem para {$params['chatId']}", $content);
+
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage(), 'response' => $response ?? null], 400);
@@ -129,6 +142,9 @@ class MessageController extends Controller
 
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->sendAudio($sessionId, $params['chatId'], $params['path']);
+
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("sendAudio: Enviou a mensagem para {$params['chatId']}", $content);
 
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
@@ -155,6 +171,9 @@ class MessageController extends Controller
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->sendPoll($sessionId, $params['chatId'], $params['poll']);
 
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("sendPoll: Enviou a mensagem para {$params['chatId']}", $content);
+
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
@@ -180,6 +199,9 @@ class MessageController extends Controller
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->deleteMessage($sessionId, $params['chatId'], $params['messageId']);
 
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("deleteMessage: Deletou a mensagem {$params['messageId']} no grupo {$params['chatId']}", $content);
+
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
@@ -204,6 +226,9 @@ class MessageController extends Controller
 
             // Faz o envio da mensagem
             $content = (new MessageWhatsapp)->sendEvent($sessionId, $params['chatId'], $params['options']);
+
+            // Gera o log de envio de mensagem
+            Log::channel('whatsapp-message')->info("sendEvent: Enviou a mensagem para {$params['chatId']}", $content);
 
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
