@@ -112,10 +112,10 @@ class SendWebookCommand extends Command
                         Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
 
                         // Seta o log de inicio
-                        Log::channel('daily')->info("Enviou o webhook: {$params['action']}, Instância: {$sessionId}, evento:", $event);
+                        Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Instância: {$sessionId}, evento:", $event);
                     }
                 } catch (\Throwable $th) {
-                    Log::channel('daily')->error("Erro webhook: {$th->getMessage()}");
+                    Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}");
                 }
             }
         }
