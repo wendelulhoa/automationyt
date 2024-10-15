@@ -6,6 +6,7 @@ use App\Http\Controllers\Puppeter\Page;
 use App\Models\Filesend;
 use finfo;
 use Illuminate\Support\Str;
+use Intervention\Image\Laravel\Facades\Image;
 
 trait UtilWhatsapp
 {
@@ -57,11 +58,27 @@ trait UtilWhatsapp
                 'forget_in' => now()->addMinutes(120)
             ]);
 
-            // Salva o arquivo na raiz do container
-            file_put_contents("/storage/$fileName", $fileContent);
+            // Verificar se o arquivo é uma imagem e realiza a conversão
+            if(in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'])) {
+                // Salvar a imagem no disco
+                $image = Image::read($fileContent);
+                $fileName = "$randomFileName.png";
 
-            // Define as permissões para 777
-            chmod("/storage/$fileName", 0777);
+                // Salva o arquivo na raiz do container
+                $image->toPng()->save("/storage/$fileName");
+
+                // Define as permissões para 777
+                chmod("/storage/$fileName", 0777);
+            } 
+
+            // Salva sem conversão
+            else {
+                // Salva o arquivo na raiz do container
+                file_put_contents("/storage/$fileName", $fileContent);
+    
+                // Define as permissões para 777
+                chmod("/storage/$fileName", 0777);
+            }
         }
 
         return $fileName;

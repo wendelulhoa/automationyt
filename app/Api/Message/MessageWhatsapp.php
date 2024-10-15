@@ -160,7 +160,7 @@ class MessageWhatsapp {
             $page->setFileInput($backendNodeId, "/storage/$fileName");
 
             // Executa o script no navegador
-            $content   = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");")['result']['result']['value'];
 
             // Deleta a variável temporária e o input file
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
