@@ -30,7 +30,7 @@ trait UtilWhatsapp
         }
 
         // Verificar se o arquivo já foi enviado anteriormente
-        if(empty($fileSend)) {
+        if(empty($fileSend) || empty($fileName)) {
             // Baixar o conteúdo do arquivo
             $fileContent = file_get_contents($path);
     
