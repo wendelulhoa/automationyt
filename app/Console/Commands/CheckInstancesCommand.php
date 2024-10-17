@@ -34,10 +34,14 @@ class CheckInstancesCommand extends Command
 
         // Sobe as instâncias via url com o checkconnection
         foreach ($instances as $instance) {
-            Http::withHeaders([
-                'Authorization' => env('API_KEY'),
-                'api-key' => $instance->token
-            ])->get(route('wapiwu.checkconnection', ['sessionId' => $instance->session_id]));
+            try {
+                Http::withHeaders([
+                    'Authorization' => env('API_KEY'),
+                    'api-key' => $instance->token
+                ])->get(route('wapiwu.checkconnection', ['sessionId' => $instance->session_id]));
+            } catch (\Throwable $th) {
+                Log::channel('daily')->error('Erro ao verificar instância: ' . $instance->id . ' - ' . $th->getMessage());
+            }
         }
     }
 }
