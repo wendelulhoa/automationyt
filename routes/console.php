@@ -10,10 +10,10 @@ use Illuminate\Support\Facades\Schedule;
 // Schedule::command(CheckInstancesCommand::class)->everyFourMinutes();
 
 // Remove os arquivos desnecessarios
-Schedule::command(RemoveFilesSendCommand::class)->everyFiveSeconds();
+Schedule::command(RemoveFilesSendCommand::class)->everyFiveMinutes()->withoutOverlapping();
 
-// Envia os webhooks a cada 1 minuto
-Schedule::command(SendWebookCommand::class)->everyFiveSeconds();
+// Envia os webhooks a cada 5s
+Schedule::command(SendWebookCommand::class)->everyFiveSeconds()->withoutOverlapping();
 
 // Recupera as instâncias que estão com problemas
-Schedule::command(RecoveryInstancesCommand::class)->everyFiveSeconds();
+Schedule::command(RecoveryInstancesCommand::class)->everyFiveSeconds()->withoutOverlapping();

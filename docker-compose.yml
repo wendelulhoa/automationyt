@@ -40,7 +40,18 @@ services:
             - NET_ADMIN
         links:
             - db-mysql
-        command: /usr/sbin/cron -f
+    
+    redis:
+        image: redis:latest
+        container_name: redis-wuapi
+        restart: always
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 3s
+            timeout: 2s
+            retries: 3
+        networks:
+            - dev-wuapi
 
 networks:
     dev-wuapi:
