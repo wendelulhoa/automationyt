@@ -74,7 +74,7 @@ class SendWebookCommand extends Command
             $sessionId = $instance->session_id;
 
             // Caso não for webhook não envia o webhook.
-            if(!$instance->webhook) continue;
+            // if(!$instance->webhook) continue;
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');

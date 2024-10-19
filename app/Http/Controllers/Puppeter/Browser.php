@@ -210,7 +210,6 @@ Class Browser {
                google-chrome --headless \
                 --disable-gpu \
                 --disable-software-rasterizer \
-                --disable-cache \
                 --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/$versionChrome Safari/537.36' \
                 --remote-debugging-port=$port \
                 --disable-dev-shm-usage \
@@ -219,12 +218,10 @@ Class Browser {
                 --no-sandbox \
                 --lang=pt-BR \
                 --no-first-run \
-                --window-size=800,600 \
                 --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,UseDBus \
                 --disable-background-networking \
                 --disable-domain-reliability \
                 --disable-renderer-backgrounding \
-                --disable-background-timer-throttling \
                 --disable-client-side-phishing-detection \
                 --disable-component-extensions-with-background-pages \
                 --disable-breakpad \
@@ -232,20 +229,15 @@ Class Browser {
                 --disable-gl-drawing-for-tests \
                 --disable-web-security \
                 --mute-audio \
-                --disable-background-timer-throttling \
-                --aggressive-cache-discard \
-                --disable-application-cache \
-                --disable-offline-load-stale-cache \
-                --disk-cache-size=0 \
                 --disable-default-apps \
                 --disable-extensions \
-                --disable-sync \
                 --disable-translate \
                 --hide-scrollbars \
                 --safebrowsing-disable-auto-update \
                 --ignore-certificate-errors \
                 --ignore-ssl-errors \
                 --ignore-certificate-errors-spki-list \
+                --js-flags='--max-old-space-size=8192' \
                 > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
                 echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";
