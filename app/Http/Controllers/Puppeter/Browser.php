@@ -206,7 +206,7 @@ Class Browser {
 
             // Comando para iniciar o navegador
             $command = "
-               Xvfb :$port -screen $port 1280x720x24 & DISPLAY=:$port
+               cpulimit -l 300 -- Xvfb :$port -screen $port 1280x720x24 & DISPLAY=:$port
                google-chrome --headless \
                 --disable-gpu \
                 --disable-cache \

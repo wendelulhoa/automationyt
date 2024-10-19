@@ -22,6 +22,7 @@ RUN apt update -y && \
       software-properties-common \
       bash-completion \
       supervisor \
+      cpulimit \
       && rm -rf /var/lib/apt/lists/*
 
 # Adicionar repositório do Google Chrome e instalar o Chrome
