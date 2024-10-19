@@ -40,7 +40,7 @@ class CheckInstancesCommand extends Command
                     'api-key' => $instance->token
                 ])->get(route('wapiwu.checkconnection', ['sessionId' => $instance->session_id]));
             } catch (\Throwable $th) {
-                Log::channel('daily')->error('Erro ao verificar instância: ' . $instance->id . ' - ' . $th->getMessage());
+                Log::channel('daily')->error('Erro ao verificar instância: ' . $instance->session_id . ' - ' . $th->getMessage());
             }
         }
     }
