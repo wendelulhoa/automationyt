@@ -209,6 +209,7 @@ Class Browser {
                Xvfb :$port -screen $port 1280x720x24 & DISPLAY=:$port
                google-chrome --headless \
                 --disable-gpu \
+                --disable-cache \
                 --disable-software-rasterizer \
                 --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/$versionChrome Safari/537.36' \
                 --remote-debugging-port=$port \
@@ -225,6 +226,10 @@ Class Browser {
                 --disable-client-side-phishing-detection \
                 --disable-component-extensions-with-background-pages \
                 --disable-breakpad \
+                --disable-application-cache \
+                --disable-offline-load-stale-cache \
+                --disk-cache-size=0 \
+                --disable-sync \
                 --metrics-recording-only \
                 --disable-gl-drawing-for-tests \
                 --disable-web-security \
@@ -237,7 +242,7 @@ Class Browser {
                 --ignore-certificate-errors \
                 --ignore-ssl-errors \
                 --ignore-certificate-errors-spki-list \
-                --js-flags='--max-old-space-size=8192' \
+                --js-flags='--max-old-space-size=4096' \
                 > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
                 echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";
