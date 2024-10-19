@@ -244,7 +244,7 @@ Class Browser {
                 --ignore-certificate-errors \
                 --ignore-ssl-errors \
                 --ignore-certificate-errors-spki-list \
-                --js-flags='--max-old-space-size=2048' \
+                --js-flags='--max-old-space-size=3072' \
                 > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
                 echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";
