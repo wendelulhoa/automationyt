@@ -226,6 +226,8 @@ Class Browser {
                 --disable-client-side-phishing-detection \
                 --disable-component-extensions-with-background-pages \
                 --disable-breakpad \
+                --disable-background-timer-throttling \
+                --aggressive-cache-discard \
                 --disable-application-cache \
                 --disable-offline-load-stale-cache \
                 --disk-cache-size=0 \
@@ -242,7 +244,7 @@ Class Browser {
                 --ignore-certificate-errors \
                 --ignore-ssl-errors \
                 --ignore-certificate-errors-spki-list \
-                --js-flags='--max-old-space-size=4096' \
+                --js-flags='--max-old-space-size=2048' \
                 > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
                 echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
             ";
