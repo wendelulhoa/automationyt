@@ -217,6 +217,7 @@ Class Browser {
                 --remote-allow-origins=* \
                 --user-data-dir='$pathData' \
                 --no-sandbox \
+                --window-size=800,600 \
                 --lang=pt-BR \
                 --no-first-run \
                 --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,UseDBus \
