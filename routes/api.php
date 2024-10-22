@@ -6,6 +6,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\WhatsappController;
 use App\Http\Middleware\VerifyInstanceToken;
 use App\Http\Middleware\VerifyServerToken;
+use App\Http\Middleware\CheckRebootInstance;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::class]], function() {
@@ -54,14 +55,14 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::cl
     
         // Envio de mensagens
         Route::group(['prefix' => 'message'], function() {
-            Route::any('/send-file', [MessageController::class, 'sendFile']);
-            Route::post('/send-text', [MessageController::class, 'sendText']);
-            Route::post('/send-linkpreview', [MessageController::class, 'sendLinkPreview']);
-            Route::post('/send-poll', [MessageController::class, 'sendPoll']);
-            Route::post('/send-vcard', [MessageController::class, 'sendVcard']);
-            Route::post('/send-audio', [MessageController::class, 'sendAudio']);
-            Route::post('/send-event', [MessageController::class, 'sendEvent']);
-            Route::delete('/delete', [MessageController::class, 'deleteMessage']);
+            Route::any('/send-file', [MessageController::class, 'sendFile'])->name('wapiwu.message.sendfile');
+            Route::post('/send-text', [MessageController::class, 'sendText'])->name('wapiwu.message.sendtext');
+            Route::post('/send-linkpreview', [MessageController::class, 'sendLinkPreview'])->name('wapiwu.message.sendlinkpreview');
+            Route::post('/send-poll', [MessageController::class, 'sendPoll'])->name('wapiwu.message.sendpoll');
+            Route::post('/send-vcard', [MessageController::class, 'sendVcard'])->name('wapiwu.message.sendvcard');
+            Route::post('/send-audio', [MessageController::class, 'sendAudio'])->name('wapiwu.message.sendaudio');
+            Route::post('/send-event', [MessageController::class, 'sendEvent'])->name('wapiwu.message.sendevent');
+            Route::delete('/delete', [MessageController::class, 'deleteMessage'])->name('wapiwu.message.deletemessage');
         });
     });
 
