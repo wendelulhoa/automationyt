@@ -103,6 +103,11 @@ class WhatsappController extends Controller
 
                // Verifica a conexão
                $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
+               
+               // Caso tenha erro recarrega a página
+               if(isset($content['error'])) {
+                    $page->reload();
+               }
 
                // Define o status code da resposta
                $statusCode = $content['success'] ? 200 : 500;
