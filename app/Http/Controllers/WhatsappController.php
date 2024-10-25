@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Puppeter\Puppeteer;
 use App\Models\Instance;
+use App\Traits\UtilWhatsapp;
 use Illuminate\Http\JsonResponse;
 use LaravelQRCode\Facades\QRCode;
 use Illuminate\Support\Facades\File;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Cache;
 
 class WhatsappController extends Controller
 {
+     use UtilWhatsapp;
+
      /**
       * Obtém o QR Code
       *
@@ -107,6 +110,11 @@ class WhatsappController extends Controller
                // Caso tenha erro recarrega a página
                if(isset($content['error'])) {
                     $page->reload();
+               }
+
+               // Caso dê erro, tenta reabrir o navegador
+               if($content['status'] == 'OPENING') {
+                    $this->reopenBrowser($sessionId);
                }
 
                // Define o status code da resposta

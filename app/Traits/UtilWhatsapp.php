@@ -3,8 +3,10 @@
 namespace App\Traits;
 
 use App\Http\Controllers\Puppeter\Page;
+use App\Http\Controllers\Puppeter\Puppeteer;
 use App\Models\Filesend;
 use finfo;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -203,5 +205,37 @@ trait UtilWhatsapp
         }
 
         return ($codeCountry == '55' ? $fullNumber : $fullNumber) . ($jid ? "@c.us" : "");
+    }
+
+    /**
+      * Reabre o navegador
+      *
+      * @param string $sessionId
+      *
+      * @return void
+      */
+    public function reopenBrowser(string $sessionId): void
+    {
+        try {
+            // Caminho base.
+            $basePath = base_path();
+
+            // Define o caminho do diretório público
+            $publicPath = public_path('chrome-sessions');
+
+            // Caso tenha um processo em execução, mata o processo
+            if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
+                    $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
+
+                    // Mata o processo se estiver em execução
+                    shell_exec("$basePath/stop_instance.sh $pid");
+                    shell_exec("ps aux | grep $sessionId | grep -v grep | awk '{print $2}' | xargs kill -9");
+            }
+
+            // Sobre o navegador novamente
+            (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Erro ao reabrir o browser: ". $th->getMessage());
+        }
     }
 }
