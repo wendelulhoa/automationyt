@@ -113,8 +113,13 @@ class WhatsappController extends Controller
                }
 
                // Caso dê erro, tenta reabrir o navegador
-               if($content['status'] == 'OPENING') {
-                    $this->reopenBrowser($sessionId);
+               if($content['status'] == 'OPENING' && !cache()->has("opening-{$sessionId}")) {
+                    // Adiciona no cache para verificar daqui 10m
+                    cache()->put("opening-{$sessionId}", "opening-{$sessionId}", now()->addMinutes(10));
+
+                    // Para a instância
+                    // $this->stopInstance($sessionId);
+                    $page->reload();
                }
 
                // Define o status code da resposta

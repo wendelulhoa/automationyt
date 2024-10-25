@@ -214,7 +214,7 @@ trait UtilWhatsapp
       *
       * @return void
       */
-    public function reopenBrowser(string $sessionId): void
+    public function stopInstance(string $sessionId): void
     {
         try {
             // Caminho base.
@@ -225,15 +225,12 @@ trait UtilWhatsapp
 
             // Caso tenha um processo em execução, mata o processo
             if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
-                    $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
+                $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
 
-                    // Mata o processo se estiver em execução
-                    shell_exec("$basePath/stop_instance.sh $pid");
-                    shell_exec("ps aux | grep $sessionId | grep -v grep | awk '{print $2}' | xargs kill -9");
+                // Mata o processo se estiver em execução
+                shell_exec("$basePath/stop_instance.sh $pid");
+                shell_exec("ps aux | grep $sessionId | grep -v grep | awk '{print $2}' | xargs kill -9");
             }
-
-            // Sobre o navegador novamente
-            (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
         } catch (\Throwable $th) {
             Log::channel('daily')->error("Erro ao reabrir o browser: ". $th->getMessage());
         }
