@@ -206,7 +206,7 @@ Class Browser {
 
             // Comando para iniciar o navegador
             $command = "
-               Xvfb :$port -screen $port 800x600x24 & DISPLAY=:$port
+               Xvfb :$port -screen $port 1280x720x24 & DISPLAY=:$port
                google-chrome --headless \
                 --disable-gpu \
                 --disable-cache \
@@ -217,7 +217,7 @@ Class Browser {
                 --remote-allow-origins=* \
                 --user-data-dir='$pathData' \
                 --no-sandbox \
-                --window-size=800,600 \
+                --window-size=1280,720 \
                 --lang=pt-BR \
                 --no-first-run \
                 --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,UseDBus \
