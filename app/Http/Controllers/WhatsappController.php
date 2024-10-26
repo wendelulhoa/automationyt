@@ -27,22 +27,17 @@ class WhatsappController extends Controller
      public function getQrcode(string $sessionId)
      {
           try {
-               // Caminho base.
-               $basePath = base_path();
-
-               // Define o caminho do diretório público
-               $publicPath = public_path('chrome-sessions');
-
-               // Caso tenha um processo em execução, mata o processo
-               if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
-                    // Mata o processo se estiver em execução
-                    shell_exec("$basePath/recovery_instance.sh $sessionId");
-                    shell_exec("chmod -R 777 $publicPath/{$sessionId}/userdata/");
-                    sleep(2);
-               }
-
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
+              
+               // Caso não tenha o cache faz o reload
+               if(!cache()->has("$sessionId-qrcode")) {
+                    $page->reload();
+                    sleep(4);
+               }
+               
+               // Adiciona o cache para impedir de ficar fzd reload.
+               cache()->put("$sessionId-qrcode", "$sessionId-qrcode", now()->addMinutes(2));
 
                // Pega o qrcode
                $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
