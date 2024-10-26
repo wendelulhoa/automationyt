@@ -211,7 +211,7 @@ Class Browser {
                 --disable-gpu \
                 --disable-cache \
                 --disable-software-rasterizer \
-                --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/$versionChrome Safari/537.36' \
+                --user-agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15' \
                 --remote-debugging-port=$port \
                 --disable-dev-shm-usage \
                 --remote-allow-origins=* \
