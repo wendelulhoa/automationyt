@@ -12,7 +12,7 @@ class MessageWhatsapp {
     /**
      * Tempo de espera 0,5s
      */
-    private $sleepTime = 500000;
+    private $sleepTime = 6;
 
     /**
      * Envia uma mensagem de texto
@@ -31,7 +31,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -69,7 +69,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -110,7 +110,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -141,7 +141,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -189,7 +189,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -231,7 +231,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Monta as opções
             $auxOptions = [];
@@ -279,7 +279,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -309,7 +309,7 @@ class MessageWhatsapp {
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
-            usleep($this->sleepTime);
+            sleep($this->sleepTime);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
