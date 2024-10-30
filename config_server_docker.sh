@@ -1,0 +1,67 @@
+# Definir WORKING_DIR como o diretório de trabalho atual
+WORKING_DIR=$(pwd)
+
+# Definir SCRIPT_PATH como o diretório onde o script está localizado
+SCRIPT_PATH="$WORKING_DIR/scripts-py"
+
+# Cria o volume de storage
+docker volume create storage-wuapi
+
+echo "SCRIPT_PATH: $SCRIPT_PATH"
+echo "WORKING_DIR: $WORKING_DIR"
+
+# Criar o arquivo de serviço systemd
+SERVICE_FILE_START_SESSION="/etc/systemd/system/start-instance-python.service"
+SERVICE_FILE_STOP_SESSION="/etc/systemd/system/stop-instance-python.service"
+
+echo "Criando o arquivo de serviço systemd em $SERVICE_FILE= $SCRIPT_PATH..."
+
+cat <<EOL | sudo tee $SERVICE_FILE_START_SESSION
+[Unit]
+Description=start-instance-python
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 "$SCRIPT_PATH/startInstance.py"
+WorkingDirectory=$WORKING_DIR
+Restart=always
+User=$(whoami)
+Group=$(whoami)
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+cat <<EOL | sudo tee $SERVICE_FILE_STOP_SESSION
+[Unit]
+Description=stop-instance-python
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 "$SCRIPT_PATH/stopInstance.py"
+WorkingDirectory=$WORKING_DIR
+Restart=always
+User=$(whoami)
+Group=$(whoami)
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# Habilitar e iniciar o serviço
+echo "Habilitando e iniciando o serviço..."
+
+# Recarregar os serviços do systemd
+sudo systemctl daemon-reload
+
+# Habilitar e iniciar os serviços
+sudo systemctl enable start-instance-python.service
+sudo systemctl start start-instance-python.service
+sudo systemctl enable stop-instance-python.service
+sudo systemctl start stop-instance-python.service
+
+# Verificar o status do serviço
+sudo systemctl status start-instance-python.service
+sudo systemctl status stop-instance-python.service

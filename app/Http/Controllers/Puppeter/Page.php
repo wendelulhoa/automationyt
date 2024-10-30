@@ -33,7 +33,6 @@ Class Page {
      */
     public function evaluate(string $expression, bool $recursive = false): array
     {
-        
         $result = $this->connection()->connWebSocket([
             'id' => 1,
             'method' => 'Runtime.evaluate',

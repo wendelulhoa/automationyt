@@ -32,17 +32,14 @@ class RecoveryInstancesCommand extends Command
 
         // Caminho base.
         $basePath = base_path();
-
-        // Define o caminho do diretório público
-        $publicPath = public_path('chrome-sessions');
         
         // Log de informação.
         // Log::channel('daily')->info('Resolvendo problemas de permissão');
 
         foreach ($instances as $sessionId) {
-            shell_exec("$basePath/recovery_instance.sh $sessionId");
+            shell_exec("$basePath/scripts-sh/recovery_instance.sh $sessionId");
 
-            shell_exec("chmod -R 777 $publicPath/{$sessionId}/userdata/");
+            shell_exec("chmod -R 777 $basePath/chrome-sessions/{$sessionId}/userdata/");
         }
     }
 }

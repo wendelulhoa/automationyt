@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Puppeter;
 use App\Http\Controllers\Puppeter\Websocketpuppeteer;
+use Dotenv\Dotenv;
 use Illuminate\Support\Facades\Http;
 
 Class Browser {
@@ -13,7 +14,11 @@ Class Browser {
      */
     private string $urlSocket;
 
-    //
+    /**
+     * URL dos containers de fora
+     *
+     * @var string
+     */
     private string $url = 'host.docker.internal';
 
     /**
@@ -64,29 +69,34 @@ Class Browser {
     public function getUrlSocket(): string 
     {
         // Define o caminho do diretório público
-        $publicPath = public_path('chrome-sessions');
+        $basePath = base_path('chrome-sessions');
 
         // Pega o caminho do arquivo que contém a porta
-        $pathPort = "$publicPath/{$this->sessionId}/port.txt";
+        $pathPort = "$basePath/{$this->sessionId}/.env";
 
         // Cria os diretórios caso não existam
         if (!file_exists($pathPort)) {
-            // $this->start();
+            $this->start();
         }
+
+        // Carrega o arquivo .env de um caminho específico
+        $dotenv = Dotenv::createImmutable("$basePath/{$this->sessionId}");
+
+        // Carrega apenas as variáveis sem sobrescrever o .env principal do Laravel
+        $vars = $dotenv->load();
 
         // Faz a requisição para obter a URL do socket
         $tries = 0;
         $response = null;
-        
+
         // Pega a porta do arquivo
-        $this->port = file_get_contents($pathPort);
+        $this->port = $vars['PORT'];
 
         while (true) {
             try {
                 // Faz a requisição para obter a URL do socket
                 $response = Http::get("{$this->url}:{$this->port}/json/version");
             } catch (\Throwable $th) {
-                dd($th);
                 $this->start();
                 sleep(1);
             }
@@ -168,105 +178,57 @@ Class Browser {
     public function start()
     {
         try {
-            dd('aqui');
-            // Define o caminho do diretório público
-            $publicPath = public_path('chrome-sessions');
-
-            exec("chmod -R 777 $publicPath/");
-            $pathData = "$publicPath/{$this->sessionId}/userdata";
-            $pathLogs = "$publicPath/{$this->sessionId}/logs";
-            $pathPids = "$publicPath/{$this->sessionId}/pids";
-            $pathPort = "$publicPath/{$this->sessionId}/port.txt";
-
             // Caminho base.
-            $basePath = base_path();
-
-            // Cria os diretórios caso não existam
-            if (!file_exists($pathLogs)) {
-                mkdir($pathLogs, 0777, true);
-            }
-            if (!file_exists($pathPids)) {
-                mkdir($pathPids, 0777, true);
-            }
+            $pathNewSession = base_path("sessions-configs/new_sessions");
 
             // Define uma porta e um número de display disponíveis
-            $port = $this->getAvailablePort();
-            $this->port = $port;
-
-            // Armazena a porta e o display em arquivos
-            file_put_contents($pathPort, $port);
-
-            exec("chmod -R 777 $publicPath/");
-            exec("chmod -R 777 $publicPath/{$this->sessionId}/");
-            exec("chown -R root:root $publicPath/");
-            exec("chmod -R 777 /root/.local");
-            
-            // Pega a versão instalada no momento
-            $versionChrome = explode(" ", shell_exec("google-chrome --version"))[2];
-
-            // Remove os dados do usuário que antes estavam em execução
-            exec("rm -rf $publicPath/{$this->sessionId}/userdata/SingletonLock");
-            exec("rm -rf $publicPath/{$this->sessionId}/userdata/SingletonSocket");
-            exec("rm -rf $publicPath/{$this->sessionId}/userdata/SingletonCookie");
-
-            // Comando para iniciar o navegador
-            $command = "
-               xvfb-run :$port -screen $port 1280x720x24 & DISPLAY=:$port
-               google-chrome --headless \
-                --disable-gpu \
-                --disable-cache \
-                --disable-software-rasterizer \
-                --user-agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15' \
-                --remote-debugging-port=$port \
-                --disable-dev-shm-usage \
-                --remote-allow-origins=* \
-                --user-data-dir='$pathData' \
-                --no-sandbox \
-                --window-size=1280,720 \
-                --lang=pt-BR \
-                --no-first-run \
-                --disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,UseDBus \
-                --disable-background-networking \
-                --disable-domain-reliability \
-                --disable-renderer-backgrounding \
-                --disable-client-side-phishing-detection \
-                --disable-component-extensions-with-background-pages \
-                --disable-breakpad \
-                --disable-background-timer-throttling \
-                --aggressive-cache-discard \
-                --disable-application-cache \
-                --disable-offline-load-stale-cache \
-                --disk-cache-size=0 \
-                --disable-sync \
-                --metrics-recording-only \
-                --disable-gl-drawing-for-tests \
-                --disable-web-security \
-                --mute-audio \
-                --disable-default-apps \
-                --disable-extensions \
-                --disable-translate \
-                --hide-scrollbars \
-                --safebrowsing-disable-auto-update \
-                --ignore-certificate-errors \
-                --ignore-ssl-errors \
-                --ignore-certificate-errors-spki-list \
-                > '$pathLogs/chrome-{$this->sessionId}.log' 2>&1 & \
-                echo $! > '$pathPids/chrome-{$this->sessionId}.pid'
-            ";
-
-            // Caso tenha um processo em execução, mata o processo
-            if (file_exists("$pathPids/chrome-{$this->sessionId}.pid")) {
-                $pid = file_get_contents("$pathPids/chrome-{$this->sessionId}.pid");
-
-                // Mata o processo se estiver em execução
-                shell_exec("$basePath/stop_instance.sh $pid");
+            if(!$this->port) {
+                $port = $this->getAvailablePort();
+                $this->port = $port;
             }
 
-            // Sobe o navegador
-            shell_exec($command);
+            // Cadastra para subir a instância
+            $newSession = [
+                'port' => $this->port,
+                'session_id' => $this->sessionId
+            ];
+
+            // Caso não tenha o cache faz o reload
+            $initSession = true;
+            if(cache()->has("{$this->sessionId}-startsession")) {
+                while($initSession) {
+                    $initSession = cache()->has("{$this->sessionId}-startsession");
+                    sleep(2);
+                }
+
+                // retorna true ao finalizar a inicialização
+                return true;
+            }
+
+            // Seta para criar a instância
+            file_put_contents("$pathNewSession/{$this->sessionId}.json", json_encode($newSession));
+            
+            // Adiciona o cache para impedir de ficar fzd reload.
+            cache()->put("{$this->sessionId}-startsession", "{$this->sessionId}-startsession", now()->addMinutes(2));
+
+            // Caso dê sucesso é pq já subiu
+            for ($i=0; $i <= 30; $i++) { 
+                try {
+                    // Faz a requisição para obter a URL do socket
+                    Http::get("{$this->url}:{$this->port}/json/version");
+                    break;
+                } catch (\Throwable $th) {}
+
+                // Espera 1s
+                sleep(1);
+            }
+            
+            // Exclui o cache de start
+            cache()->forget("{$this->sessionId}-startsession");
 
             return true;
         } catch (\Throwable $th) {
+            cache()->forget("{$this->sessionId}-startsession");
             return false;
         }
     }

@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\Http;
 class Puppeteer extends Controller
 {
     /**
+     * URL dos containers de fora
+     *
+     * @var string
+     */
+    private string $url = 'host.docker.internal';
+
+    /**
      * Inicializa o navegador
      *
      * @param string $sessionId
@@ -57,7 +64,7 @@ class Puppeteer extends Controller
     {
         try {
             // Define o caminho do diretório público
-            $publicPath = public_path('chrome-sessions');
+            $publicPath = base_path('chrome-sessions');
 
             // Pega o caminho do arquivo que contém a porta
             $pathPort = "$publicPath/$sessionId/port.txt";
@@ -76,7 +83,7 @@ class Puppeteer extends Controller
 
             try {
                 // Faz a requisição para obter a URL do socket
-                $response = Http::get("http://127.0.0.1:{$port}/json/version");
+                $response = Http::get("{$this->url}:{$port}/json/version");
                 $success  = $response->successful();
             } catch (\Throwable $th) {
                 $success = false;

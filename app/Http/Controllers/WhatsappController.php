@@ -147,40 +147,24 @@ class WhatsappController extends Controller
      {
           try {
                // Só desconecta se o browser estiver ativo
-               if((new Puppeteer)->browserIsActive($sessionId)) {
-                    // Cria uma nova página e navega até a URL
-                    $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-                    // Verifica a conexão
-                    $page->evaluate("window.WUAPI.disconnect();");
-                    sleep(2);
-               }
-
-               // Adiciona no cache
-               Cache::remember("disconnect_$sessionId", now()->addMinutes(2), function () {
-                    return true;
-               });
-
-               // Caminho base.
-               $basePath = base_path();
+               // Verifica a conexão
+               $page->evaluate("window.WUAPI.disconnect();");
 
                // Cria ou atualiza a instância
                Instance::initInstance(['session_id' => $sessionId, 'connected' => false]);
 
-               // Define o caminho do diretório público
-               $publicPath = public_path('chrome-sessions');
+               // Caminho base.
+               $pathStopSession = base_path("sessions-configs/stop_sessions");
 
-               // Caso tenha um processo em execução, mata o processo
-               if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
-                    $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
+               // Cadastra para parar a instância
+               $stopSession = [
+                    'session_id' => $sessionId
+               ];
 
-                    // Mata o processo se estiver em execução
-                    shell_exec("$basePath/stop_instance.sh $pid");
-                    shell_exec("ps aux | grep $sessionId | grep -v grep | awk '{print $2}' | xargs kill -9");
-               }
-
-               // Deleta a pasta da sessão
-               shell_exec("python3 $basePath/deleteSession.py $publicPath/{$sessionId}");
+               // Seta para parar a instância
+               file_put_contents("$pathStopSession/{$sessionId}.json", json_encode($stopSession));
 
                // Retorna o resultado em JSON
                return response()->json([
