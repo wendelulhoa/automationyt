@@ -37,7 +37,7 @@ class WhatsappController extends Controller
                }
                
                // Adiciona o cache para impedir de ficar fzd reload.
-               cache()->put("$sessionId-qrcode", "$sessionId-qrcode", now()->addMinutes(2));
+               cache()->put("$sessionId-qrcode", "$sessionId-qrcode", now()->addSeconds(30));
 
                // Pega o qrcode
                $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
