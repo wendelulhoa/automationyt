@@ -26,7 +26,7 @@ Class Browser {
      *
      * @var integer
      */
-    private int $port;
+    private int|null $port;
 
     /**
      * Construtor da classe
@@ -36,6 +36,7 @@ Class Browser {
     public function __construct(private string $sessionId)
     {
         // Define a URL do socket
+        $this->port      = null;
         $this->urlSocket = $this->getUrlSocket();
     }
 
