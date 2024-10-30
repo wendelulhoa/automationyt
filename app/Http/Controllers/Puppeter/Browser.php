@@ -13,6 +13,9 @@ Class Browser {
      */
     private string $urlSocket;
 
+    //
+    private string $url = 'host.docker.internal';
+
     /**
      * Porta do navegador
      *
@@ -68,7 +71,7 @@ Class Browser {
 
         // Cria os diretórios caso não existam
         if (!file_exists($pathPort)) {
-            $this->start();
+            // $this->start();
         }
 
         // Faz a requisição para obter a URL do socket
@@ -81,8 +84,9 @@ Class Browser {
         while (true) {
             try {
                 // Faz a requisição para obter a URL do socket
-                $response = Http::get("http://127.0.0.1:{$this->port}/json/version");
+                $response = Http::get("{$this->url}:{$this->port}/json/version");
             } catch (\Throwable $th) {
+                dd($th);
                 $this->start();
                 sleep(1);
             }
@@ -129,7 +133,7 @@ Class Browser {
         // Pega o ID da aba
         $targetId = $result['result']['targetId'];
 
-        return new Page("ws://127.0.0.1:{$this->port}/devtools/page/{$targetId}", $targetId);
+        return new Page("{$this->url}:{$this->port}/devtools/page/{$targetId}", $targetId);
     }
 
     /**
@@ -148,7 +152,7 @@ Class Browser {
         $pages = [];
         foreach ($result['result']['targetInfos'] as $value) {
             if($value['type'] == 'page' && !in_array($value['url'], ['chrome://privacy-sandbox-dialog/notice', 'about:blank', 'chrome-untrusted://new-tab-page/one-google-bar?paramsencoded="'])) {
-                $pages[] = new Page("ws://127.0.0.1:{$this->port}/devtools/page/{$value['targetId']}", $value['targetId']);
+                $pages[] = new Page("{$this->url}:{$this->port}/devtools/page/{$value['targetId']}", $value['targetId']);
             }
         }
 
@@ -164,6 +168,7 @@ Class Browser {
     public function start()
     {
         try {
+            dd('aqui');
             // Define o caminho do diretório público
             $publicPath = public_path('chrome-sessions');
 

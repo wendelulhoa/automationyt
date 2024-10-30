@@ -34,6 +34,9 @@ services:
         volumes:
             - .:/var/www/html/wuapi
             - ~/.ssh:/root/.ssh
+            - storage-wuapi:/storage
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         networks:
             - dev-wuapi
         cap_add:
@@ -60,3 +63,6 @@ networks:
 volumes:
     mysql_data:
         driver: local
+    storage-wuapi:
+        external: true
+        name: storage-wuapi
