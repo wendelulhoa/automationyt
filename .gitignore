@@ -22,3 +22,4 @@ yarn-error.log
 /resources/wapi/puppeteer-functions/sessions.json
 /chrome-sessions/
 /public/chrome-sessions/
+/sessions-configs/

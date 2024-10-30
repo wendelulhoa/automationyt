@@ -182,7 +182,7 @@ Class Browser {
             $pathNewSession = base_path("sessions-configs/new_sessions");
 
             // Define uma porta e um número de display disponíveis
-            if(!$this->port) {
+            if(empty($this->port)) {
                 $port = $this->getAvailablePort();
                 $this->port = $port;
             }
@@ -228,6 +228,7 @@ Class Browser {
 
             return true;
         } catch (\Throwable $th) {
+            dd($th);
             cache()->forget("{$this->sessionId}-startsession");
             return false;
         }
