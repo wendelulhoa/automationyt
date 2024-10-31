@@ -60,27 +60,28 @@ trait UtilWhatsapp
                 'forget_in' => now()->addMinutes(120)
             ]);
 
-            // Verificar se o arquivo é uma imagem e realiza a conversão
-            if(in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'])) {
-                // Salvar a imagem no disco
-                $image = Image::read($fileContent);
-                $fileName = "$randomFileName.png";
+            // // Verificar se o arquivo é uma imagem e realiza a conversão
+            // if(in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'])) {
+            //     // Salvar a imagem no disco
+            //     $image = Image::read($fileContent);
+            //     $fileName = "$randomFileName.png";
 
-                // Salva o arquivo na raiz do container
-                $image->toPng()->save("/storage/$fileName");
+            //     // Salva o arquivo na raiz do container
+            //     $image->toPng()->save("/storage/$fileName");
 
-                // Define as permissões para 777
-                chmod("/storage/$fileName", 0777);
-            } 
+            //     // Define as permissões para 777
+            //     chmod("/storage/$fileName", 0777);
+            // } 
 
             // Salva sem conversão
-            else {
-                // Salva o arquivo na raiz do container
-                file_put_contents("/storage/$fileName", $fileContent);
-    
-                // Define as permissões para 777
-                chmod("/storage/$fileName", 0777);
-            }
+            // else {
+            // }
+            
+            // Salva o arquivo na raiz do container
+            file_put_contents("/storage/$fileName", $fileContent);
+
+            // Define as permissões para 777
+            chmod("/storage/$fileName", 0777);
         }
 
         return $fileName;

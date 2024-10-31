@@ -11,11 +11,25 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Cache;
 
 class WhatsappController extends Controller
 {
      use UtilWhatsapp;
+
+
+     public function restartSession($sessionId) 
+     {
+          // Caminho base.
+          $pathRestartSession = base_path("sessions-configs/restart_sessions");
+
+          // Cadastra para parar a instância
+          $restartSession = [
+               'session_id' => $sessionId
+          ];
+
+          // Seta para parar a instância
+          file_put_contents("$pathRestartSession/{$sessionId}.json", json_encode($restartSession));
+     }
 
      /**
       * Obtém o QR Code
@@ -28,26 +42,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
-              
-               // Caso não tenha o cache faz o reload
-               if(!cache()->has("$sessionId-qrcode")) {
-                    // Caminho base.
-                    $pathRestartSession = base_path("sessions-configs/restart_sessions");
-
-                    // Cadastra para parar a instância
-                    $restartSession = [
-                         'session_id' => $sessionId
-                    ];
-
-                    // Seta para parar a instância
-                    file_put_contents("$pathRestartSession/{$sessionId}.json", json_encode($restartSession));
-
-                    sleep(15);
-               }
-               
-               // Adiciona o cache para impedir de ficar fzd reload.
-               cache()->put("$sessionId-qrcode", "$sessionId-qrcode", now()->addMinutes(2));
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
 
                // Pega o qrcode
                $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
@@ -56,6 +51,11 @@ class WhatsappController extends Controller
                if($content['success']) {
                     // Caminho completo para o arquivo
                     $fullPath = public_path("$sessionId-qrcode.svg");
+
+                    // Caso venha vazio da restart no container
+                    if(empty($content['qrCode'])) {
+                         $this->restartSession($sessionId);
+                    }
 
                     // Gera o QR code em SVG
                     $qrCode = QRCode::text(trim($content['qrCode']))
@@ -87,6 +87,9 @@ class WhatsappController extends Controller
                     'status' => $content['message']
                ]);
           } catch (\Throwable $th) {
+               // Se der erro da restart no qrcode.
+               $this->restartSession($sessionId);
+
                // Em caso de erro, retorna uma resposta de falha
                return response()->json([
                     'success' => false,

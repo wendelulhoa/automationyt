@@ -82,7 +82,6 @@ sudo systemctl start stop-instance-python.service
 sudo systemctl enable restart-instance-python.service
 sudo systemctl start restart-instance-python.service
 
-# Verificar o status do serviço
-sudo systemctl status start-instance-python.service
-sudo systemctl status stop-instance-python.service
-sudo systemctl status restart-instance-python.service
+# Cria uma nova pasta de instâncias
+mkdir -p /root/chrome-sessions
+cd  && chmod -R 777 /root/chrome-sessions
