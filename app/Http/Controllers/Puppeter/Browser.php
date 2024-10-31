@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Puppeter;
 use App\Http\Controllers\Puppeter\Websocketpuppeteer;
-use Dotenv\Dotenv;
 use Illuminate\Support\Facades\Http;
 
 Class Browser {
@@ -97,26 +96,7 @@ Class Browser {
             try {
                 // Faz a requisição para obter a URL do socket
                 $response = Http::get("{$this->url}:{$this->port}/json/version");
-                $body = $response->json();
-
-                if(isset($body['error'])) {
-                    // // Caminho base.
-                    // $pathStopSession = base_path("sessions-configs/stop_sessions");
-
-                    // // Cadastra para parar a instância
-                    // $stopSession = [
-                    //     'session_id' => $this->sessionId
-                    // ];
-
-                    // // Seta para parar a instância
-                    // file_put_contents("$pathStopSession/{$this->sessionId}.json", json_encode($stopSession));
-
-                    // sleep(5);
-                    // $this->start();
-                }
-
             } catch (\Throwable $th) {
-                if(request()->has('teste')) dd($th);
                 $this->start();
                 sleep(1);
             }
@@ -129,7 +109,7 @@ Class Browser {
             // Verifica se tentou mais de 3 vezes
             $tries++;
         }
-        // if(request()->has('teste')) dd($response->json());
+
         return $response->json()['webSocketDebuggerUrl'];
     }
 
@@ -251,7 +231,6 @@ Class Browser {
 
             return true;
         } catch (\Throwable $th) {
-            dd($th);
             cache()->forget("{$this->sessionId}-startsession");
             return false;
         }

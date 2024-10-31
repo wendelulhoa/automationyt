@@ -24,7 +24,10 @@ if [ -d "$DEST_DIR" ]; then
   docker compose build && docker compose up -d
 else 
   # Clona o repositório para o diretório especificado
-  git clone git@github.com:wendelulhoa/wuapi-docker-chromium.git "$DEST_DIR"
+  git clone git@github.com:wendelulhoa/docker-chromium-beta.git "$DEST_DIR"
+
+  # Remove o arquivo de configuração do Docker
+  rm -rf ~/.docker/config.json
 
   # Cria o arquivo .env com SESSION_ID e PORT no diretório clonado
   echo "SESSION_ID=$SESSION_ID" > "$DEST_DIR/.env"
