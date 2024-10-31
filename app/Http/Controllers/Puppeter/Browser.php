@@ -80,24 +80,43 @@ Class Browser {
             $this->start();
         }
 
-        // Carrega o arquivo .env de um caminho específico
-        $dotenv = Dotenv::createImmutable("$basePath/{$this->sessionId}");
-
-        // Carrega apenas as variáveis sem sobrescrever o .env principal do Laravel
-        $vars = $dotenv->load();
-
-        // Faz a requisição para obter a URL do socket
-        $tries = 0;
-        $response = null;
-
-        // Pega a porta do arquivo
-        $this->port = $vars['PORT'];
+        // Só entra se for vazio
+        if(empty($this->port)) {
+            // Carrega apenas as variáveis sem sobrescrever o .env principal do Laravel
+            $vars = $this->getEnvInstance("$basePath/{$this->sessionId}/.env");
+    
+            // Faz a requisição para obter a URL do socket
+            $tries = 0;
+            $response = null;
+    
+            // Pega a porta do arquivo
+            $this->port = $vars['PORT'];
+        }
 
         while (true) {
             try {
                 // Faz a requisição para obter a URL do socket
                 $response = Http::get("{$this->url}:{$this->port}/json/version");
+                $body = $response->json();
+
+                if(isset($body['error'])) {
+                    // // Caminho base.
+                    // $pathStopSession = base_path("sessions-configs/stop_sessions");
+
+                    // // Cadastra para parar a instância
+                    // $stopSession = [
+                    //     'session_id' => $this->sessionId
+                    // ];
+
+                    // // Seta para parar a instância
+                    // file_put_contents("$pathStopSession/{$this->sessionId}.json", json_encode($stopSession));
+
+                    // sleep(5);
+                    // $this->start();
+                }
+
             } catch (\Throwable $th) {
+                if(request()->has('teste')) dd($th);
                 $this->start();
                 sleep(1);
             }
@@ -110,7 +129,7 @@ Class Browser {
             // Verifica se tentou mais de 3 vezes
             $tries++;
         }
-
+        // if(request()->has('teste')) dd($response->json());
         return $response->json()['webSocketDebuggerUrl'];
     }
 
@@ -186,6 +205,9 @@ Class Browser {
             if(empty($this->port)) {
                 $port = $this->getAvailablePort();
                 $this->port = $port;
+
+                // Exclui o cache de start
+                cache()->forget("{$this->sessionId}-startsession");
             }
 
             // Cadastra para subir a instância
@@ -250,6 +272,35 @@ Class Browser {
         } while ($this->isPortInUse($port));
 
         return $port;
+    }
+
+    
+    private function getEnvInstance($envPath)
+    {
+        // Lista de variaveis da instância
+        $vars = [];
+
+        // Verifica se o arquivo existe antes de tentar carregá-lo
+        if (file_exists($envPath)) {
+            // Abre o arquivo .env e lê seu conteúdo
+            $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+            // Itera sobre as linhas do arquivo .env
+            foreach ($lines as $line) {
+                // Ignora comentários
+                if (strpos(trim($line), '#') === 0) {
+                    continue;
+                }
+                
+                // Divide a linha em chave e valor
+                list($key, $value) = explode('=', $line, 2);
+                
+                // Adiciona as variaveis
+                $vars[$key] = $value;
+            }
+        }
+
+        return $vars;
     }
 
     /**

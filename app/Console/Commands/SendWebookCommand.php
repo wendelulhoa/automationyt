@@ -88,7 +88,6 @@ class SendWebookCommand extends Command
 
             // Envia os eventos para o webhook
             foreach ($events as $id => $event) {
-                dd($events, $sessionId);
                 // Deleta o evento
                 $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
 

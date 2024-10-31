@@ -25,7 +25,7 @@ def process_json_files():
                         subprocess.run(["scripts-sh/start_instance.sh", session_id, str(port)], check=True)
                         # Exclui o arquivo JSON após iniciar a instância
                         os.remove(file_path)
-                        
+                        time.sleep(2)
                         print(f"Instância iniciada para sessão {session_id} na porta {port}")
                     except subprocess.CalledProcessError as e:
                         print(f"Erro ao iniciar instância para sessão {session_id}: {e}")

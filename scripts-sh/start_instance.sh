@@ -11,8 +11,8 @@ if [ -z "$1" ] || [ -z "$2" ]; then
   exit 1
 fi
 
-# Verifica se o container com o SESSION_ID já está em execução
-if docker ps --filter "name=$SESSION_ID" --format '{{.Names}}' | grep -q "$SESSION_ID"; then
+# Verifica se o container com o SESSION_ID exato já está em execução
+if docker ps --filter "name=^/${SESSION_ID}$" --format '{{.Names}}' | grep -q "^${SESSION_ID}$"; then
   echo "O container com SESSION_ID=$SESSION_ID já está em execução."
   exit 0
 fi

@@ -14,7 +14,6 @@ fi
 if [ -d "$DEST_DIR" ]; then
   # Entra no diretório e inicia o Docker Compose
   cd "$DEST_DIR" || exit
-  docker compose down
-  rm -rf "$DEST_DIR/userdata"
+  docker compose down && docker compose build
 fi
 
