@@ -74,6 +74,10 @@ Class Browser {
         // Pega o caminho do arquivo que contém a porta
         $pathPort = "$basePath/{$this->sessionId}/.env";
 
+        // Faz a requisição para obter a URL do socket
+        $tries = 0;
+        $response = null;
+
         // Cria os diretórios caso não existam
         if (!file_exists($pathPort)) {
             $this->start();
@@ -83,10 +87,6 @@ Class Browser {
         if(empty($this->port)) {
             // Carrega apenas as variáveis sem sobrescrever o .env principal do Laravel
             $vars = $this->getEnvInstance("$basePath/{$this->sessionId}/.env");
-    
-            // Faz a requisição para obter a URL do socket
-            $tries = 0;
-            $response = null;
     
             // Pega a porta do arquivo
             $this->port = $vars['PORT'];

@@ -42,7 +42,7 @@ class Puppeteer extends Controller
         // Verifica se é para recarregar a página
         if($reload) {
             $page->reload();
-            sleep(2);
+            sleep(4);
         }
 
         // Verifica se a função existe e seta os scripts

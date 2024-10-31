@@ -28,20 +28,10 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
-              
-               // Caso não tenha o cache faz o reload
-               if(!cache()->has("$sessionId-qrcode")) {
-                    $page->reload();
-                    
-                    // Cria uma nova página e navega até a URL
-                    $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
-
-                    sleep(4);
-               }
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', !cache()->has("$sessionId-qrcode"));
                
                // Adiciona o cache para impedir de ficar fzd reload.
-               cache()->put("$sessionId-qrcode", "$sessionId-qrcode", now()->addMinutes(5));
+               cache()->put("$sessionId-qrcode", "$sessionId-qrcode", now()->addMinutes(2));
 
                // Pega o qrcode
                $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
