@@ -28,7 +28,23 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', !cache()->has("$sessionId-qrcode"));
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
+              
+               // Caso não tenha o cache faz o reload
+               if(!cache()->has("$sessionId-qrcode")) {
+                    // Caminho base.
+                    $pathRestartSession = base_path("sessions-configs/restart_sessions");
+
+                    // Cadastra para parar a instância
+                    $restartSession = [
+                         'session_id' => $sessionId
+                    ];
+
+                    // Seta para parar a instância
+                    file_put_contents("$pathRestartSession/{$sessionId}.json", json_encode($restartSession));
+
+                    sleep(15);
+               }
                
                // Adiciona o cache para impedir de ficar fzd reload.
                cache()->put("$sessionId-qrcode", "$sessionId-qrcode", now()->addMinutes(2));

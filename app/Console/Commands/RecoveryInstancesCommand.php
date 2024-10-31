@@ -36,10 +36,10 @@ class RecoveryInstancesCommand extends Command
         // Log de informação.
         // Log::channel('daily')->info('Resolvendo problemas de permissão');
 
-        foreach ($instances as $sessionId) {
-            shell_exec("$basePath/scripts-sh/recovery_instance.sh $sessionId");
+        // foreach ($instances as $sessionId) {
+        //     shell_exec("$basePath/scripts-sh/recovery_instance.sh $sessionId");
 
-            shell_exec("chmod -R 777 $basePath/chrome-sessions/{$sessionId}/userdata/");
-        }
+        //     shell_exec("chmod -R 777 $basePath/chrome-sessions/{$sessionId}/userdata/");
+        // }
     }
 }
