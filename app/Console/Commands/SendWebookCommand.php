@@ -77,13 +77,18 @@ class SendWebookCommand extends Command
             if(!$instance->webhook) continue;
 
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-
-            // Seta os grupos
-            $events = $page->evaluate("window.WUAPI.webhookEvents")['result']['result']['value'];
+            try {
+                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+    
+                // Seta os grupos
+                $events = $page->evaluate("window.WUAPI.webhookEvents")['result']['result']['value'];
+            } catch (\Throwable $th) {
+                continue;
+            }
 
             // Envia os eventos para o webhook
             foreach ($events as $id => $event) {
+                dd($events, $sessionId);
                 // Deleta o evento
                 $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
 
