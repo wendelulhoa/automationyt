@@ -34,6 +34,9 @@ else
   echo "SESSION_ID=$SESSION_ID" > "$DEST_DIR/.env"
   echo "PORT=$PORT" >> "$DEST_DIR/.env"
   
+  mkdir -p "$DEST_DIR/userdata"
+  chmod -R 777 "$DEST_DIR/userdata"
+
   # cria a pasta onde vai ficar o .env
   mkdir -p $WUAPI_DIR
   chmod -R 777 $WUAPI_DIR
