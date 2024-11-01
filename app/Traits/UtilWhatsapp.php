@@ -209,7 +209,7 @@ trait UtilWhatsapp
     }
 
     /**
-      * Reabre o navegador
+      * Para a execução do container
       *
       * @param string $sessionId
       *
@@ -219,21 +219,42 @@ trait UtilWhatsapp
     {
         try {
             // Caminho base.
-            $basePath = base_path();
+            $pathStopSession = base_path("sessions-configs/stop_sessions");
 
-            // Define o caminho do diretório público
-            $publicPath = public_path('chrome-sessions');
+            // Cadastra para parar a instância
+            $stopSession = [
+                'session_id' => $sessionId
+            ];
 
-            // Caso tenha um processo em execução, mata o processo
-            if (file_exists("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid")) {
-                $pid = file_get_contents("$publicPath/{$sessionId}/pids/chrome-{$sessionId}.pid");
-
-                // Mata o processo se estiver em execução
-                shell_exec("$basePath/stop_instance.sh $pid");
-                shell_exec("ps aux | grep $sessionId | grep -v grep | awk '{print $2}' | xargs kill -9");
-            }
+            // Seta para parar a instância
+            file_put_contents("$pathStopSession/{$sessionId}.json", json_encode($stopSession));
         } catch (\Throwable $th) {
-            Log::channel('daily')->error("Erro ao reabrir o browser: ". $th->getMessage());
+            Log::channel('daily')->error("Sessão: {$sessionId}, Erro finalizar o container: ". $th->getMessage());
+        }
+    }
+
+    /**
+    * Coloca para fazer o reinicio do container
+    *
+    * @param string $sessionId
+
+    * @return void
+    */
+    public function restartSession($sessionId) 
+    {
+        try {
+            // Caminho base.
+            $pathRestartSession = base_path("sessions-configs/restart_sessions");
+
+            // Cadastra para parar a instância
+            $restartSession = [
+                    'session_id' => $sessionId
+            ];
+
+            // Seta para parar a instância
+            file_put_contents("$pathRestartSession/{$sessionId}.json", json_encode($restartSession));
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Sessão: {$sessionId}, Erro ao reiniciar a sessão: {$th->getMessage()}");
         }
     }
 }

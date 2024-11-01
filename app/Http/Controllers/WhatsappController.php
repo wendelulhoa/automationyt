@@ -16,21 +16,6 @@ class WhatsappController extends Controller
 {
      use UtilWhatsapp;
 
-
-     public function restartSession($sessionId) 
-     {
-          // Caminho base.
-          $pathRestartSession = base_path("sessions-configs/restart_sessions");
-
-          // Cadastra para parar a instância
-          $restartSession = [
-               'session_id' => $sessionId
-          ];
-
-          // Seta para parar a instância
-          file_put_contents("$pathRestartSession/{$sessionId}.json", json_encode($restartSession));
-     }
-
      /**
       * Obtém o QR Code
       *
@@ -125,9 +110,8 @@ class WhatsappController extends Controller
                     // Adiciona no cache para verificar daqui 10m
                     cache()->put("opening-{$sessionId}", "opening-{$sessionId}", now()->addMinutes(10));
 
-                    // Para a instância
-                    // $this->stopInstance($sessionId);
-                    $page->reload();
+                    // Reinicia o container
+                    $this->restartSession($sessionId);
                }
 
                // Define o status code da resposta
@@ -168,16 +152,8 @@ class WhatsappController extends Controller
                // Cria ou atualiza a instância
                Instance::initInstance(['session_id' => $sessionId, 'connected' => false]);
 
-               // Caminho base.
-               $pathStopSession = base_path("sessions-configs/stop_sessions");
-
-               // Cadastra para parar a instância
-               $stopSession = [
-                    'session_id' => $sessionId
-               ];
-
-               // Seta para parar a instância
-               file_put_contents("$pathStopSession/{$sessionId}.json", json_encode($stopSession));
+               // Para a execução do container
+               $this->stopInstance($sessionId);
 
                // Retorna o resultado em JSON
                return response()->json([

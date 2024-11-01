@@ -28,6 +28,13 @@ Class Browser {
     private int|null $port;
 
     /**
+     * Portas em uso
+     *
+     * @var array
+     */
+    private array $portsInUse = [];
+
+    /**
      * Construtor da classe
      *
      * @param string $sessionId
@@ -36,6 +43,7 @@ Class Browser {
     {
         // Define a URL do socket
         $this->port      = null;
+        $this->portsInUse = $this->getPortsInUse();
         $this->urlSocket = $this->getUrlSocket();
     }
 
@@ -253,7 +261,13 @@ Class Browser {
         return $port;
     }
 
-    
+    /**
+     * Busca as variáveis de ambiente de uma instância
+     *
+     * @param string $envPath
+     * 
+     * @return array
+     */
     private function getEnvInstance($envPath)
     {
         // Lista de variaveis da instância
@@ -283,6 +297,30 @@ Class Browser {
     }
 
     /**
+     * Busca as portas em uso
+     *
+     * @return array
+     */
+    private function getPortsInUse(): array
+    {
+        $directoryPath = base_path('chrome-sessions');
+        $ports = [];
+
+        // Percorre o diretório verificando as portas em uso
+        if (is_dir($directoryPath)) {
+            // Lista das sessões
+            $subfolders = scandir($directoryPath);
+            foreach ($subfolders as $folder) {
+                if ($folder !== '.' && $folder !== '..' && is_dir($directoryPath . '/' . $folder)) {
+                    $ports[$folder] = $this->getEnvInstance("$directoryPath/$folder/.env")['PORT'] ?? null;
+                }
+            }
+        }
+
+        return $ports;
+    }
+
+    /**
      * Verifica se a porta está em uso
      *
      * @param integer $port
@@ -291,11 +329,6 @@ Class Browser {
      */
     private function isPortInUse(int $port): bool
     {
-        $connection = @fsockopen('localhost', $port);
-        if (is_resource($connection)) {
-            fclose($connection);
-            return true;
-        }
-        return false;
+        return in_array($port, $this->portsInUse);
     }
 }

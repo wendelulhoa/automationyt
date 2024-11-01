@@ -10,9 +10,9 @@ class MessageWhatsapp {
     use UtilWhatsapp;
 
     /**
-     * Tempo de espera 4s
+     * Tempo de espera 5s
      */
-    private $sleepTime = 4;
+    private $sleepTime = 5;
 
     /**
      * Envia uma mensagem de texto
@@ -28,6 +28,7 @@ class MessageWhatsapp {
     {
         try {
             // Pega o chatId
+            $body   = []; 
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
@@ -41,14 +42,15 @@ class MessageWhatsapp {
             $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);")['result']['result']['value'];
+            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);");
+            $content = $body['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage()];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 
@@ -66,6 +68,7 @@ class MessageWhatsapp {
     {
         try {
             // Pega o chatId
+            $body   = [];
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
@@ -82,14 +85,15 @@ class MessageWhatsapp {
             $script = "window.WUAPI.sendLinkPreview('$chatId', localStorage.getItem('$randomNameVar'), '$link');";
 
             // Executa o script no navegador
-            $content = $page->evaluate($script)['result']['result']['value'];
+            $body    = $page->evaluate($script);
+            $content = $body['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage()];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 
@@ -107,6 +111,7 @@ class MessageWhatsapp {
     {
         try {
             // Pega o chatId
+            $body   = [];
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
@@ -116,11 +121,12 @@ class MessageWhatsapp {
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.sendVcard('$chatId', '$title', '$contact');")['result']['result']['value'];
+            $body    = $page->evaluate("window.WUAPI.sendVcard('$chatId', '$title', '$contact');");
+            $content = $body['result']['result']['value'];
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage()];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 
@@ -160,7 +166,8 @@ class MessageWhatsapp {
             $page->setFileInput($backendNodeId, "/storage/$fileName");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");")['result']['result']['value'];
+            $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");");
+            $content = $body['result']['result']['value'];
 
             // Deleta a variável temporária e o input file
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
@@ -168,7 +175,7 @@ class MessageWhatsapp {
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage(), 'response' => $response ?? null];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 
@@ -186,6 +193,7 @@ class MessageWhatsapp {
     {
         try {
             // Pega o chatId
+            $body   = [];
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
@@ -204,14 +212,15 @@ class MessageWhatsapp {
             $page->setFileInput($backendNodeId, "/storage/$fileName");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
+            $body    = $page->evaluate("window.WUAPI.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");");
+            $content = $body['result']['result']['value'];
 
             // Deleta a variável temporária e o input file
             $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage()];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 
@@ -228,6 +237,7 @@ class MessageWhatsapp {
     {
         try {
             // Pega o chatId
+            $body   = [];
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
@@ -251,7 +261,8 @@ class MessageWhatsapp {
             $page->evaluate("localStorage.setItem('$randomNameVarOptions', `" . json_encode($auxOptions) . "`);");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});")['result']['result']['value'];
+            $body    = $page->evaluate("window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});");
+            $content = $body['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
@@ -259,7 +270,7 @@ class MessageWhatsapp {
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage()];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 
@@ -276,6 +287,7 @@ class MessageWhatsapp {
     {
         try {
             // Pega o chatId
+            $body   = [];
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
@@ -285,11 +297,12 @@ class MessageWhatsapp {
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.deleteMessage('$chatId', '$messageId');")['result']['result']['value'];
+            $body    = $page->evaluate("window.WUAPI.deleteMessage('$chatId', '$messageId');");
+            $content = $body['result']['result']['value'];
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage()];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 
@@ -306,6 +319,7 @@ class MessageWhatsapp {
     {
         try {
             // Pega o chatId
+            $body   = [];
             $chatId = $this->getWhatsappGroupId($chatId, false, true);
 
             // Seta um tempo de espera
@@ -319,14 +333,15 @@ class MessageWhatsapp {
             $page->evaluate("localStorage.setItem('$randomNameVarOptions', `" . json_encode($options) . "`);");
 
             // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.sendMsgEvent('$chatId', JSON.parse(localStorage.getItem('$randomNameVarOptions')));")['result']['result']['value'];
+            $body    = $page->evaluate("window.WUAPI.sendMsgEvent('$chatId', JSON.parse(localStorage.getItem('$randomNameVarOptions')));");
+            $content = $body['result']['result']['value'];
 
             // Remove o item temporário
             $page->evaluate("localStorage.removeItem(`$randomNameVarOptions`);");
 
             return $content;
         } catch (\Throwable $th) {
-            return ['success' => false, 'message' => $th->getMessage()];
+            return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
         }
     }
 }
