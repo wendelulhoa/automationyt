@@ -4,9 +4,9 @@ use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\WhatsappController;
+use App\Http\Middleware\ControlRequestMessage;
 use App\Http\Middleware\VerifyInstanceToken;
 use App\Http\Middleware\VerifyServerToken;
-use App\Http\Middleware\CheckRebootInstance;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::class]], function() {
@@ -54,7 +54,7 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::cl
         });
     
         // Envio de mensagens
-        Route::group(['prefix' => 'message'], function() {
+        Route::group(['prefix' => 'message', 'middleware' => [ControlRequestMessage::class]], function() {
             Route::any('/send-file', [MessageController::class, 'sendFile'])->name('wapiwu.message.sendfile');
             Route::post('/send-text', [MessageController::class, 'sendText'])->name('wapiwu.message.sendtext');
             Route::post('/send-linkpreview', [MessageController::class, 'sendLinkPreview'])->name('wapiwu.message.sendlinkpreview');
