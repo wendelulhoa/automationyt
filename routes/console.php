@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\CheckInstancesCommand;
+use App\Console\Commands\RebootInstancesCommand;
 use App\Console\Commands\RecoveryInstancesCommand;
 use App\Console\Commands\RemoveFilesSendCommand;
 use App\Console\Commands\SendWebookCommand;
@@ -17,3 +18,6 @@ Schedule::command(SendWebookCommand::class)->everyFiveSeconds()->withoutOverlapp
 
 // Recupera as instâncias que estão com problemas
 Schedule::command(RecoveryInstancesCommand::class)->everyFiveSeconds()->withoutOverlapping();
+
+/* Realiza o envio das mensagens do envio individual */
+Schedule::command(RebootInstancesCommand::class)->dailyAt('02:30')->withoutOverlapping();
