@@ -248,7 +248,7 @@ trait UtilWhatsapp
 
             // Cadastra para parar a instância
             $restartSession = [
-                    'session_id' => $sessionId
+                'session_id' => $sessionId
             ];
 
             // Seta para parar a instância
