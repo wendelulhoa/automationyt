@@ -36,12 +36,15 @@ class RebootInstancesCommand extends Command
 
         // Reinicia as instâncias
         foreach ($instances as $instance) {
-            // Extrai o nome da sessão
-            $sessionId = $instance->session_id;
-            
             try {
                 // Reinicia a sessão das instâncias conectadas
-                $this->restartSession($sessionId);
+                $this->restartSession($instance->session_id);
+
+                // Espera 5s
+                sleep(5);
+
+                // Loga que reiniciou as instâncias
+                Log::channel('daily')->error("Reiniciou a instância: {$instance->session_id}");
             } catch (\Throwable $th) {
                 Log::channel('daily')->error('Erro ao reiniciar instância: ' . $instance->session_id . ' - ' . $th->getMessage());
             }
