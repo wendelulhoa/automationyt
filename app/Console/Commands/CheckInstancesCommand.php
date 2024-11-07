@@ -39,6 +39,9 @@ class CheckInstancesCommand extends Command
                     'Authorization' => env('API_KEY'),
                     'api-key' => $instance->token
                 ])->get(route('wapiwu.checkconnection', ['sessionId' => $instance->session_id]));
+
+                // Espera 30s para próxima verificação.
+                sleep(30);
             } catch (\Throwable $th) {
                 Log::channel('daily')->error('Erro ao verificar instância: ' . $instance->session_id . ' - ' . $th->getMessage());
             }
