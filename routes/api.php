@@ -14,6 +14,7 @@ Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::cl
     Route::get('/getqrcode', [WhatsappController::class, 'getQrcode'])->name('wapiwu.getqrcode');
     Route::post('/start-session', [WhatsappController::class, 'startSession'])->name('wapiwu.startsession');
     Route::get('/checkconnection', [WhatsappController::class, 'checkConnection'])->name('wapiwu.checkconnection');
+    Route::get('/restartsession', [WhatsappController::class, 'restartInstance'])->name('wapiwu.restartsession');
     
     Route::group(['prefix' => '', 'middleware' => [VerifyInstanceToken::class]], function() {
         // Rotas gerais que precisam de autenticação

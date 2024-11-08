@@ -311,4 +311,29 @@ class WhatsappController extends Controller
                ], 400);
           }
      }
+
+     /**
+      * Reinicia sessão
+      *
+      * @param string $sessionId
+
+      * @return Json
+      */
+     public function restartInstance(string $sessionId)
+     {
+          try {
+               $this->restartSession($sessionId);
+
+               return response()->json([
+                    'success' => true,
+                    'message' => 'Será reinicializado a instância'
+               ], 200);
+          } catch (\Throwable $th) {
+               // Em caso de erro, retorna uma resposta de falha
+               return response()->json([
+                    'success' => false,
+                    'message' => $th->getMessage()
+               ], 400);
+          }
+     }
 }
