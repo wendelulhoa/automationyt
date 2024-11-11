@@ -69,7 +69,7 @@ class WhatsappController extends Controller
                return response()->json([
                     'success' => true,
                     'qrcode' => $qrCode,
-                    'status' => $content['message']
+                    'status' => $content['message'] ?? $content
                ]);
           } catch (\Throwable $th) {
                // Se der erro da restart no qrcode.
