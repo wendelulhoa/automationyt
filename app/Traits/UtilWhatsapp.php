@@ -6,12 +6,20 @@ use App\Http\Controllers\Puppeter\Page;
 use App\Http\Controllers\Puppeter\Puppeteer;
 use App\Models\Filesend;
 use finfo;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 
 trait UtilWhatsapp
 {
+    /**
+     * URL dos containers de fora
+     *
+     * @var string
+     */
+    private string $urlInstance = 'host.docker.internal';
+
     /**
      * Função para baixar um arquivo e setar na pasta storage
      *
@@ -256,5 +264,69 @@ trait UtilWhatsapp
         } catch (\Throwable $th) {
             Log::channel('daily')->error("Sessão: {$sessionId}, Erro ao reiniciar a sessão: {$th->getMessage()}");
         }
+    }
+
+    /**
+     * Faz o backup da instância
+     *
+     * @param string $sessionId
+     * 
+     * @return void
+     */
+    public function backupInstance(string $sessionId)
+    {
+        try {
+            // Define o caminho do diretório público
+            $basePath = base_path('chrome-sessions');
+
+            // Pega o caminho do arquivo que contém a porta
+            $pathPort = "$basePath/{$sessionId}/.env";
+
+            // Carrega apenas as variáveis sem sobrescrever o .env principal do Laravel
+            $vars = $this->getEnvInstance("$pathPort");
+    
+            // Pega a porta do arquivo
+            $port = $vars['PORT'];
+
+            // Faz a requisição para obter a URL do socket
+            Http::get("{$this->urlInstance}:{$port}/backup/instance");
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Sessão: {$sessionId}, Erro ao fazer backup da instância: {$th->getMessage()}");
+        }
+    }
+
+    /**
+     * Busca as variáveis de ambiente de uma instância
+     *
+     * @param string $envPath
+     * 
+     * @return array
+     */
+    private function getEnvInstance($envPath)
+    {
+        // Lista de variaveis da instância
+        $vars = [];
+
+        // Verifica se o arquivo existe antes de tentar carregá-lo
+        if (file_exists($envPath)) {
+            // Abre o arquivo .env e lê seu conteúdo
+            $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+            // Itera sobre as linhas do arquivo .env
+            foreach ($lines as $line) {
+                // Ignora comentários
+                if (strpos(trim($line), '#') === 0) {
+                    continue;
+                }
+                
+                // Divide a linha em chave e valor
+                list($key, $value) = explode('=', $line, 2);
+                
+                // Adiciona as variaveis
+                $vars[$key] = $value;
+            }
+        }
+
+        return $vars;
     }
 }

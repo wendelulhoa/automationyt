@@ -100,6 +100,11 @@ class WhatsappController extends Controller
                // Verifica a conexão
                $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
                
+               // Faz o backup da instância
+               if($content['success']) {
+                    $this->backupInstance($sessionId);
+               }
+
                // Caso tenha erro recarrega a página
                if(isset($content['error'])) {
                     $page->reload();
