@@ -22,7 +22,10 @@ class ControlRequestMessage
         try {
             // Verifica se a sessão existe
             $sessionId = $request->route('sessionId');
-            // $routeName = $request->route()->getName();
+            $routeName = $request->route()->getName();
+
+            // Grava o log de envio de mensagem
+            Log::channel('daily')->info("Rota: $routeName, sessão: $sessionId");
             
             // Aguarda a finalização da requisição
             if(cache()->has("request-message-{$sessionId}")) {

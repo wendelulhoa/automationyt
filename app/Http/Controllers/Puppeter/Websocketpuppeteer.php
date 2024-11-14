@@ -30,12 +30,13 @@ class Websocketpuppeteer extends Controller
     public function connWebSocket(array $command): array
     {
         try {
-            $response = Http::timeout(45)->post($this->url, $command);
+            $response = Http::timeout(120)->post($this->url, $command);
             return $response->json();
         } catch (\Throwable $th) {
             return [
                 'success' => false,
-                'error'   => $th->getMessage()
+                'error'   => $th->getMessage(),
+                'command' => $command ?? 'não tem command'
             ];
         }
     }
