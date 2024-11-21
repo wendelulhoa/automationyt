@@ -25,7 +25,7 @@ if [ -d "$DEST_DIR" ]; then
   git pull && docker compose build && docker compose up -d
 else 
   # Clona o repositório para o diretório especificado
-  git clone git@github.com:wendelulhoa/docker-chromium-beta.git "$DEST_DIR"
+  git clone git@github.com:wendelulhoa/docker-chrome-wuapi.git "$DEST_DIR"
 
   # Remove o arquivo de configuração do Docker
   rm -rf ~/.docker/config.json
