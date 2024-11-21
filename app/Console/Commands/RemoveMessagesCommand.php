@@ -58,7 +58,7 @@ class RemoveMessagesCommand extends Command
 
                 if($content['status'] == 'CONNECTING' && !$generateQr && !$isRestartInstance) {
                     // Adiciona o prefixo base64 correto, incluindo o tipo MIME
-                    cache()->put("restart-instance-$sessionId", "restart-instance-$sessionId", now()->addMinutes(15));
+                    cache()->put("restart-instance-$sessionId", "restart-instance-$sessionId", now()->addMinutes(30));
 
                     // Reinicia a instância
                     $this->restartSession($sessionId);
