@@ -32,6 +32,9 @@ class WhatsappController extends Controller
                // Pega o qrcode
                $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
 
+               // Adiciona o prefixo base64 correto, incluindo o tipo MIME
+               cache()->put("generate-qrcode-$sessionId", "generate-qrcode-$sessionId", now()->addMinutes(1));
+
                $qrCode = null;
                if($content['success']) {
                     // Caminho completo para o arquivo
@@ -143,14 +146,14 @@ class WhatsappController extends Controller
      public function disconnect(string $sessionId): JsonResponse
      {
           try {
+               // Cria ou atualiza a instância
+               Instance::initInstance(['session_id' => $sessionId, 'connected' => false]);
+
                // Só desconecta se o browser estiver ativo
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
                $page->evaluate("window.WUAPI.disconnect();");
-
-               // Cria ou atualiza a instância
-               Instance::initInstance(['session_id' => $sessionId, 'connected' => false]);
 
                // Para a execução do container
                $this->stopInstance($sessionId);
@@ -181,6 +184,7 @@ class WhatsappController extends Controller
           try {
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+               // dd($page->evaluate("window.WUAPI.teste()"));
                // dd($page->evaluate("window.WUAPI.countMessagesInIndexedDB()"));
                // dd($page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB()"));
                $screenshot = base64_decode($page->screenShot()['result']['data']);

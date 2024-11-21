@@ -23,9 +23,9 @@ class ControlRequestMessage
             // Verifica se a sessão existe
             $sessionId = $request->route('sessionId');
             $routeName = $request->route()->getName();
-
+            
             // Grava o log de envio de mensagem
-            Log::channel('daily')->info("Rota: $routeName, sessão: $sessionId");
+            $this->setLog("Rota: $routeName, sessão: $sessionId");
             
             // Aguarda a finalização da requisição
             if(cache()->has("request-message-{$sessionId}")) {
@@ -50,7 +50,7 @@ class ControlRequestMessage
             $response = ['status' => 'error', 'message' => $e->getMessage(), 'success' => false];
 
             // Loga o erro
-            Log::channel('daily')->error("Ocorreu um erro na requisição: " . $e->getMessage());
+            $this->setLog("Ocorreu um erro na requisição: " . $e->getMessage(), "error");
         }
         
         return $response;
@@ -80,6 +80,22 @@ class ControlRequestMessage
             sleep($interval);
             $timeout += $interval;
             $interval++;
+        }
+    }
+
+    /**
+     * Seta o log
+     *
+     * @param string $log
+     * @return void
+     */
+    private function setLog(string $log, string $type = 'info')
+    {
+        try {
+            // Grava o log de envio de mensagem
+            Log::channel('daily')->$type($log);
+        } catch (\Throwable $th) {
+            //throw $th;
         }
     }
 }

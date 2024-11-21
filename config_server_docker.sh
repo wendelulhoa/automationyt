@@ -7,6 +7,9 @@ SCRIPT_PATH="$WORKING_DIR/scripts-py"
 # Cria o volume de storage
 docker volume create storage-wuapi
 
+# Cria uma nova rede da wuapi
+docker network create redewuapi
+
 echo "SCRIPT_PATH: $SCRIPT_PATH"
 echo "WORKING_DIR: $WORKING_DIR"
 

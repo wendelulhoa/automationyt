@@ -4,11 +4,15 @@ use App\Console\Commands\CheckInstancesCommand;
 use App\Console\Commands\RebootInstancesCommand;
 use App\Console\Commands\RecoveryInstancesCommand;
 use App\Console\Commands\RemoveFilesSendCommand;
+use App\Console\Commands\RemoveMessagesCommand;
 use App\Console\Commands\SendWebookCommand;
 use Illuminate\Support\Facades\Schedule;
 
 // Registra os comando de console
 Schedule::command(CheckInstancesCommand::class)->everyTwentySeconds()->withoutOverlapping();
+
+// Remove as mensagens do whatsapp por instância
+Schedule::command(RemoveMessagesCommand::class)->everyMinute()->withoutOverlapping();
 
 // Remove os arquivos desnecessarios
 Schedule::command(RemoveFilesSendCommand::class)->everyFiveMinutes()->withoutOverlapping();

@@ -11,6 +11,10 @@ chown $WWWUSER:www-data -R /var/www/html/wuapi
 
 chmod 775 -R /var/www/html/wuapi
 
+# Seta as permissões na pasta de storage
+chown -R www-data:www-data /var/www/html/wuapi/storage
+chmod -R 775 /var/www/html/wuapi/storage
+
 ### Instala os pacotes do composer
 composer install --no-interaction --no-dev
 
