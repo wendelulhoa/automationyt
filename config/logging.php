@@ -81,6 +81,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'whatsapp-removemessages' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/whatsappremovemessages/laravel.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_DAILY_DAYS', 7),
+            'replace_placeholders' => true,
+        ],
+
         'whatsapp-webhook' => [
             'driver' => 'daily',
             'path' => storage_path('logs/whatsappwebhooks/laravel.log'),

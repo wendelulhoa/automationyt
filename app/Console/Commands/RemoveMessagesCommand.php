@@ -64,7 +64,7 @@ class RemoveMessagesCommand extends Command
                     $this->restartSession($sessionId);
 
                     // Seta o log
-                    Log::channel('daily')->info("Reiniciou a instância: {$sessionId}");
+                    Log::channel('whatsapp-removemessages')->info("Reiniciou a instância: {$sessionId}");
 
                     // Vai para o próximo registro
                     continue;
@@ -75,7 +75,7 @@ class RemoveMessagesCommand extends Command
                     $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
 
                     // Seta o log
-                    Log::channel('daily')->info("Removeu as mensagens da instância: {$sessionId}");
+                    Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");
                 }
             } catch (\Throwable $th) {
                 // Continua para a próxima instância em caso de erro
