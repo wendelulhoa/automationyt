@@ -9,7 +9,7 @@ use App\Console\Commands\SendWebookCommand;
 use Illuminate\Support\Facades\Schedule;
 
 // Registra os comando de console
-Schedule::command(CheckInstancesCommand::class)->everyTwentySeconds()->withoutOverlapping();
+Schedule::command(CheckInstancesCommand::class)->everyFiveMinutes()->withoutOverlapping();
 
 // Remove as mensagens do whatsapp por instância
 Schedule::command(RemoveMessagesCommand::class)->everyMinute()->withoutOverlapping();
@@ -20,8 +20,5 @@ Schedule::command(RemoveFilesSendCommand::class)->everyFiveMinutes()->withoutOve
 // Envia os webhooks a cada 5s
 Schedule::command(SendWebookCommand::class)->everyFiveSeconds()->withoutOverlapping();
 
-// Recupera as instâncias que estão com problemas
-Schedule::command(RecoveryInstancesCommand::class)->everyFiveSeconds()->withoutOverlapping();
-
 /* Realiza o envio das mensagens do envio individual */
-Schedule::command(RebootInstancesCommand::class)->dailyAt('02:30')->withoutOverlapping();
+Schedule::command(RebootInstancesCommand::class)->dailyAt('02:00')->withoutOverlapping();

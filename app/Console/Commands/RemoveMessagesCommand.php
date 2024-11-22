@@ -47,6 +47,7 @@ class RemoveMessagesCommand extends Command
 
             // Cria uma nova página e navega até a URL
             try {
+                // Pega a página ativa
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                 // Verifica a conexão
@@ -55,6 +56,7 @@ class RemoveMessagesCommand extends Command
                 // Verifica se está gerando qrCode
                 $generateQr        = cache()->has("generate-qrcode-$sessionId");
                 $isRestartInstance = cache()->has("restart-instance-$sessionId");
+                $hasDeleteMsgs     = cache()->has("deletemessages-$sessionId");
 
                 if($content['status'] == 'CONNECTING' && !$generateQr && !$isRestartInstance) {
                     // Adiciona o prefixo base64 correto, incluindo o tipo MIME
@@ -71,8 +73,15 @@ class RemoveMessagesCommand extends Command
                 }
 
                 // Remove as mensagens da instância
-                if ($content['success']) {
+                if ($content['success'] && !$hasDeleteMsgs) {
+                    // Seta que deletou as mensagens
+                    cache()->put("deletemessages-$sessionId", "deletemessages-$sessionId", now()->addMinutes(2));
+
+                    // Deleta as mensagens
                     $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
+
+                    // Deleta os chats
+                    $page->evaluate("window.WUAPI.deleteChatsView()");
 
                     // Seta o log
                     Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");

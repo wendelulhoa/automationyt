@@ -111,7 +111,7 @@ class SendWebookCommand extends Command
                     $params['session']     = $sessionId;
 
                     // Monta os paramêtros do webhook
-                    if(!in_array($event['id']['remote']['user'], ['status'])) {
+                    if(!in_array($event['id']['remote']['user'], ['status']) && $event['id']['fromMe'] == false) {
                         // Faz o envio do webhook
                         Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
 

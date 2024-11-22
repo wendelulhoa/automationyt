@@ -35,16 +35,19 @@ class CheckInstancesCommand extends Command
         // Sobe as instâncias via url com o checkconnection
         foreach ($instances as $instance) {
             try {
+                // Caso esteja em envio de mensagens não faz a remoção de mensagens
+                if(cache()->has("request-message-{$instance->session_id}")) {
+                    continue;
+                }
+
+                // Verifica se a instância está conectada
                 $response = Http::withHeaders([
                     'Authorization' => env('API_KEY'),
                     'api-key' => $instance->token
                 ])->get(route('wapiwu.checkconnection', ['sessionId' => $instance->session_id]))->json();
 
-                // Verifica se a instância está conectada.
-                // Log::channel('daily')->info('Instância '. $response['success'] ? 'conectada' : 'desconectada' .': ' . $instance->session_id, $response);
-
-                // Espera 15s para próxima verificação.
-                sleep(15);
+                // Espera 30s para próxima verificação.
+                sleep(30);
             } catch (\Throwable $th) {
                 Log::channel('daily')->error('Erro ao verificar instância: ' . $instance->session_id . ' - ' . $th->getMessage());
             }
