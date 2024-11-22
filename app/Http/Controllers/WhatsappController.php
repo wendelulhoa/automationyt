@@ -149,14 +149,14 @@ class WhatsappController extends Controller
                // Cria ou atualiza a instância
                Instance::initInstance(['session_id' => $sessionId, 'connected' => false]);
 
-               // Retira da instância
-               cache()->forget("instance-{$sessionId}");
-
                // Só desconecta se o browser estiver ativo
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
                $page->evaluate("window.WUAPI.disconnect();");
+
+               // Retira da instância
+               cache()->forget("instance-{$sessionId}");
 
                // Para a execução do container
                $this->stopInstance($sessionId);
