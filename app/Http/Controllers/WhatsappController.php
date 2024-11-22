@@ -149,6 +149,9 @@ class WhatsappController extends Controller
                // Cria ou atualiza a instância
                Instance::initInstance(['session_id' => $sessionId, 'connected' => false]);
 
+               // Retira da instância
+               cache()->forget("instance-{$sessionId}");
+
                // Só desconecta se o browser estiver ativo
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
@@ -246,17 +249,20 @@ class WhatsappController extends Controller
      public function startSession(Request $request, string $sessionId)
      {
           try {
-               // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-
-               // Verifica a conexão
-               $content = $page->evaluate("window.WUAPI.startSession();")['result']['result']['value'];
-
                // Gerar um token de autenticação
                $token = Hash::make(Str::random(50));
 
                // Cria ou atualiza a instância
                Instance::initInstance(['session_id' => $sessionId, 'token' => $token, 'webhook' => $request->webhook ?? false, 'connected' => true]);
+               
+               // Retira da instância
+               cache()->forget("instance-{$sessionId}");
+
+               // Cria uma nova página e navega até a URL
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+
+               // Verifica a conexão
+               $content = $page->evaluate("window.WUAPI.startSession();")['result']['result']['value'];
 
                // Coloca para esperar 1 segundo
                sleep(3);

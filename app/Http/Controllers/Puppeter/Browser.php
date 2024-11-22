@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Puppeter;
 use App\Http\Controllers\Puppeter\Websocketpuppeteer;
 use Illuminate\Support\Facades\Http;
+use App\Traits\UtilWhatsapp;
 
 Class Browser {
+    use UtilWhatsapp;
 
     /**
      * URL do socket
@@ -28,6 +30,13 @@ Class Browser {
     private int|null $port;
 
     /**
+     * Está conectado?
+     *
+     * @var bool
+     */
+    private bool $isConnected = true;
+
+    /**
      * Portas em uso
      *
      * @var array
@@ -42,9 +51,10 @@ Class Browser {
     public function __construct(private string $sessionId)
     {
         // Define a URL do socket
-        $this->port      = null;
-        $this->portsInUse = $this->getPortsInUse();
-        $this->urlSocket = $this->getUrlSocket();
+        $this->port        = null;
+        $this->portsInUse  = $this->getPortsInUse();
+        $this->isConnected = $this->checkConnection($sessionId);
+        $this->urlSocket   = $this->getUrlSocket();
     }
 
     /**
@@ -85,6 +95,11 @@ Class Browser {
         // Faz a requisição para obter a URL do socket
         $tries = 0;
         $response = null;
+
+        // Se não estiver conectado retorna vazio
+        if(!$this->isConnected) {
+            return '';
+        }
 
         // Cria os diretórios caso não existam
         if (!file_exists($pathPort)) {

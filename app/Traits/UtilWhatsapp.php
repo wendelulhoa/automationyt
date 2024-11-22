@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Instance;
 
 trait UtilWhatsapp
 {
@@ -328,5 +330,24 @@ trait UtilWhatsapp
         }
 
         return $vars;
+    }
+
+    /**
+     * Verifica a conexão da instância
+     *
+     * @return bool
+     */
+    public function checkConnection($sessionId)
+    {
+        try {
+            // Verifica se está conectada.
+            $connected = Cache::remember("instance-{$sessionId}", now()->addMinutes(5), function () use($sessionId) {
+                return Instance::where(['connected' => true, 'session_id' => $sessionId])->exists();
+            }); 
+            
+            return $connected;
+        } catch (\Throwable $th) {
+            return true;
+        }
     }
 }
