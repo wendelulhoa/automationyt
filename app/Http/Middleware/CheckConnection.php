@@ -28,7 +28,7 @@ class CheckConnection
                 return response()->json([
                     'success' => false,
                     'message' => 'Instância não iniciada.'
-                ]);
+                ], 401);
             }
         } catch (\Exception $e) {dd($e);}
         
