@@ -7,9 +7,10 @@ use App\Http\Controllers\WhatsappController;
 use App\Http\Middleware\ControlRequestMessage;
 use App\Http\Middleware\VerifyInstanceToken;
 use App\Http\Middleware\VerifyServerToken;
+use App\Http\Middleware\CheckConnection;
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::class]], function() {
+Route::group(['prefix' => '/{sessionId}', 'middleware' => [VerifyServerToken::class, CheckConnection::class]], function() {
     // Rotas de inicialização
     Route::get('/getqrcode', [WhatsappController::class, 'getQrcode'])->name('wapiwu.getqrcode');
     Route::post('/start-session', [WhatsappController::class, 'startSession'])->name('wapiwu.startsession');
