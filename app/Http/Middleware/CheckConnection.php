@@ -30,7 +30,7 @@ class CheckConnection
                     'message' => 'Instância não iniciada.'
                 ], 401);
             }
-        } catch (\Exception $e) {dd($e);}
+        } catch (\Exception $e) {}
         
         return $next($request);
     }
