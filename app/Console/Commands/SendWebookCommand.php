@@ -7,6 +7,8 @@ use Illuminate\Console\Command;
 use App\Models\Instance;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use App\Api\Group\GroupWhatsapp;
 
 class SendWebookCommand extends Command
 {
@@ -100,9 +102,15 @@ class SendWebookCommand extends Command
 
                     // Sempre reseta os paramêtros
                     $params = [];
+                    $groupId = $event['id']['remote']['_serialized'];
+
+                    // Busca o grupo caso seja comunidade vem o id completo
+                    $group = Cache::remember("group-{$groupId}", now()->addMinutes(30), function () use($sessionId, $groupId) {
+                        return (new GroupWhatsapp)->findGroupInfo($sessionId, $groupId);
+                    }); 
 
                     // Seta os parametros do webhook
-                    $params['chatid']      = $event['id']['remote']['user'];
+                    $params['chatid']      = $group['metadata']['id'] ?? $event['id']['remote']['user'];
                     $params['author']      = isset($event['author']) ? $event['author']['user'] : null;
                     $params['action']      = $this->getAction($event['subtype']);
                     $params['participant'] = $this->getParticipantsNumber($event['recipients'])[0];
@@ -116,7 +124,7 @@ class SendWebookCommand extends Command
                         Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
 
                         // Seta o log de inicio
-                        Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Instância: {$sessionId}, evento:", $event);
+                        Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $event);
                     }
                 } catch (\Throwable $th) {
                     Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}");
