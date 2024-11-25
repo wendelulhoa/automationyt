@@ -155,6 +155,7 @@ trait UtilWhatsapp
             'text/plain' => 'txt',
             'text/csv' => 'csv',
             'video/quicktime' => 'mov',
+            'audio/mpeg' => 'mp3',
         ];
 
         return $mimeTypes[$mimeType] ?? 'bin';
