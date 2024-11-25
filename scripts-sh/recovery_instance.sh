@@ -1,16 +1,20 @@
 #!/bin/bash
-SESSION_ID=$1
 
-LOG_FILE="/var/www/html/wuapi/public/chrome-sessions/$SESSION_ID/logs/chrome-$SESSION_ID.log"  # Substitua pelo caminho real do seu arquivo de log
+# Caminho da pasta base
+BASE_DIR="/root/chrome-sessions"
 
-# Verifica se o log contém o erro
-if grep -q -e "Failed to open LevelDB database from" -e "Failed to write the temporary index file" "$LOG_FILE"; then
-    # Atualiza a pasta Default com o backup
-    chmod -R 777 /var/www/html/wuapi/public/chrome-sessions/{$sessionId}/
-    chmod -R 777 /var/www/html/wuapi/public/chrome-sessions/{$sessionId}/userdata/
-    chmod -R 777 /var/www/html/wuapi/public/chrome-sessions/{$sessionId}/userdata/Default/
-    
-    echo "Resolvido problema de permissão."
+# Verifica se a pasta existe
+if [ -d "$BASE_DIR" ]; then
+    # Percorre cada subpasta dentro do diretório base
+    for sessionId in "$BASE_DIR"/*; do
+        # Garante que é um diretório
+        if [ -d "$sessionId" ]; then
+            echo "Configurando permissões para $sessionId..."
+            chmod -R 777 "$sessionId/userdata/"
+            chmod -R 777 "$sessionId/userdata/Default/"
+        fi
+    done
+    echo "Permissões aplicadas a todas as sessões."
 else
-    echo "Nenhum erro encontrado no log."
+    echo "A pasta $BASE_DIR não foi encontrada."
 fi

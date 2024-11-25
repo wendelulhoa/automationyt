@@ -17,6 +17,7 @@ echo "WORKING_DIR: $WORKING_DIR"
 SERVICE_FILE_START_SESSION="/etc/systemd/system/start-instance-python.service"
 SERVICE_FILE_STOP_SESSION="/etc/systemd/system/stop-instance-python.service"
 SERVICE_FILE_RESTART_SESSION="/etc/systemd/system/restart-instance-python.service"
+SERVICE_FILE_RECOVERY_SESSION="/etc/systemd/system/recovery-instance-python.service"
 
 echo "Criando o arquivo de serviço systemd em $SERVICE_FILE= $SCRIPT_PATH..."
 
@@ -71,6 +72,23 @@ Environment=PYTHONUNBUFFERED=1
 WantedBy=multi-user.target
 EOL
 
+cat <<EOL | sudo tee $SERVICE_FILE_RECOVERY_SESSION
+[Unit]
+Description=recovery-instance-python
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 "$SCRIPT_PATH/recoveryInstance.py"
+WorkingDirectory=$WORKING_DIR
+Restart=always
+User=$(whoami)
+Group=$(whoami)
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
 # Habilitar e iniciar o serviço
 echo "Habilitando e iniciando o serviço..."
 
@@ -84,6 +102,8 @@ sudo systemctl enable stop-instance-python.service
 sudo systemctl start stop-instance-python.service
 sudo systemctl enable restart-instance-python.service
 sudo systemctl start restart-instance-python.service
+sudo systemctl enable recovery-instance-python.service
+sudo systemctl start recovery-instance-python.service
 
 # Cria uma nova pasta de instâncias
 mkdir -p /root/chrome-sessions
