@@ -61,6 +61,44 @@ class SendWebookCommand extends Command
     }
 
     /**
+     * Envia o webhook
+     *
+     * @param array  $event     = Evento
+     * @param array  $params    = Parametros
+     * @param string $sessionId = Sessão
+     * 
+     * @return void
+     */
+    function sendWebhook(array $event, array $params, string $sessionId): void
+    {
+        $maxRetries = 2; // Número máximo de tentativas
+        $attempt = 0;
+        $success = false;
+
+        do {
+            try {
+                // Verifica as condições
+                if (!in_array($event['id']['remote']['user'], ['status'])) {
+                    // Faz o envio do webhook
+                    Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
+
+                    // Seta o log de inicio
+                    Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $event);
+
+                    $success = true; // Marca como sucesso
+                }
+            } catch (\Exception $e) {
+                $attempt++;
+                if ($attempt < $maxRetries) {
+                    sleep(2); // Aguarda 2 segundos antes de tentar novamente
+                } else {
+                    Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}");
+                }
+            }
+        } while (!$success && $attempt < $maxRetries);
+    }
+
+    /**
      * Execute the console command.
      */
     public function handle()
@@ -118,14 +156,8 @@ class SendWebookCommand extends Command
                     $params['content']     = $params['action'] == 'msgreceived' ? $event['body'] : null;
                     $params['session']     = $sessionId;
 
-                    // Monta os paramêtros do webhook
-                    if(!in_array($event['id']['remote']['user'], ['status']) && $event['id']['fromMe'] == false) {
-                        // Faz o envio do webhook
-                        Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
-
-                        // Seta o log de inicio
-                        Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $event);
-                    }
+                    // Monta os paramêtros do webhook e envia o webhook
+                    $this->sendWebhook($event, $params, $sessionId);
                 } catch (\Throwable $th) {
                     Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}");
                 }
