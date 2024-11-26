@@ -87,7 +87,7 @@ class SendWebookCommand extends Command
 
                     $success = true; // Marca como sucesso
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $th) {
                 $attempt++;
                 if ($attempt < $maxRetries) {
                     sleep(2); // Aguarda 2 segundos antes de tentar novamente
@@ -107,7 +107,7 @@ class SendWebookCommand extends Command
         $instances = Instance::where(['connected' => true])->get();
         
         // Seta o log de inicio
-        // Log::channel('daily')->info("Começou o envio de webhook");
+        Log::channel('daily')->info("Começou o envio de webhook");
 
         foreach ($instances as $instance) {
             // Extrai o nome da sessão
