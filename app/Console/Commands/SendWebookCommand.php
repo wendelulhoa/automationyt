@@ -86,6 +86,8 @@ class SendWebookCommand extends Command
                     Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $event);
 
                     $success = true; // Marca como sucesso
+
+                    break;
                 }
             } catch (\Throwable $th) {
                 $attempt++;
