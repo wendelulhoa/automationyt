@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Instance;
+use Illuminate\Support\Facades\Redis;
 
 trait UtilWhatsapp
 {
@@ -348,6 +349,52 @@ trait UtilWhatsapp
             }); 
             
             return $connected;
+        } catch (\Throwable $th) {
+            return true;
+        }
+    }
+
+    /**
+     * Incremeta na criação de grupos
+     *
+     * @param string $cacheKey
+     * 
+     * @return void
+     */
+    public function incrementGroupCount(string $cacheKey): void
+    {
+        $expiresAt = now()->endOfDay()->timestamp; // Expira no final do dia
+
+        // Incrementa o contador ou inicializa com expiração
+        if (Redis::exists($cacheKey)) {
+            Redis::incr($cacheKey);
+        } else {
+            Redis::set($cacheKey, 1, 'EX', $expiresAt - time());
+        }
+    }
+
+    /**
+     * Verifica se está habilitado para criar grupos
+     *
+     * @param string $cacheKey
+     * @return bool
+     */
+    public function checkCreateGroup(string $cacheKey) 
+    {
+        try {
+            // Obtém o contador atual do Redis
+            $currentCount = Redis::get($cacheKey);
+            $enabled      = true;
+
+            // Verifica se atingiu o limite diário
+            if ($currentCount && $currentCount >= 20) {
+                $enabled = false;
+            }
+
+            // Incrementa o contador ou inicializa com expiração até o fim do dia
+            $this->incrementGroupCount($cacheKey);
+
+            return $enabled;
         } catch (\Throwable $th) {
             return true;
         }

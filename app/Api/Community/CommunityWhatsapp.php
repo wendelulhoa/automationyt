@@ -30,6 +30,18 @@ class CommunityWhatsapp
             // Seta um tempo de espera
             usleep($this->sleepTime);
 
+            // Busca se está habilitado para criação
+            $enabled = $this->checkCreateGroup("create_community_{$sessionId}");
+
+            // Verifica se ainda pode criar novos grupos.
+            if(!$enabled) {
+                return [
+                    'message' => 'Você atingiu o limite diário de criação de grupos.',
+                    'success' => false,
+                    'metadata' => []
+                ];
+            }
+
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
             

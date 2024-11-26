@@ -97,6 +97,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'whatsapp-creategroup' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/whatsappcreategroup/laravel.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_DAILY_DAYS', 7),
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

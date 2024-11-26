@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Api\Group\GroupWhatsapp;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class GroupController extends Controller
 {
@@ -26,6 +27,9 @@ class GroupController extends Controller
 
             // Criar um grupo
             $content = (new GroupWhatsapp)->createGroup($sessionId, $params['subject'], $params['participants']);
+
+            // Seta o log de criação de grupo
+            $this->setLog("Criou o grupo na instância: {$sessionId}", $content);
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return response()->json(['success' => $content['success'], 'message' => $content['message'], 'metadata' => $content['metadata']], ((bool) $content['success'] ? 200 : 400));
@@ -333,6 +337,22 @@ class GroupController extends Controller
             return response()->json($content, ((bool) $content['success'] ? 200 : 400));
         } catch (\Throwable $th) {
             return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
+        }
+    }
+
+    /**
+     * Seta o log
+     *
+     * @param string $log
+     * @return void
+     */
+    private function setLog(string $log, array $data = [])
+    {
+        try {
+            // Grava o log de envio de mensagem
+            Log::channel('whatsapp-creategroup')->info($log, $data);
+        } catch (\Throwable $th) {
+            //throw $th;
         }
     }
 }
