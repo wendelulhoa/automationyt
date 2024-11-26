@@ -95,7 +95,7 @@ class SendWebookCommand extends Command
                     if(cache()->has($id) || empty($event['recipients'][0])) continue;
 
                     // Adiciona o prefixo base64 correto, incluindo o tipo MIME
-                    cache()->put($id, $id, now()->addMinutes(5));
+                    cache()->put($id, $id, now()->addMinutes(2));
 
                     // Sempre reseta os paramêtros
                     $params = [];
@@ -118,6 +118,11 @@ class SendWebookCommand extends Command
                     // Retira o conteúdo para salvar o log
                     unset($event['body']);
 
+                    // Caso seja entrada e saída entra para verifica se já foi enviado
+                    if(cache()->has("participant-{$params['action']}-{$params['chatid']}")) {
+                        continue;
+                    }
+
                     // Monta os paramêtros do webhook e envia o webhook
                     if (!in_array($event['id']['remote']['user'], ['status'])) {
                         // Faz o envio do webhook
@@ -128,6 +133,11 @@ class SendWebookCommand extends Command
                         
                         // Deleta o evento
                         $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
+
+                        // Seta o cache para não enviar novamente
+                        if(in_array($params['action'], ['entry', 'leave'])) {
+                            cache()->put("participant-{$params['action']}-{$params['chatid']}", "participant-{$params['action']}-{$params['chatid']}", now()->addMinutes(60));
+                        }
                     }
                 } catch (\Throwable $th) {
                     Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}");
