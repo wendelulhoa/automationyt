@@ -136,7 +136,7 @@ class SendWebookCommand extends Command
 
                         // Seta o cache para não enviar novamente
                         if(in_array($params['action'], ['entry', 'leave'])) {
-                            cache()->put("participant-{$params['action']}-{$params['chatid']}", "participant-{$params['action']}-{$params['chatid']}", now()->addMinutes(60));
+                            cache()->put("participant-{$params['action']}-{$params['chatid']}", "participant-{$params['action']}-{$params['chatid']}", now()->addMinutes(120));
                         }
                     }
                 } catch (\Throwable $th) {

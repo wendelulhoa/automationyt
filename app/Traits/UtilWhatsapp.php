@@ -57,41 +57,42 @@ trait UtilWhatsapp
     
             // Determinar a extensão do arquivo com base no mimetype
             $extension = $this->getExtensionFromMimeType($mimeType);
-    
+
             // Gerar um nome aleatório para o arquivo
             $randomFileName = strtolower(Str::random(10));
     
             // Nome completo do arquivo com extensão
             $fileName = "$randomFileName.$extension";
+
+            // Salva o arquivo na raiz do container
+            file_put_contents("/storage/$fileName", $fileContent);
+
+            // Define as permissões para 777
+            chmod("/storage/$fileName", 0777);
+
+            // Faz a converção para sempre ficar no padrão do whatsapp.
+            if(in_array($extension, ['mp3', 'ogg', 'mpeg', 'opus'])) {
+                // Converte para o formato m4a para depois renomear para ogg
+                $command = "ffmpeg -i " . escapeshellarg("/storage/$fileName") . " -b:a 192k " . escapeshellarg("/storage/$randomFileName.mp3");
+
+                // Executa o comando
+                exec($command, $output, $returnCode);
+
+                // Remove o arquivo original
+                unlink("/storage/$fileName");
+
+                $fileName = "$randomFileName.mp3";
+
+                // Define as permissões para 777
+                chmod("/storage/$fileName", 0777);
+            }
+
             Filesend::create([
                 'path' => $fileName,
                 'hash' => md5($path),
                 'type' => $mimeType,
                 'forget_in' => now()->addMinutes(120)
             ]);
-
-            // // Verificar se o arquivo é uma imagem e realiza a conversão
-            // if(in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'])) {
-            //     // Salvar a imagem no disco
-            //     $image = Image::read($fileContent);
-            //     $fileName = "$randomFileName.png";
-
-            //     // Salva o arquivo na raiz do container
-            //     $image->toPng()->save("/storage/$fileName");
-
-            //     // Define as permissões para 777
-            //     chmod("/storage/$fileName", 0777);
-            // } 
-
-            // Salva sem conversão
-            // else {
-            // }
-            
-            // Salva o arquivo na raiz do container
-            file_put_contents("/storage/$fileName", $fileContent);
-
-            // Define as permissões para 777
-            chmod("/storage/$fileName", 0777);
         }
 
         return $fileName;
@@ -155,7 +156,7 @@ trait UtilWhatsapp
             'text/plain' => 'txt',
             'text/csv' => 'csv',
             'video/quicktime' => 'mov',
-            'audio/mpeg' => 'mp3',
+            'audio/mpeg' => 'mpeg',
         ];
 
         return $mimeTypes[$mimeType] ?? 'bin';

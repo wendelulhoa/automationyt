@@ -19,6 +19,7 @@ RUN apt update -y && \
       lsof \
       xvfb \
       gnupg \
+      ffmpeg \
       software-properties-common \
       bash-completion \
       supervisor \
