@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command(CheckInstancesCommand::class)->everyFiveMinutes()->withoutOverlapping();
 
 // Remove as mensagens do whatsapp por instância
-Schedule::command(RemoveMessagesCommand::class)->everyFiveMinutes()->withoutOverlapping();
+Schedule::command(RemoveMessagesCommand::class)->everyFifteenMinutes()->withoutOverlapping();
 
 // Remove os arquivos desnecessarios
 Schedule::command(RemoveFilesSendCommand::class)->everyFiveMinutes()->withoutOverlapping();

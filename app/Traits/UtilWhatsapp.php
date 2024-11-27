@@ -410,7 +410,7 @@ trait UtilWhatsapp
     public function getRamdomSleep(int $sleep = 2): int
     {
         try {
-            $sleep = rand($sleep, $sleep * 4);
+            $sleep = rand($sleep, $sleep * 3);
 
             return $sleep;
         } catch (\Throwable $th) {

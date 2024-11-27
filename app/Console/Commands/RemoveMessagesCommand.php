@@ -48,7 +48,7 @@ class RemoveMessagesCommand extends Command
             // Cria uma nova página e navega até a URL
             try {
                 // Aguarda 10s
-                sleep(10);
+                sleep(20);
 
                 // Pega a página ativa
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -78,7 +78,7 @@ class RemoveMessagesCommand extends Command
                 // Remove as mensagens da instância
                 if ($content['success'] && !$hasDeleteMsgs) {
                     // Seta que deletou as mensagens
-                    cache()->put("deletemessages-$sessionId", "deletemessages-$sessionId", now()->addMinutes(2));
+                    cache()->put("deletemessages-$sessionId", "deletemessages-$sessionId", now()->addMinutes(5));
 
                     // Deleta as mensagens
                     $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
