@@ -399,4 +399,22 @@ trait UtilWhatsapp
             return true;
         }
     }
+
+    /**
+     * Pega um sleep random
+     *
+     * @param integer $sleep
+     * 
+     * @return integer
+     */
+    public function getRamdomSleep(int $sleep = 2): int
+    {
+        try {
+            $sleep = rand($sleep, $sleep * 4);
+
+            return $sleep;
+        } catch (\Throwable $th) {
+            return $sleep;
+        }
+    }
 }

@@ -47,6 +47,9 @@ class RemoveMessagesCommand extends Command
 
             // Cria uma nova página e navega até a URL
             try {
+                // Aguarda 10s
+                sleep(10);
+
                 // Pega a página ativa
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
