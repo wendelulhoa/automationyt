@@ -30,6 +30,21 @@ class GroupWhatsapp
             // Seta um tempo de espera
             usleep($this->sleepTime);
 
+            // Cria uma nova página e navega até a URL
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+            
+            // Verifica a conexão
+            $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
+
+            // Verifica a conexão a instância.
+            if (!$content['success']) {
+                return [
+                    'message' => 'Ops! A instância está desconectada.',
+                    'success' => false,
+                    'metadata' => []
+                ];
+            }
+
             // Busca se está habilitado para criação
             $enabled = $this->checkCreateGroup("create_group_{$sessionId}");
             
@@ -42,8 +57,6 @@ class GroupWhatsapp
                 ];
             }
 
-            // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
             
             // Seta o text temporário
             $randomNameVar = strtolower(Str::random(5));

@@ -363,7 +363,7 @@ trait UtilWhatsapp
      */
     public function incrementGroupCount(string $cacheKey): void
     {
-        $expiresAt = now()->endOfDay()->timestamp; // Expira no final do dia
+        $expiresAt = now()->addHours(6)->timestamp; // Expira no final do dia
 
         // Incrementa o contador ou inicializa com expiração
         if (Redis::exists($cacheKey)) {
