@@ -7,6 +7,7 @@ use App\Console\Commands\RemoveFilesSendCommand;
 use App\Console\Commands\RemoveMessagesCommand;
 use App\Console\Commands\SendWebookCommand;
 use App\Console\Commands\SendWebhookLeaveCommunity;
+use App\Console\Commands\OptimizeNewConnectionCommand;
 use Illuminate\Support\Facades\Schedule;
 
 // Registra os comando de console
