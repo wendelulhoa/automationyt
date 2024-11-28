@@ -81,7 +81,7 @@ class SendWebookCommand extends Command
             // Cria uma nova página e navega até a URL
             try {
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-    
+
                 // Seta os grupos
                 $events = $page->evaluate("window.WUAPI.webhookEvents")['result']['result']['value'];
             } catch (\Throwable $th) {
@@ -130,9 +130,6 @@ class SendWebookCommand extends Command
     
                         // Seta o log de inicio
                         Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $event);
-                        
-                        // Deleta o evento
-                        $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
 
                         // Seta o cache para não enviar novamente
                         if(in_array($params['action'], ['entry', 'leave'])) {
@@ -141,7 +138,11 @@ class SendWebookCommand extends Command
                     }
                 } catch (\Throwable $th) {
                     Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}");
+                    continue;
                 }
+
+                // Deleta o evento
+                $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
             }
         }
     }

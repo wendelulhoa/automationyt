@@ -6,6 +6,7 @@ use App\Console\Commands\RecoveryInstancesCommand;
 use App\Console\Commands\RemoveFilesSendCommand;
 use App\Console\Commands\RemoveMessagesCommand;
 use App\Console\Commands\SendWebookCommand;
+use App\Console\Commands\SendWebhookLeaveCommunity;
 use Illuminate\Support\Facades\Schedule;
 
 // Registra os comando de console
@@ -19,6 +20,12 @@ Schedule::command(RemoveFilesSendCommand::class)->everyFiveMinutes()->withoutOve
 
 // Envia os webhooks a cada 5s
 Schedule::command(SendWebookCommand::class)->everyFiveSeconds()->withoutOverlapping();
+
+// Envia a cada 1m
+Schedule::command(SendWebhookLeaveCommunity::class)->everyFiveMinutes()->withoutOverlapping();
+
+// Realiza sempre a otimização na primeira conexão.
+Schedule::command(OptimizeNewConnectionCommand::class)->everyMinute()->withoutOverlapping();
 
 // Reinicia as instâncias
 Schedule::command(RebootInstancesCommand::class)->dailyAt('02:00')->withoutOverlapping();

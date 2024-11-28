@@ -45,6 +45,12 @@ class WhatsappController extends Controller
                          $this->restartSession($sessionId);
                     }
 
+                    // Cria ou atualiza a instância
+                    Instance::initInstance(['session_id' => $sessionId, 'newconnection' => true]);
+
+                    // Seta como nova conexão
+                    cache()->put("newconnection-{$sessionId}", "newconnection-{$sessionId}", now()->addMinutes(30));
+
                     // Gera o QR code em SVG
                     $qrCode = QRCode::text(trim($content['qrCode']))
                          ->setSize(6)

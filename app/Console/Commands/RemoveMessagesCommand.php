@@ -77,17 +77,7 @@ class RemoveMessagesCommand extends Command
 
                 // Remove as mensagens da instância
                 if ($content['success'] && !$hasDeleteMsgs) {
-                    // Seta que deletou as mensagens
-                    cache()->put("deletemessages-$sessionId", "deletemessages-$sessionId", now()->addMinutes(5));
-
-                    // Deleta as mensagens
-                    $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
-
-                    // Deleta os chats
-                    $page->evaluate("window.WUAPI.deleteChatsView()");
-
-                    // Seta o log
-                    Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");
+                    $this->removeMessages($page, $sessionId);
                 }
             } catch (\Throwable $th) {
                 // Continua para a próxima instância em caso de erro

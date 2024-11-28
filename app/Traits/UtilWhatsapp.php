@@ -13,6 +13,7 @@ use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Instance;
 use Illuminate\Support\Facades\Redis;
+use App\Api\Group\GroupWhatsapp;
 
 trait UtilWhatsapp
 {
@@ -415,6 +416,116 @@ trait UtilWhatsapp
             return $sleep;
         } catch (\Throwable $th) {
             return $sleep;
+        }
+    }
+
+    /**
+     * Envia o webhook da comunidade
+     *
+     * @param string $sessionId
+     * @param boolean $sendWebhook
+     * @return void
+     */
+    public function sendWebhookCommunity(string $sessionId, bool $sendWebhook = false): void
+    {
+        try {
+            // Cria uma nova página e navega até a URL
+            $allGroups = (new GroupWhatsapp)->getAllGroups($sessionId);
+            
+            // Caso esteja vazio passa para a próxima interação
+            if(empty($allGroups['groups'])) return;
+
+            // Envia os eventos para o webhook
+            foreach ($allGroups['groups'] as $group) {
+                foreach ($group['participants']['pastParticipants'] as $pastParticipant) {
+                    try {
+                        // Assuming you have the timestamp
+                        $timestamp = $pastParticipant['leaveTs'];
+                        
+                        // Se não comunidade passa para próxima interação.
+                        if(!$group['isCommunity'] || strpos($pastParticipant['jid'], '@lid') !== false || cache()->has("jid_{$pastParticipant['jid']}_{$timestamp}")) continue;
+
+        
+                        // Create a Carbon object from the timestamp
+                        $timestampDate = Carbon::createFromTimestamp($timestamp);
+        
+                        // Pega o inicio e o fim do dia.
+                        $startOfDay = Carbon::yesterday()->startOfDay();
+                        $endOfDay = Carbon::now()->endOfDay();
+        
+                        // Caso a data seja menor que 2 dias não busca
+                        if (!($timestampDate->between($startOfDay, $endOfDay))) continue;
+
+                        // Monta a query para consulta
+                        $query = Leavemember::where(['jid' => $pastParticipant['jid'], 'leavets' => $timestamp]);
+
+                        // Caso tenha no cache é por está em uso
+                        if(!cache()->has("jid_{$pastParticipant['jid']}_{$timestamp}")) {
+                            $exists = $query->exists();
+    
+                            // Se existir continua para próxima interação
+                            if($exists) continue;
+
+                            // Se não existir cria
+                            if(!$exists) {
+                                Leavemember::create(['jid' => $pastParticipant['jid'], 'leavets' => $timestamp]);
+                            }
+
+                            // Adiciona o prefixo base64 correto, incluindo o tipo MIME
+                            cache()->put("jid_{$pastParticipant['jid']}_{$timestamp}", "jid_{$pastParticipant['jid']}_{$timestamp}", now()->addMinutes(240));
+                        }
+    
+                        // Seta os parametros do webhook
+                        $params['chatid']      = $group['id'];
+                        $params['author']      = $pastParticipant['jid'];
+                        $params['action']      = 'leave';
+                        $params['participant'] = $pastParticipant['jid'];
+                        $params['msgid']       = null;
+                        $params['content']     = null;
+                        $params['session']     = $sessionId;
+
+                        // Envia o webhook
+                        if($sendWebhook) {
+                            // Monta os paramêtros do webhook e envia o webhook
+                            Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
+        
+                            // Seta o log de envio
+                            Log::channel('whatsapp-webhook')->info("Enviou o webhook saída: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $pastParticipant);
+                        }
+                    } catch (\Throwable $th) {
+                        Log::channel('whatsapp-webhook')->error("Erro webhook comunidade: {$th->getMessage()}, Instância: {$sessionId}");
+                        continue;
+                    }
+                }
+            }
+        } catch (\Throwable $th) {
+            Log::channel('whatsapp-webhook')->error("Erro webhook comunidade: {$th->getMessage()}, Instância: {$sessionId}");
+        }
+    }
+
+    /**
+     * Remove as mensagens 
+     *
+     * @param Page $page
+     * @param string $sessionId
+     * @return void
+     */
+    public function removeMessages(Page $page, string $sessionId): void
+    {
+        try {
+            // Seta que deletou as mensagens
+            cache()->put("deletemessages-$sessionId", "deletemessages-$sessionId", now()->addMinutes(5));
+
+            // Deleta as mensagens
+            $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
+
+            // Deleta os chats
+            $page->evaluate("window.WUAPI.deleteChatsView()");
+
+            // Seta o log
+            Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");
+        } catch (\Throwable $th) {
+            Log::channel('whatsapp-removemessages')->error("Erro ao remover mensagens: {$th->getMessage()}, Instância: {$sessionId}");
         }
     }
 }

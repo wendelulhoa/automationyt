@@ -10,7 +10,7 @@ class Instance extends Model
     use HasFactory;
 
     protected $table = 'instances';
-    protected $fillable = ['token', 'session_id', 'webhook', 'connected'];
+    protected $fillable = ['token', 'session_id', 'webhook', 'connected', 'newconnection'];
 
     /**
      * Método para inicializar uma instância
