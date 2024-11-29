@@ -412,7 +412,7 @@ trait UtilWhatsapp
     public function getRamdomSleep(int $sleep = 2): int
     {
         try {
-            $sleep = rand($sleep, $sleep * 3);
+            $sleep = rand($sleep, $sleep * 2);
 
             return $sleep;
         } catch (\Throwable $th) {
@@ -430,6 +430,9 @@ trait UtilWhatsapp
     public function sendWebhookCommunity(string $sessionId, bool $sendWebhook = false): void
     {
         try {
+            // Se tiver acima de 70 só retorna.
+            if($this->getPercentageCpu() >= 60 && $sendWebhook) return;
+
             // Cria uma nova página e navega até a URL
             $allGroups = (new GroupWhatsapp)->getAllGroups($sessionId);
             
@@ -514,8 +517,11 @@ trait UtilWhatsapp
     public function removeMessages(Page $page, string $sessionId): void
     {
         try {
+            // Se tiver acima de 70 só retorna.
+            if($this->getPercentageCpu() >= 70) return;
+
             // Seta que deletou as mensagens
-            cache()->put("deletemessages-$sessionId", "deletemessages-$sessionId", now()->addMinutes(5));
+            cache()->put("deletemessages-{$sessionId}", "deletemessages-{$sessionId}", now()->addMinutes(30));
 
             // Deleta as mensagens
             $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
@@ -527,6 +533,33 @@ trait UtilWhatsapp
             Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");
         } catch (\Throwable $th) {
             Log::channel('whatsapp-removemessages')->error("Erro ao remover mensagens: {$th->getMessage()}, Instância: {$sessionId}");
+        }
+    }
+
+    /**
+     * Busca a porcentagem da CPU
+     *
+     * @return float
+     */
+    public function getPercentageCpu()
+    {
+        try {
+            // Pega a porcentagem do CPU
+            $output = shell_exec("top -bn1 | grep 'Cpu(s)'");
+            $cpuUsage = 0;
+
+            // Processa o resultado
+            preg_match('/(\d+\.\d+)\s*id/', $output, $matches);
+
+            // Calcula o uso da CPU (100% menos a porcentagem de idle)
+            if (isset($matches[1])) {
+                $cpuUsage = 100 - (float)$matches[1];
+            }
+
+            return $cpuUsage;
+        } catch (\Throwable $th) {
+            // Retorna 0 em caso de falha
+            return 0;
         }
     }
 }

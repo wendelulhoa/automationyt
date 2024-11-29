@@ -39,7 +39,7 @@ class RemoveMessagesCommand extends Command
             // Aguarda até que o uso da CPU seja menor que 50%
             while ($this->getPercentageCpu() >= 50) {
                 // Dorme por 5 segundos antes de checar novamente
-                sleep(5);
+                sleep(10);
             }
 
             // Extrai o nome da sessão
@@ -47,6 +47,14 @@ class RemoveMessagesCommand extends Command
 
             // Cria uma nova página e navega até a URL
             try {
+                // Verifica se está gerando qrCode
+                $generateQr        = cache()->has("generate-qrcode-$sessionId");
+                $isRestartInstance = cache()->has("restart-instance-$sessionId");
+                $hasDeleteMsgs     = cache()->has("deletemessages-$sessionId");
+
+                // Se já foi deletado não faz nenhuma consulta
+                if($hasDeleteMsgs) continue;
+
                 // Aguarda 10s
                 sleep(20);
 
@@ -56,12 +64,7 @@ class RemoveMessagesCommand extends Command
                 // Verifica a conexão
                 $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
 
-                // Verifica se está gerando qrCode
-                $generateQr        = cache()->has("generate-qrcode-$sessionId");
-                $isRestartInstance = cache()->has("restart-instance-$sessionId");
-                $hasDeleteMsgs     = cache()->has("deletemessages-$sessionId");
-
-                if($content['status'] == 'CONNECTING' && !$generateQr && !$isRestartInstance) {
+                if($content['status'] == 'CONNECTING' && !$generateQr && !$isRestartInstance && $this->getPercentageCpu() < 40) {
                     // Adiciona o prefixo base64 correto, incluindo o tipo MIME
                     cache()->put("restart-instance-$sessionId", "restart-instance-$sessionId", now()->addMinutes(30));
 

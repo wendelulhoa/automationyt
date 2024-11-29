@@ -193,7 +193,7 @@ class WhatsappController extends Controller
           try {
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-               // dd($page->evaluate("var elements = document.querySelectorAll('.x10l6tqk.xh8yej3.x1g42fcv'); elements.length;"));
+               // dd($page->evaluate("navigator.userAgent;"));
                // dd($page->evaluate("window.WUAPI.deleteChatsView()"));
                // dd($page->evaluate("window.WUAPI.countMessagesInIndexedDB()"));
                // dd($page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB()"));

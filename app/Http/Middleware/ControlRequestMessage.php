@@ -6,9 +6,31 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Cache;
 
 class ControlRequestMessage
 {
+    /**
+     * Número máximo de requisições simultâneas
+     *
+     * @var integer
+     */
+    private $maxRequests = 7;
+
+    /**
+     * Chave para controlar a fila
+     *
+     * @var string
+     */
+    private $lockKey = 'active_requests';
+
+    /**
+     * Tempo máximo de espera (em segundos)
+     *
+     * @var integer
+     */
+    private $timeout = 10;
+
     /**
      * Handle an incoming request.
      *
@@ -19,18 +41,24 @@ class ControlRequestMessage
         // Caso ocorra algum erro, a resposta padrão é essa
         $response = ['status' => 'error', 'message' => 'Request not finished', 'success' => false];
 
+        // Verifica se a sessão existe
+        $sessionId = $request->route('sessionId');
+        $routeName = $request->route()->getName();
+
         try {
-            // Verifica se a sessão existe
-            $sessionId = $request->route('sessionId');
-            $routeName = $request->route()->getName();
-            
+            // Caso o processamento esteja acima de 70% espera 5s.
+            if($this->getPercentageCpu() >= 60) {
+                sleep(3);
+            }
+
             // Grava o log de envio de mensagem
             $this->setLog("Rota: $routeName, sessão: $sessionId");
             
-            // Aguarda a finalização da requisição
-            if(cache()->has("request-message-{$sessionId}")) {
-                $this->waitFinishRequest($sessionId);
-            }
+            // Aguarda a finalização da requisição se tiver mais de 7 requisições simultanea.
+            $this->waitFinishRequest($sessionId, 'all');
+
+            // Aguarda a finalização da requisição de mesma sessão.
+            $this->waitFinishRequest($sessionId, 'session');
 
             // Adiciona no cache para verificar daqui 10m
             cache()->put("request-message-{$sessionId}", "request-message-{$sessionId}", now()->addSeconds(30));
@@ -41,11 +69,14 @@ class ControlRequestMessage
             // Libera para a próxima requisição
             cache()->forget("request-message-{$sessionId}");
 
-            // Aguarda 2 segundos para a próxima requisição
-            sleep(2);
+            // Libera a vaga
+            $this->releaseLock($sessionId);
         } catch (\Exception $e) {
             // Libera para a próxima requisição
             cache()->forget("request-message-{$sessionId}");
+
+            // Libera a vaga
+            $this->releaseLock($sessionId);
 
             $response = ['status' => 'error', 'message' => $e->getMessage(), 'success' => false];
 
@@ -62,24 +93,50 @@ class ControlRequestMessage
      * @param string $sessionId
      * @return void
      */
-    private function waitFinishRequest(string $sessionId) 
+    private function waitFinishRequest(string $sessionId, $type = 'session') 
     {
-        // Variáveis de controle
-        $timeout    = 0;
-        $maxTimeout = 30;
-        $interval   = 1;
+        switch ($type) {
+            case 'all':
+                $startTime = now();
+                $lockAcquired = false;
 
-        // Aguarda a finalização da requisição
-        while ($timeout < $maxTimeout) {
-            // Verifica se a requisição foi finalizada
-            if (!cache()->has("request-message-{$sessionId}")) {
+                // Aguarda até que uma vaga esteja disponível (máximo de 20 segundos)
+                while (true) {
+                    if ($this->canProcessRequest($sessionId)) {
+                        $lockAcquired = true;
+                        break;
+                    }
+
+                    // Verifica se o tempo de espera foi excedido
+                    if (now()->diffInSeconds($startTime) >= $this->timeout) {
+                        $this->setLog("Timeout atingido. Prosseguindo com a requisição sem vaga na fila. Sessão: $sessionId");
+                        break; // Sai do loop e prossegue com a requisição
+                    }
+
+                    // Aguarda 500ms antes de tentar novamente
+                    usleep(500000); // 500ms
+                }
                 break;
-            }
             
-            // Aguarda 1 segundo
-            sleep($interval);
-            $timeout += $interval;
-            $interval++;
+            case 'session':
+                // Variáveis de controle
+                $timeout    = 0;
+                $maxTimeout = 30;
+                $interval   = 1;
+        
+                // Aguarda a finalização da requisição
+                while ($timeout < $maxTimeout) {
+                    // Verifica se a requisição foi finalizada
+                    if (!cache()->has("request-message-{$sessionId}")) {
+                        break;
+                    }
+                    
+                    // Aguarda 1 segundo
+                    sleep($interval);
+                    $timeout += $interval;
+                    $interval++;
+                }
+                break;
         }
     }
 
@@ -96,6 +153,70 @@ class ControlRequestMessage
             Log::channel('daily')->$type($log);
         } catch (\Throwable $th) {
             //throw $th;
+        }
+    }
+
+    /**
+     * Verifica se a requisição pode ser processada (respeitando o limite).
+     *
+     * @param string $sessionId = sessão
+     * @return boolean
+     */
+    private function canProcessRequest(string $sessionId): bool
+    {
+        // Obtém a contagem atual de requisições ativas
+        $activeRequests = Cache::get($this->lockKey, []);
+
+        // Verifica se já há espaço na fila
+        if (count($activeRequests) < $this->maxRequests) {
+            $activeRequests[$sessionId] = now();
+            Cache::put($this->lockKey, $activeRequests, now()->addMinutes(5));
+            return true;
+        }
+
+        return false; // Não há espaço na fila
+    }
+
+    /**
+     * Libera uma vaga na fila de requisições.
+     *
+     * @param string $sessionId = sessão
+     * 
+     * @return void
+     */
+    private function releaseLock(string $sessionId): void
+    {
+        $activeRequests = Cache::get($this->lockKey, []);
+        if (isset($activeRequests[$sessionId])) {
+            unset($activeRequests[$sessionId]);
+            Cache::put($this->lockKey, $activeRequests, now()->addMinutes(5));
+        }
+    }
+
+    /**
+     * Busca a porcentagem da CPU
+     *
+     * @return float
+     */
+    private function getPercentageCpu()
+    {
+        try {
+            // Pega a porcentagem do CPU
+            $output = shell_exec("top -bn1 | grep 'Cpu(s)'");
+            $cpuUsage = 0;
+
+            // Processa o resultado
+            preg_match('/(\d+\.\d+)\s*id/', $output, $matches);
+
+            // Calcula o uso da CPU (100% menos a porcentagem de idle)
+            if (isset($matches[1])) {
+                $cpuUsage = 100 - (float)$matches[1];
+            }
+
+            return $cpuUsage;
+        } catch (\Throwable $th) {
+            // Retorna 0 em caso de falha
+            return 0;
         }
     }
 }

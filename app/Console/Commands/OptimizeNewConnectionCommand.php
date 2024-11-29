@@ -35,6 +35,9 @@ class OptimizeNewConnectionCommand extends Command
 
         foreach ($instances as $sessionId) {
             try {
+                // Se tiver acima de 70 só retorna.
+                if($this->getPercentageCpu() >= 70) continue;
+
                 // Pega a página ativa
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 

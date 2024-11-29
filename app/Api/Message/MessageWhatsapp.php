@@ -169,10 +169,6 @@ class MessageWhatsapp {
             $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");");
             $content = $body['result']['result']['value'];
 
-            // Deleta a variável temporária e o input file
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
-            $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
-
             return $content;
         } catch (\Throwable $th) {
             return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
@@ -214,9 +210,6 @@ class MessageWhatsapp {
             // Executa o script no navegador
             $body    = $page->evaluate("window.WUAPI.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");");
             $content = $body['result']['result']['value'];
-
-            // Deleta a variável temporária e o input file
-            $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
 
             return $content;
         } catch (\Throwable $th) {
@@ -263,10 +256,6 @@ class MessageWhatsapp {
             // Executa o script no navegador
             $body    = $page->evaluate("window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});");
             $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
-            $page->evaluate("localStorage.removeItem(`$randomNameVarOptions`);");
 
             return $content;
         } catch (\Throwable $th) {
@@ -335,9 +324,6 @@ class MessageWhatsapp {
             // Executa o script no navegador
             $body    = $page->evaluate("window.WUAPI.sendMsgEvent('$chatId', JSON.parse(localStorage.getItem('$randomNameVarOptions')));");
             $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVarOptions`);");
 
             return $content;
         } catch (\Throwable $th) {
