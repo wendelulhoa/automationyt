@@ -521,7 +521,7 @@ trait UtilWhatsapp
             if($this->getPercentageCpu() >= 70) return;
 
             // Seta que deletou as mensagens
-            cache()->put("deletemessages-{$sessionId}", "deletemessages-{$sessionId}", now()->addMinutes(30));
+            cache()->put("deletemessages-{$sessionId}", "deletemessages-{$sessionId}", now()->addMinutes(2));
 
             // Deleta as mensagens
             $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
