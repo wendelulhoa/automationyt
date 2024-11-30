@@ -47,8 +47,8 @@ class ControlRequestMessage
 
         try {
             // Caso o processamento esteja acima de 70% espera 5s.
-            if($this->getPercentageCpu() >= 60) {
-                sleep(3);
+            if($this->getPercentageCpu() >= 80) {
+                sleep(5);
             }
 
             // Grava o log de envio de mensagem
@@ -114,14 +114,14 @@ class ControlRequestMessage
                     }
 
                     // Aguarda 500ms antes de tentar novamente
-                    usleep(500000); // 500ms
+                    usleep(500000);
                 }
                 break;
             
             case 'session':
                 // Variáveis de controle
                 $timeout    = 0;
-                $maxTimeout = 30;
+                $maxTimeout = 20;
                 $interval   = 1;
         
                 // Aguarda a finalização da requisição
