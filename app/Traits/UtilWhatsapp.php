@@ -15,6 +15,7 @@ use App\Models\Instance;
 use Illuminate\Support\Facades\Redis;
 use App\Api\Group\GroupWhatsapp;
 use Carbon\Carbon;
+use App\Models\Leavemember;
 
 trait UtilWhatsapp
 {
