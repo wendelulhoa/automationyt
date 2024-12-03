@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Api\Group\GroupWhatsapp;
+use Exception;
 
 class SendWebookCommand extends Command
 {
@@ -126,10 +127,15 @@ class SendWebookCommand extends Command
                     // Monta os paramêtros do webhook e envia o webhook
                     if (!in_array($event['id']['remote']['user'], ['status'])) {
                         // Faz o envio do webhook
-                        Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
-    
+                        $response = Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
+                        
+                        // Verifica se a chave "message" existe e contém "Internal Server Error"
+                        if (isset($response['message']) && trim($response['message']) === trim('Internal Server Error')) {
+                            throw new Exception("Erro interno no servidor: " . $response['message']);
+                        }
+
                         // Seta o log de inicio
-                        Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $params);
+                        Log::channel('whatsapp-webhook')->info("Enviou o webhook: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:",['params' => $params, 'response' => $response->body()]);
 
                         // Seta o cache para não enviar novamente
                         if(in_array($params['action'], ['entry', 'leave'])) {
