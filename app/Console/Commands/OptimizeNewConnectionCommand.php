@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Instance;
 use App\Traits\UtilWhatsapp;
 use App\Http\Controllers\Puppeter\Puppeteer;
+use Illuminate\Support\Facades\Log;
 
 class OptimizeNewConnectionCommand extends Command
 {

@@ -37,16 +37,15 @@ class MessageWhatsapp {
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
+            // Seta como true ou false para enviar
+            $mention = $mention ? 'true' : 'false';
+
+            // Normalizar texto para UTF-8 (se necessário)
+            $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
 
             // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);");
+            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', `$text`, $mention);");
             $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
@@ -77,19 +76,15 @@ class MessageWhatsapp {
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$text \n\n $link`);");
+            // Normalizar texto para UTF-8 (se necessário)
+            $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
 
             // Seta o script para enviar a imagem
-            $script = "window.WUAPI.sendLinkPreview('$chatId', localStorage.getItem('$randomNameVar'), '$link');";
+            $script = "window.WUAPI.sendLinkPreview('$chatId', `$text \n\n $link`, '$link');";
 
             // Executa o script no navegador
             $body    = $page->evaluate($script);
             $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
@@ -157,6 +152,9 @@ class MessageWhatsapp {
 
             // Adiciona o input file no DOM
             [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+
+            // Normalizar texto para UTF-8 (se necessário)
+            $caption = str_replace(["´", "`", "'"], ["", "", ""], $caption);
             
             // Seta o caption temporário
             $randomNameVar = strtolower(Str::random(6));
