@@ -34,8 +34,8 @@ def process_json_files():
                 # Verifica se session_id e port foram encontrados
                 if session_id and port:
                     # Verifica o uso da CPU antes de iniciar o processamento
-                    while get_cpu_usage() >= 60.0:
-                        print("Uso da CPU acima de 60%, aguardando...")
+                    while get_cpu_usage() >= 90.0:
+                        print("Uso da CPU acima de 90%, aguardando...")
                         time.sleep(5)  # Aguarda 5 segundos antes de verificar novamente
 
                     # Executa o script shell com os argumentos
