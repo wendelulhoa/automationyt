@@ -27,7 +27,7 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
 
                // Pega o qrcode
                $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
@@ -193,7 +193,7 @@ class WhatsappController extends Controller
           try {
                // Cria uma nova página e navega até a URL
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-               // dd($page->evaluate("navigator.userAgent;"));
+               // dd($page->evaluate(" window.WUAPI.getVersion();"));
                // dd($page->evaluate("window.WUAPI.deleteChatsView()"));
                // dd($page->evaluate("window.WUAPI.countMessagesInIndexedDB()"));
                // dd($page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB()"));
