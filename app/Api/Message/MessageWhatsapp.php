@@ -10,9 +10,9 @@ class MessageWhatsapp {
     use UtilWhatsapp;
 
     /**
-     * Tempo de espera 4s
+     * Tempo de espera 1s
      */
-    private $sleepTime = 2;
+    private $sleepTime = 1;
 
     /**
      * Envia uma mensagem de texto

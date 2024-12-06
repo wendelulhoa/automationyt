@@ -46,9 +46,9 @@ class ControlRequestMessage
         $routeName = $request->route()->getName();
 
         try {
-            // Caso o processamento esteja acima de 70% espera 5s.
+            // Caso o processamento esteja acima de 80% espera 2s.
             if($this->getPercentageCpu() >= 80) {
-                sleep(5);
+                sleep(2);
             }
 
             // Grava o log de envio de mensagem
@@ -121,7 +121,7 @@ class ControlRequestMessage
             case 'session':
                 // Variáveis de controle
                 $timeout    = 0;
-                $maxTimeout = 20;
+                $maxTimeout = 10;
                 $interval   = 1;
         
                 // Aguarda a finalização da requisição
@@ -134,7 +134,6 @@ class ControlRequestMessage
                     // Aguarda 1 segundo
                     sleep($interval);
                     $timeout += $interval;
-                    $interval++;
                 }
                 break;
         }

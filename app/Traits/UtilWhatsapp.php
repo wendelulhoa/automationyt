@@ -410,7 +410,7 @@ trait UtilWhatsapp
      * 
      * @return integer
      */
-    public function getRamdomSleep(int $sleep = 2): int
+    public function getRamdomSleep(int $sleep = 1): int
     {
         try {
             $sleep = rand($sleep, $sleep * 2);
@@ -518,9 +518,6 @@ trait UtilWhatsapp
     public function removeMessages(Page $page, string $sessionId): void
     {
         try {
-            // Se tiver acima de 70 só retorna.
-            if($this->getPercentageCpu() >= 70) return;
-
             // Seta que deletou as mensagens
             cache()->put("deletemessages-{$sessionId}", "deletemessages-{$sessionId}", now()->addMinutes(2));
 
