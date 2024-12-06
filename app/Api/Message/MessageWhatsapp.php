@@ -150,8 +150,11 @@ class MessageWhatsapp {
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
 
-            // Adiciona o input file no DOM
-            [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+            // Verifica se o arquivo existe
+            $existFile = $this->checkExistFile($page, $fileName)['success'];
+
+            // Seta o nome inicial do input
+            $nameFileInput = 'default';
 
             // Normalizar texto para UTF-8 (se necessário)
             $caption = str_replace(["´", "`", "'"], ["", "", ""], $caption);
@@ -160,11 +163,17 @@ class MessageWhatsapp {
             $randomNameVar = strtolower(Str::random(6));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$caption`);");
 
-            // Seta o arquivo no input
-            $page->setFileInput($backendNodeId, "/storage/$fileName");
+            // Só seta se o arquivo não existir
+            if(!$existFile) {
+                // Adiciona o input file no DOM
+                [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+                
+                // Seta o arquivo no input
+                $page->setFileInput($backendNodeId, "/storage/$fileName");
+            }
 
             // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\");");
+            $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\", \"$fileName\");");
             $content = $body['result']['result']['value'];
 
             return $content;
@@ -199,11 +208,17 @@ class MessageWhatsapp {
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
 
-            // Adiciona o input file no DOM
-            [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+            // Verifica se o arquivo existe
+            $existFile = $this->checkExistFile($page, $fileName)['success'];
 
-            // Seta o arquivo no input
-            $page->setFileInput($backendNodeId, "/storage/$fileName");
+            // Só seta se o arquivo não existir
+            if(!$existFile) {
+                // Adiciona o input file no DOM
+                [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+                
+                // Seta o arquivo no input
+                $page->setFileInput($backendNodeId, "/storage/$fileName");
+            }
 
             // Executa o script no navegador
             $body    = $page->evaluate("window.WUAPI.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");");

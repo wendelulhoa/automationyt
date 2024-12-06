@@ -115,9 +115,10 @@ trait UtilWhatsapp
         // Deleta a variável temporária
         $randomNameVar = strtolower(Str::random(6));
         $page->evaluate("window.WUAPI.addInputFile('$randomNameVar');");
+        $document = $page->getDocument();
 
         // Pega o body 
-        $body = $page->getDocument()['result']['root']['children'][1]['children'][1];
+        $body = ($document['result']['root']['children'][1]['children'][1] ?? $document['result']['root']['children'][0]['children'][1]);
         
         // Pego todos inputs
         $auxInputs = [];
@@ -558,6 +559,27 @@ trait UtilWhatsapp
         } catch (\Throwable $th) {
             // Retorna 0 em caso de falha
             return 0;
+        }
+    }
+
+    /**
+     * Verifica se o arquivo existe
+     *
+     * @param Page $page
+     * @param string $fileName
+     * 
+     * @return array
+     */
+    public function checkExistFile(Page $page, string $fileName): array
+    {
+        try {
+            // Pega se tem o arquivo em backup
+            $body = $page->evaluate("window.WUAPI.existsFile('$fileName');");
+            $content = $body['result']['result']['value'];
+
+            return ['success' => $content['success'], 'message' => $content['message']];
+        } catch (\Throwable $th) {
+            return ['success' => false, 'message' => $th->getMessage()];
         }
     }
 }
