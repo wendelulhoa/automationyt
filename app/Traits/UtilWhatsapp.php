@@ -433,7 +433,7 @@ trait UtilWhatsapp
     {
         try {
             // Se tiver acima de 70 só retorna.
-            if($this->getPercentageCpu() >= 60 && $sendWebhook) return;
+            if($this->getPercentageCpu() >= 80 && $sendWebhook) return;
 
             // Cria uma nova página e navega até a URL
             $allGroups = (new GroupWhatsapp)->getAllGroups($sessionId);
@@ -527,6 +527,9 @@ trait UtilWhatsapp
 
             // Deleta os chats
             $page->evaluate("window.WUAPI.deleteChatsView()");
+
+            // Limpa o cache de imagens
+            $page->evaluate("window.WUAPI.clearCache()");
 
             // Seta o log
             Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");

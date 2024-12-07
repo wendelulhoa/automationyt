@@ -25,13 +25,6 @@ class ControlRequestMessage
     private $lockKey = 'active_requests';
 
     /**
-     * Tempo máximo de espera (em segundos)
-     *
-     * @var integer
-     */
-    private $timeout = 10;
-
-    /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
@@ -97,24 +90,22 @@ class ControlRequestMessage
     {
         switch ($type) {
             case 'all':
-                $startTime = now();
-                $lockAcquired = false;
-
-                // Aguarda até que uma vaga esteja disponível (máximo de 20 segundos)
-                while (true) {
+                // Variáveis de controle
+                $timeout    = 0;
+                $maxTimeout = 10;
+                $interval   = 1;
+        
+                // Aguarda a finalização da requisição
+                while ($timeout < $maxTimeout) {
+                    // Verifica se a requisição foi finalizada
                     if ($this->canProcessRequest($sessionId)) {
                         $lockAcquired = true;
                         break;
                     }
-
-                    // Verifica se o tempo de espera foi excedido
-                    if (now()->diffInSeconds($startTime) >= $this->timeout) {
-                        $this->setLog("Timeout atingido. Prosseguindo com a requisição sem vaga na fila. Sessão: $sessionId");
-                        break; // Sai do loop e prossegue com a requisição
-                    }
-
-                    // Aguarda 500ms antes de tentar novamente
-                    usleep(500000);
+                    
+                    // Aguarda 1 segundo
+                    sleep($interval);
+                    $timeout += $interval;
                 }
                 break;
             

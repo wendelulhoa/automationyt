@@ -14,6 +14,6 @@ fi
 if [ -d "$DEST_DIR" ]; then
   # Entra no diretório e inicia o Docker Compose
   cd "$DEST_DIR" || exit
-  git pull && docker compose down && docker compose build && docker compose up -d
+  git pull origin master && docker compose down && docker compose build && docker compose up -d
 fi
 
