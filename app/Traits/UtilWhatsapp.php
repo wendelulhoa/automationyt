@@ -519,9 +519,6 @@ trait UtilWhatsapp
     public function removeMessages(Page $page, string $sessionId): void
     {
         try {
-            // Seta que deletou as mensagens
-            cache()->put("deletemessages-{$sessionId}", "deletemessages-{$sessionId}", now()->addMinutes(2));
-
             // Deleta as mensagens
             $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
 
@@ -529,7 +526,7 @@ trait UtilWhatsapp
             $page->evaluate("window.WUAPI.deleteChatsView()");
 
             // Limpa o cache de imagens
-            $page->evaluate("window.WUAPI.clearCache()");
+            // $page->evaluate("window.WUAPI.clearCache()");
 
             // Seta o log
             Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");
