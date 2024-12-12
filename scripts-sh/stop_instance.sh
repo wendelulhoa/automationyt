@@ -19,6 +19,5 @@ if [ -d "$DEST_DIR" ]; then
   rm -r "$WUAPI_DIR"
   rm -r "$DEST_DIR"
   docker rmi "$SESSION_ID"-chrome:latest
-  docker rmi "$SESSION_ID"-chromium:latest
 fi
 
