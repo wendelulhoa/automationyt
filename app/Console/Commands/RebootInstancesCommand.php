@@ -41,7 +41,7 @@ class RebootInstancesCommand extends Command
                 $this->restartSession($instance->session_id);
 
                 // Espera 5s
-                sleep(5);
+                // sleep(5);
 
                 // Loga que reiniciou as instâncias
                 Log::channel('daily')->error("Reiniciou a instância: {$instance->session_id}");
