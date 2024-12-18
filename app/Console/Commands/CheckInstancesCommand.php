@@ -47,7 +47,7 @@ class CheckInstancesCommand extends Command
                 ])->get(route('wapiwu.checkconnection', ['sessionId' => $instance->session_id]))->json();
 
                 // Espera 30s para próxima verificação.
-                sleep(30);
+                sleep(10);
             } catch (\Throwable $th) {
                 Log::channel('daily')->error('Erro ao verificar instância: ' . $instance->session_id . ' - ' . $th->getMessage());
             }

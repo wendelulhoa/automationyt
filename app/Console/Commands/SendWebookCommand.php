@@ -76,9 +76,6 @@ class SendWebookCommand extends Command
             // Extrai o nome da sessão
             $sessionId = $instance->session_id;
 
-            // Caso não for webhook não envia o webhook.
-            if(!$instance->webhook) continue;
-
             // Cria uma nova página e navega até a URL
             try {
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
@@ -92,6 +89,13 @@ class SendWebookCommand extends Command
             // Envia os eventos para o webhook
             foreach ($events as $id => $event) {
                 try {
+                    // Caso não for webhook não envia o webhook.
+                    if(!$instance->webhook) {
+                        // Deleta o evento
+                        $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
+                        continue;
+                    }
+
                     // Caso tenha no cache é por está em uso
                     if(cache()->has($id) || empty($event['recipients'][0])) continue;
 

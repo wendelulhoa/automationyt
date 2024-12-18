@@ -52,46 +52,4 @@ class Puppeteer extends Controller
 
         return $page;
     }
-
-    /**
-     * Verifica se o navegador está ativo
-     *
-     * @param string $sessionId
-     * 
-     * @return boolean
-     */
-    public function browserIsActive(string $sessionId): bool
-    {
-        try {
-            // Define o caminho do diretório público
-            $publicPath = base_path('chrome-sessions');
-
-            // Pega o caminho do arquivo que contém a porta
-            $pathPort = "$publicPath/$sessionId/port.txt";
-
-            // Cria os diretórios caso não existam
-            if (!file_exists($pathPort)) {
-                return false;
-            }
-
-            // Faz a requisição para obter a URL do socket
-            $response = null;
-            $success  = false;
-            
-            // Pega a porta do arquivo
-            $port = file_get_contents($pathPort);
-
-            try {
-                // Faz a requisição para obter a URL do socket
-                $response = Http::get("{$this->url}:{$port}/json/version");
-                $success  = $response->successful();
-            } catch (\Throwable $th) {
-                $success = false;
-            }
-
-            return $success;
-        } catch (\Throwable $th) {
-            return false;
-        }
-    }
 }

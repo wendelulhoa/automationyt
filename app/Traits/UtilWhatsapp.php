@@ -582,4 +582,33 @@ trait UtilWhatsapp
             return ['success' => false, 'message' => $th->getMessage()];
         }
     }
+
+    /**
+     * Seta a instância primária
+     *
+     * @param string $sessionId
+     * 
+     * @return void
+     */
+    public function setPrimaryInstance(string $sessionId)
+    {
+        try {
+            // Define o caminho do diretório público
+            $basePath = base_path('chrome-sessions');
+
+            // Pega o caminho do arquivo que contém a porta
+            $pathPort = "$basePath/{$sessionId}/.env";
+
+            // Carrega apenas as variáveis sem sobrescrever o .env principal do Laravel
+            $vars = $this->getEnvInstance("$pathPort");
+    
+            // Pega a porta do arquivo
+            $port = $vars['PORT'];
+
+            // Faz a requisição para obter a URL do socket
+            return Http::get("{$this->urlInstance}:{$port}/setprimary");
+        } catch (\Throwable $th) {
+            Log::channel('daily')->error("Sessão: {$sessionId}, Erro ao setar a instância primaria: {$th->getMessage()}");
+        }
+    }
 }
