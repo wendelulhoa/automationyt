@@ -261,6 +261,9 @@ class WhatsappController extends Controller
      public function startSession(Request $request, string $sessionId)
      {
           try {
+               // Cria uma nova página e navega até a URL
+               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
+
                // Gerar um token de autenticação
                $token = Hash::make(Str::random(50));
 
