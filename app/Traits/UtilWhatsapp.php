@@ -605,7 +605,6 @@ trait UtilWhatsapp
             // Faz a requisição para obter a URL do socket
             return Http::get("{$this->urlInstance}:{$port}/setprimary");
         } catch (\Throwable $th) {
-            Log::channel('daily')->error("Sessão: {$sessionId}, Erro ao setar a instância primaria: {$th->getMessage()}");
         }
     }
 }
