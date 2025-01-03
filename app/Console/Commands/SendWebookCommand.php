@@ -85,13 +85,7 @@ class SendWebookCommand extends Command
             } catch (\Throwable $th) {
                 continue;
             }
-            if($sessionId == 'session5871') {
-                // dd($events, $instance);
-                // continue;
-            }
-            else {
-                continue;
-            }
+
             // Envia os eventos para o webhook
             foreach ($events as $id => $event) {
                 try {
