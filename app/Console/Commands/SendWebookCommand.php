@@ -85,7 +85,13 @@ class SendWebookCommand extends Command
             } catch (\Throwable $th) {
                 continue;
             }
-
+            if($sessionId == 'session5871') {
+                // dd($events, $instance);
+                // continue;
+            }
+            else {
+                continue;
+            }
             // Envia os eventos para o webhook
             foreach ($events as $id => $event) {
                 try {
@@ -124,7 +130,7 @@ class SendWebookCommand extends Command
                     unset($event['body']);
 
                     // Caso seja entrada e saída entra para verifica se já foi enviado
-                    if(cache()->has("participant-{$params['action']}-{$params['chatid']}")) {
+                    if(cache()->has("participant-{$params['action']}-{$params['chatid']}-{$params['participant']}")) {
                         continue;
                     }
 
@@ -143,7 +149,7 @@ class SendWebookCommand extends Command
 
                         // Seta o cache para não enviar novamente
                         if(in_array($params['action'], ['entry', 'leave'])) {
-                            cache()->put("participant-{$params['action']}-{$params['chatid']}", "participant-{$params['action']}-{$params['chatid']}", now()->addMinutes(120));
+                            cache()->put("participant-{$params['action']}-{$params['chatid']}-{$params['participant']}", "participant-{$params['action']}-{$params['chatid']}-{$params['participant']}", now()->addMinutes(120));
                         }
                     }
                 } catch (\Throwable $th) {
