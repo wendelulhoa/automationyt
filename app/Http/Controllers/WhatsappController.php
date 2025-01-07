@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Puppeter\Browser;
 
 class WhatsappController extends Controller
 {
@@ -262,7 +263,10 @@ class WhatsappController extends Controller
      {
           try {
                // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
+               $browser = (new Browser($sessionId));
+
+               // Inicia o navegador
+               $browser->start();
 
                // Gerar um token de autenticação
                $token = Hash::make(Str::random(50));

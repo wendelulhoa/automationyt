@@ -206,10 +206,7 @@ Class Browser {
             // Caso não tenha o cache faz o reload
             $initSession = true;
             if(cache()->has("{$this->sessionId}-startsession")) {
-                while($initSession) {
-                    $initSession = cache()->has("{$this->sessionId}-startsession");
-                    sleep(2);
-                }
+                sleep(5);
 
                 // retorna true ao finalizar a inicialização
                 return true;
