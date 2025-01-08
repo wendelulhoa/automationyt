@@ -478,6 +478,8 @@ class GroupWhatsapp
             // Seta os grupos
             $content = $page->evaluate("window.WUAPI.getGroupInfoFromInviteCode('$inviteCode');")['result']['result']['value'];
 
+            $responseInviteLink['groupInfo']['owner'] = $responseInviteLink['groupInfo']['owner']['_serialized'];
+
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
         } catch (\Throwable $th) {
