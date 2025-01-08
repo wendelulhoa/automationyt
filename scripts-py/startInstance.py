@@ -36,14 +36,14 @@ def process_json_files():
                     # Verifica o uso da CPU antes de iniciar o processamento
                     while get_cpu_usage() >= 90.0:
                         print("Uso da CPU acima de 90%, aguardando...")
-                        time.sleep(5)  # Aguarda 5 segundos antes de verificar novamente
+                        time.sleep(1)  # Aguarda 5 segundos antes de verificar novamente
 
                     # Executa o script shell com os argumentos
                     try:
                         subprocess.run(["scripts-sh/start_instance.sh", session_id, str(port)], check=True)
                         # Exclui o arquivo JSON após iniciar a instância
                         os.remove(file_path)
-                        time.sleep(3)
+                        time.sleep(1)
                         print(f"Instância iniciada para sessão {session_id} na porta {port}")
                     except subprocess.CalledProcessError as e:
                         print(f"Erro ao iniciar instância para sessão {session_id}: {e}")

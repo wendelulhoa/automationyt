@@ -32,4 +32,4 @@ def process_json_files():
 # Loop para verificar e processar os arquivos JSON a cada 5 segundos
 while True:
     process_json_files()
-    time.sleep(5)
+    time.sleep(2)
