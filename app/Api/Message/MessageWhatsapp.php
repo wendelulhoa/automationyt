@@ -12,7 +12,7 @@ class MessageWhatsapp {
     /**
      * Tempo de espera 1s
      */
-    private $sleepTime = 3;
+    private $sleepTime = 1;
 
     /**
      * Envia uma mensagem de texto
@@ -43,9 +43,16 @@ class MessageWhatsapp {
             // Normalizar texto para UTF-8 (se necessário)
             $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
 
+            // Seta o text temporário
+            $randomNameVar = strtolower(Str::random(5));
+            $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
+
             // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', `$text`, $mention);");
+            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);");
             $content = $body['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
@@ -79,12 +86,19 @@ class MessageWhatsapp {
             // Normalizar texto para UTF-8 (se necessário)
             $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
 
+            // Seta o text temporário
+            $randomNameVar = strtolower(Str::random(5));
+            $page->evaluate("localStorage.setItem('$randomNameVar', `$text \n\n $link`);");
+
             // Seta o script para enviar a imagem
-            $script = "window.WUAPI.sendLinkPreview('$chatId', `$text \n\n $link`, '$link');";
+            $script = "window.WUAPI.sendLinkPreview('$chatId', localStorage.getItem('$randomNameVar'), '$link');";
 
             // Executa o script no navegador
             $body    = $page->evaluate($script);
             $content = $body['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
@@ -166,6 +180,9 @@ class MessageWhatsapp {
             // Executa o script no navegador
             $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\", \"$fileName\");");
             $content = $body['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
@@ -255,6 +272,9 @@ class MessageWhatsapp {
             $body    = $page->evaluate("window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});");
             $content = $body['result']['result']['value'];
 
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+
             return $content;
         } catch (\Throwable $th) {
             return ['success' => false, 'message' => $th->getMessage(), 'body' => $body ?? null];
@@ -322,6 +342,9 @@ class MessageWhatsapp {
             // Executa o script no navegador
             $body    = $page->evaluate("window.WUAPI.sendMsgEvent('$chatId', JSON.parse(localStorage.getItem('$randomNameVarOptions')));");
             $content = $body['result']['result']['value'];
+
+            // Remove o item temporário
+            $page->evaluate("localStorage.removeItem(`$randomNameVarOptions`);");
 
             return $content;
         } catch (\Throwable $th) {

@@ -147,7 +147,7 @@ class SendWebookCommand extends Command
                         }
                     }
                 } catch (\Throwable $th) {
-                    Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}");
+                    Log::channel('whatsapp-webhook')->error("Erro webhook: {$th->getMessage()}, Instância: {$sessionId}, evento: ", ['params' => ($params ?? [])]);
                     continue;
                 }
 
