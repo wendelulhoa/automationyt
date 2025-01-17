@@ -40,7 +40,7 @@ class ControlRequestMessage
 
         try {
             // Caso o processamento esteja acima de 80% espera 2s.
-            if($this->getPercentageCpu() >= 80) {
+            if($this->getPercentageCpu() >= 95) {
                 sleep(2);
             }
 
@@ -92,7 +92,7 @@ class ControlRequestMessage
             case 'all':
                 // Variáveis de controle
                 $timeout    = 0;
-                $maxTimeout = 10;
+                $maxTimeout = 5;
                 $interval   = 1;
         
                 // Aguarda a finalização da requisição
@@ -112,7 +112,7 @@ class ControlRequestMessage
             case 'session':
                 // Variáveis de controle
                 $timeout    = 0;
-                $maxTimeout = 10;
+                $maxTimeout = 5;
                 $interval   = 1;
         
                 // Aguarda a finalização da requisição
