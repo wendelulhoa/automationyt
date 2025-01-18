@@ -39,6 +39,7 @@ services:
             - "host.docker.internal:host-gateway"
         networks:
             - dev-wuapi
+            - redewuapi
         cap_add:
             - NET_ADMIN
         links:
@@ -59,6 +60,8 @@ services:
 networks:
     dev-wuapi:
         driver: bridge
+    redewuapi:
+        external: true
 
 volumes:
     mysql_data:

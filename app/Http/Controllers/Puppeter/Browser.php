@@ -42,6 +42,7 @@ Class Browser {
     {
         // Define a URL do socket
         $this->port        = null;
+        $this->url         = "http://{$this->sessionId}";
         $this->portsInUse  = $this->getPortsInUse();
         $this->urlSocket   = $this->getUrlSocket();
     }
@@ -102,7 +103,7 @@ Class Browser {
         while (true) {
             try {
                 // Faz a requisição para obter a URL do socket
-                $response = Http::get("{$this->url}:{$this->port}/json/version");
+                $response = Http::get("{$this->url}/json/version");
             } catch (\Throwable $th) {
                 $this->start();
                 sleep(1);
@@ -117,7 +118,7 @@ Class Browser {
             $tries++;
         }
 
-        return $response->json()['webSocketDebuggerUrl'];
+        return str_replace("http://host.docker.internal:{$this->port}", "{$this->url}", $response->json()['webSocketDebuggerUrl']);
     }
 
     /**
@@ -150,7 +151,7 @@ Class Browser {
         // Pega o ID da aba
         $targetId = $result['result']['targetId'];
 
-        return new Page("{$this->url}:{$this->port}/devtools/page/{$targetId}", $targetId);
+        return new Page("{$this->url}/devtools/page/{$targetId}", $targetId);
     }
 
     /**
@@ -169,7 +170,7 @@ Class Browser {
         $pages = [];
         foreach ($result['result']['targetInfos'] as $value) {
             if($value['type'] == 'page' && !in_array($value['url'], ['chrome://privacy-sandbox-dialog/notice', 'about:blank', 'chrome-untrusted://new-tab-page/one-google-bar?paramsencoded="'])) {
-                $pages[] = new Page("{$this->url}:{$this->port}/devtools/page/{$value['targetId']}", $value['targetId']);
+                $pages[] = new Page("{$this->url}/devtools/page/{$value['targetId']}", $value['targetId']);
             }
         }
 
@@ -222,7 +223,7 @@ Class Browser {
             for ($i=0; $i <= 30; $i++) { 
                 try {
                     // Faz a requisição para obter a URL do socket
-                    Http::get("{$this->url}:{$this->port}/json/version");
+                    Http::get("{$this->url}/json/version");
                     break;
                 } catch (\Throwable $th) {}
 
