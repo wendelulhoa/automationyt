@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Puppeter\Browser;
+use App\Api\Whatsapp\Whatsapp;
 
 class WhatsappController extends Controller
 {
@@ -27,61 +28,13 @@ class WhatsappController extends Controller
      public function getQrcode(string $sessionId)
      {
           try {
-               // Seta a instância primária
-               $this->setPrimaryInstance($sessionId);
-
-               // Cria uma nova página e navega até a URL
-               $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
-
-               // Pega o qrcode
-               $content = $page->evaluate("window.WUAPI.getQrCode();")['result']['result']['value'];
-
-               // Adiciona o prefixo base64 correto, incluindo o tipo MIME
-               cache()->put("generate-qrcode-$sessionId", "generate-qrcode-$sessionId", now()->addMinutes(1));
-
-               $qrCode = null;
-               if($content['success']) {
-                    // Caminho completo para o arquivo
-                    $fullPath = public_path("$sessionId-qrcode.svg");
-
-                    // Caso venha vazio da restart no container
-                    if(empty($content['qrCode'])) {
-                         $this->restartSession($sessionId);
-                    }
-
-                    // Cria ou atualiza a instância
-                    Instance::initInstance(['session_id' => $sessionId, 'newconnection' => true]);
-
-                    // Seta como nova conexão
-                    cache()->put("newconnection-{$sessionId}", "newconnection-{$sessionId}", now()->addMinutes(30));
-
-                    // Gera o QR code em SVG
-                    $qrCode = QRCode::text(trim($content['qrCode']))
-                         ->setSize(6)
-                         ->setMargin(2)
-                         ->setOutfile($fullPath)
-                         ->svg();
-                    
-                    // Lê o conteúdo do arquivo
-                    $fileContent = File::get($fullPath);
-     
-                    // Obtém o tipo MIME do arquivo
-                    $mimeType = File::mimeType($fullPath);
-     
-                    // Codifica o conteúdo do arquivo para base64
-                    $base64Content = base64_encode($fileContent);
-     
-                    // Cria o Data URI
-                    $qrCode = 'data:' . $mimeType . ';base64,' . $base64Content;
-     
-                    // Exclui o arquivo
-                    unlink($fullPath);
-               }
+               // Gera o qrcode
+               $content = (new Whatsapp)->getQrcode($sessionId);
 
                // Retorna o resultado em JSON
                return response()->json([
                     'success' => true,
-                    'qrcode' => $qrCode,
+                    'qrcode' => $content['qrCode'] ?? null,
                     'status' => $content['message'] ?? $content
                ]);
           } catch (\Throwable $th) {
