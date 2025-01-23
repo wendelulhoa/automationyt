@@ -496,7 +496,7 @@ trait UtilWhatsapp
                             Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
         
                             // Seta o log de envio
-                            Log::channel('whatsapp-webhook')->info("Enviou o webhook saída: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $pastParticipant);
+                            Log::channel('whatsapp-webhook')->info("Enviou o webhook saída: {$params['action']}, Grupo: {$params['chatid']}, Instância: {$sessionId}, evento:", $params);
                         }
                     } catch (\Throwable $th) {
                         Log::channel('whatsapp-webhook')->error("Erro webhook comunidade: {$th->getMessage()}, Instância: {$sessionId}");
