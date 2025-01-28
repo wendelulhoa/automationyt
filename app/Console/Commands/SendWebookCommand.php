@@ -81,7 +81,7 @@ class SendWebookCommand extends Command
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                 // Seta os grupos
-                $events = json_decode($page->evaluate("JSON.stringify(window.WUAPI.webhookEvents)")['result']['result']['value'], true);
+                $events = $page->evaluate("window.WUAPI.webhookEvents")['result']['result']['value'];
             } catch (\Throwable $th) {
                 continue;
             }
