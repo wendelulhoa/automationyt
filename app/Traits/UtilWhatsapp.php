@@ -581,29 +581,17 @@ trait UtilWhatsapp
     }
 
     /**
-     * Seta a instância primária
+     * Seta um novo proxy
      *
      * @param string $sessionId
      * 
-     * @return void
+     * @return Http
      */
-    public function setPrimaryInstance(string $sessionId)
+    public function setNewProxy(string $sessionId)
     {
         try {
-            // Define o caminho do diretório público
-            $basePath = base_path('chrome-sessions');
-
-            // Pega o caminho do arquivo que contém a porta
-            $pathPort = "$basePath/{$sessionId}/.env";
-
-            // Carrega apenas as variáveis sem sobrescrever o .env principal do Laravel
-            $vars = $this->getEnvInstance("$pathPort");
-    
-            // Pega a porta do arquivo
-            $port = $vars['PORT'];
-
-            // Faz a requisição para obter a URL do socket
-            return Http::get("{$this->urlInstance}:{$port}/setprimary");
+            // Seta o novo proxy
+            return Http::get("http://{$sessionId}/setnewproxy");
         } catch (\Throwable $th) {
         }
     }

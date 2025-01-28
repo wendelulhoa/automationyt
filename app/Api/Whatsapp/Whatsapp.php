@@ -22,6 +22,9 @@ class Whatsapp {
     public function getQrcode(string $sessionId)
     {
         try {
+            // Seta um novo proxy
+            $this->setNewProxy($sessionId);
+
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
 
@@ -29,7 +32,7 @@ class Whatsapp {
             $body = $page->evaluate("window.WUAPI.getQrCode();");
 
             // Grava o que foi gerado
-            Log::channel('daily')->info("Gerou qrcode: {$sessionId}", [$body]);
+            $this->setLog("Gerou qrcode: {$sessionId}", [$body]);
 
             // Pega o conteúdo do qrCode
             $content = $body['result']['result']['value'];
@@ -86,9 +89,25 @@ class Whatsapp {
             $this->restartSession($sessionId);
 
             // Grava o erro ao gerar qr code
-            Log::channel('daily')->error("Erro ao gerar qrcode: {$sessionId} {$th->getMessage()}", [$body ?? []]);
+            $this->setLog("Erro ao gerar qrcode: {$sessionId} {$th->getMessage()}", [$body ?? []]);
 
             return ['qrCode' => null, 'error' => $th->getMessage()];
+        }
+    }
+
+    /**
+     * Seta o log
+     *
+     * @param string $log
+     * @return void
+     */
+    private function setLog(string $log, array $data = [])
+    {
+        try {
+            // Grava o log de envio de mensagem
+            Log::channel('daily')->info($log, $data);
+        } catch (\Throwable $th) {
+            //throw $th;
         }
     }
 }
