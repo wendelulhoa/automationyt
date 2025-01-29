@@ -22,8 +22,8 @@ class Whatsapp {
     public function getQrcode(string $sessionId)
     {
         try {
-            // Seta um novo proxy
-            $this->setNewProxy($sessionId);
+            // Espera 2s
+            sleep(2);
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
@@ -35,7 +35,7 @@ class Whatsapp {
             $this->setLog("Gerou qrcode: {$sessionId}", [$body]);
 
             // Pega o conteúdo do qrCode
-            $content = $body['result']['result']['value'];
+            $content = ($body['result']['result']['value'] ?? []);
 
             // Adiciona o prefixo base64 correto, incluindo o tipo MIME
             cache()->put("generate-qrcode-$sessionId", "generate-qrcode-$sessionId", now()->addMinutes(1));
@@ -43,14 +43,14 @@ class Whatsapp {
             // Caso venha vazio da restart no container
             if(empty($content['qrCode'])) {
                 // Grava o erro ao gerar qr code
-                Log::channel('daily')->error("Qrcode vazio: {$sessionId}", [$body]);
+                $this->setLog("Qrcode vazio: {$sessionId}", [$body]);
 
                 // Se der erro da restart no qrcode.
                 $this->restartSession($sessionId);
             }
 
             $qrCode = null;
-            if($content['success']) {
+            if(isset($content['success']) && $content['success']) {
                 // Caminho completo para o arquivo
                 $fullPath = public_path("$sessionId-qrcode.svg");
 

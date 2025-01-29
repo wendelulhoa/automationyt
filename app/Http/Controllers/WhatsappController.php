@@ -31,6 +31,11 @@ class WhatsappController extends Controller
                // Gera o qrcode
                $content = (new Whatsapp)->getQrcode($sessionId);
 
+               // Caso for vazio tento gerar novamente
+               if(empty($content['qrCode'])) {
+                    $content = (new Whatsapp)->getQrcode($sessionId);
+               }
+
                // Retorna o resultado em JSON
                return response()->json([
                     'success' => true,
