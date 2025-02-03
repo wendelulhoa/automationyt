@@ -522,9 +522,6 @@ trait UtilWhatsapp
             // Deleta as mensagens
             $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
 
-            // Limpa o cache de imagens
-            $page->evaluate("window.WUAPI.clearCache()");
-
             // Seta o log
             Log::channel('whatsapp-removemessages')->info("Removeu as mensagens da instância: {$sessionId}");
         } catch (\Throwable $th) {
