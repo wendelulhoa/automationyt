@@ -235,16 +235,10 @@ trait UtilWhatsapp
     public function stopInstance(string $sessionId): void
     {
         try {
-            // Caminho base.
-            $pathStopSession = base_path("sessions-configs/stop_sessions");
-
-            // Cadastra para parar a instância
-            $stopSession = [
+            // Desconecta do whatsapp
+            $content = Http::post('http://172.17.0.1:8080/stop-instance', [
                 'session_id' => $sessionId
-            ];
-
-            // Seta para parar a instância
-            file_put_contents("$pathStopSession/{$sessionId}.json", json_encode($stopSession));
+            ])->json();
         } catch (\Throwable $th) {
             Log::channel('daily')->error("Sessão: {$sessionId}, Erro finalizar o container: ". $th->getMessage());
         }
@@ -260,16 +254,10 @@ trait UtilWhatsapp
     public function restartSession($sessionId) 
     {
         try {
-            // Caminho base.
-            $pathRestartSession = base_path("sessions-configs/restart_sessions");
-
-            // Cadastra para parar a instância
-            $restartSession = [
+            // Reinicia a sessão
+            $content = Http::post('http://172.17.0.1:8080/restart-instance', [
                 'session_id' => $sessionId
-            ];
-
-            // Seta para parar a instância
-            file_put_contents("$pathRestartSession/{$sessionId}.json", json_encode($restartSession));
+            ])->json();
         } catch (\Throwable $th) {
             Log::channel('daily')->error("Sessão: {$sessionId}, Erro ao reiniciar a sessão: {$th->getMessage()}");
         }
@@ -574,22 +562,6 @@ trait UtilWhatsapp
             return ['success' => $content['success'], 'message' => $content['message']];
         } catch (\Throwable $th) {
             return ['success' => false, 'message' => $th->getMessage()];
-        }
-    }
-
-    /**
-     * Seta um novo proxy
-     *
-     * @param string $sessionId
-     * 
-     * @return Http
-     */
-    public function setNewProxy(string $sessionId)
-    {
-        try {
-            // Seta o novo proxy
-            return Http::get("http://{$sessionId}/setnewproxy");
-        } catch (\Throwable $th) {
         }
     }
 }

@@ -198,12 +198,6 @@ Class Browser {
                 cache()->forget("{$this->sessionId}-startsession");
             }
 
-            // Cadastra para subir a instância
-            $newSession = [
-                'port' => $this->port,
-                'session_id' => $this->sessionId
-            ];
-
             // Caso não tenha o cache faz o reload
             $initSession = true;
             if(cache()->has("{$this->sessionId}-startsession")) {
@@ -214,22 +208,18 @@ Class Browser {
             }
 
             // Seta para criar a instância
-            file_put_contents("$pathNewSession/{$this->sessionId}.json", json_encode($newSession));
+            $content = Http::post('http://172.17.0.1:8080/start-instance', [
+                'port' => $this->port,
+                'session_id' => $this->sessionId
+            ])->json();
+
+            // Retorna que não iniciada
+            if(!$content['success']) {
+                return false;
+            }
             
             // Adiciona o cache para impedir de ficar fzd reload.
             cache()->put("{$this->sessionId}-startsession", "{$this->sessionId}-startsession", now()->addMinutes(2));
-
-            // Caso dê sucesso é pq já subiu
-            for ($i=0; $i <= 30; $i++) { 
-                try {
-                    // Faz a requisição para obter a URL do socket
-                    Http::get("{$this->url}/json/version");
-                    break;
-                } catch (\Throwable $th) {}
-
-                // Espera 1s
-                sleep(1);
-            }
             
             // Exclui o cache de start
             cache()->forget("{$this->sessionId}-startsession");

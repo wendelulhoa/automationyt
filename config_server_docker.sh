@@ -105,6 +105,24 @@ sudo systemctl start restart-instance-python.service
 sudo systemctl enable recovery-instance-python.service
 sudo systemctl start recovery-instance-python.service
 
+sudo systemctl disable start-instance-python.service
+sudo systemctl disable stop-instance-python.service
+sudo systemctl disable restart-instance-python.service
+sudo systemctl disable recovery-instance-python.service
+sudo systemctl daemon-reload
+
+#  Instala o node
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# Configura o js do server de controle de instâncias
+cd /root/wuapi/scripts && npm install
+
+# Configura o pm2 para rodar o server de controle de instâncias
+pm2 stop instance-controller
+pm2 delete instance-controller
+pm2 start server.js --name instance-controller
+
 # Cria uma nova pasta de instâncias
 mkdir -p /root/chrome-sessions
 cd  && chmod -R 777 /root/chrome-sessions
