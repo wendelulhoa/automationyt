@@ -119,6 +119,7 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 cd /root/wuapi/scripts && npm install
 
 # Configura o pm2 para rodar o server de controle de instâncias
+npm install -g pm2
 pm2 stop instance-controller
 pm2 delete instance-controller
 pm2 start server.js --name instance-controller
