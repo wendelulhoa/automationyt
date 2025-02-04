@@ -3,6 +3,7 @@
 /public/build
 /public/hot
 /public/storage
+/scripts/node_modules
 /storage/*.key
 /vendor
 .env
