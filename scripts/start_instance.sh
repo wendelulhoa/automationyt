@@ -18,6 +18,12 @@ if docker ps --filter "name=^/${SESSION_ID}$" --format '{{.Names}}' | grep -q "^
   exit 0
 fi
 
+# Remove a pasta existente se não for um repositório Git válido
+if [ -d "$DEST_DIR" ] && [ ! -d "$DEST_DIR/.git" ]; then
+  echo "Diretório existente, mas não é um repositório Git. Removendo..."
+  rm -rf "$DEST_DIR"
+fi
+
 # Exclui a pasta existente
 if [ -d "$DEST_DIR" ]; then
   # Entra no diretório e inicia o Docker Compose

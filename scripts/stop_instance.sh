@@ -16,9 +16,12 @@ if [ -d "$DEST_DIR" ]; then
   # Entra no diretório e inicia o Docker Compose
   cd "$DEST_DIR" || exit
   docker compose down --remove-orphans
-  docker stop "$SESSION_ID" && docker rm "$SESSION_ID"
-  rm -r "$WUAPI_DIR"
-  rm -r "$DEST_DIR"
+  
+  # Remove as pastas
+  rm -rf "$WUAPI_DIR"
+  rm -rf "$DEST_DIR"
+
+  # Remove o cache
   docker rmi "$SESSION_ID"-chrome:latest
 fi
 

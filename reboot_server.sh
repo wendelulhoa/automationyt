@@ -1,8 +1,8 @@
-#!/bin/bash
-docker compose build && docker compose down && docker compose up -d
+# #!/bin/bash
+# docker compose build && docker compose down && docker compose up -d
 
-# Reinicia o apache
-systemctl restart apache2
+# # Reinicia o apache
+# systemctl restart apache2
 
 # Configura o pm2 para rodar o server de controle de instâncias
 pm2 stop instance-controller
