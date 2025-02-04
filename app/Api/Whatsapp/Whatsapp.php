@@ -22,9 +22,6 @@ class Whatsapp {
     public function getQrcode(string $sessionId)
     {
         try {
-            // Espera 2s
-            sleep(2);
-
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
 
