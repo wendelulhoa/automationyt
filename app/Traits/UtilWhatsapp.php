@@ -508,6 +508,7 @@ trait UtilWhatsapp
     {
         try {
             // Deleta as mensagens
+            $page->evaluate("window.WUAPI.deleteChatsView();");
             $page->evaluate("window.WUAPI.fetchAndDeleteMessagesFromIndexedDB();");
 
             // Seta o log
