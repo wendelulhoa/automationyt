@@ -3,6 +3,7 @@ services:
         image: mysql:8.0.33
         container_name: mysql-wuapi
         command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
+        restart: always
         environment:
             MYSQL_DATABASE: ${DB_DATABASE:-wuapi}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234567}
@@ -27,7 +28,7 @@ services:
         environment:
             GITNAME: ${GITNAME:-developer}
             GITEMAIL: ${GITEMAIL:-developer@ulhoa.com}
-        restart: 'no'
+        restart: always
         ports:
             - "8001:80"
         working_dir: /var/www/html/wuapi
