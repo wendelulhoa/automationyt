@@ -92,20 +92,21 @@ class MessageWhatsapp {
             $randomNameVar = strtolower(Str::random(5));
             $page->evaluate("localStorage.setItem('$randomNameVar', `$text \n\n $link`);");
             
-            // Pega a url do texto
-            $infoUrl = $page->evaluate("require('WALinkify').findLink(localStorage.getItem('$randomNameVar'))")['result']['result']['value'];
-
-            // Verifica quais urls não funcionam na nova modalidade
-            $excludedDomains = ['shopee', 'instagram', 'facebook', 'temu', 'google'];
-            $isExcluded = false;
-            foreach ($excludedDomains as $domain) {
-                if (str_contains($infoUrl['url'], $domain)) {
-                    $isExcluded = true;
-                    break;
+            // Desativado até encontrar uma solução para o linkpreview grande
+            if(false) {
+                // Pega a url do texto
+                $infoUrl = $page->evaluate("require('WALinkify').findLink(localStorage.getItem('$randomNameVar'))")['result']['result']['value'];
+    
+                // Verifica quais urls não funcionam na nova modalidade
+                $excludedDomains = ['shopee', 'instagram', 'facebook', 'temu', 'google'];
+                $isExcluded = false;
+                foreach ($excludedDomains as $domain) {
+                    if (str_contains($infoUrl['url'], $domain)) {
+                        $isExcluded = true;
+                        break;
+                    }
                 }
-            }
 
-            if(!$isExcluded) {
                 // Gera um preview do link
                 $preview = Cache::remember(md5($infoUrl['url']), now()->addMinutes(120), function () use($infoUrl) {
                     return (new Client)->parse($infoUrl['url']);
