@@ -23,7 +23,7 @@ class Whatsapp {
     {
         try {
             // Cria uma nova página e navega até a URL
-            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', false);
+            $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI', true);
 
             // Pega o qrcode
             $body = $page->evaluate("window.WUAPI.getQrCode();");

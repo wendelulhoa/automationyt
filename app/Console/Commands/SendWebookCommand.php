@@ -91,8 +91,8 @@ class SendWebookCommand extends Command
                 try {
                     // Caso não for webhook não envia o webhook.
                     if(!$instance->webhook) {
-                        // Deleta o evento
-                        $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
+                        // Deleta os evento
+                        $page->evaluate("window.WUAPI.webhookEvents = {}");
                         continue;
                     }
 

@@ -13,6 +13,7 @@ services:
             - mysql_data:/var/lib/mysql
         networks:
             - dev-wuapi
+        restart: always
     web:
         depends_on:
             - db-mysql
@@ -27,7 +28,7 @@ services:
         environment:
             GITNAME: ${GITNAME:-developer}
             GITEMAIL: ${GITEMAIL:-developer@ulhoa.com}
-        restart: 'no'
+        restart: always
         ports:
             - "8001:80"
         working_dir: /var/www/html/wuapi
