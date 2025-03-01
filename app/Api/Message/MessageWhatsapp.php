@@ -45,16 +45,9 @@ class MessageWhatsapp {
             // Normalizar texto para UTF-8 (se necessário)
             $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
 
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$text`);");
-
             // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', localStorage.getItem('$randomNameVar'), $mention);");
+            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', '$text', $mention);");
             $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
@@ -87,62 +80,13 @@ class MessageWhatsapp {
 
             // Normalizar texto para UTF-8 (se necessário)
             $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
-
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$text \n\n $link`);");
             
-            // Desativado até encontrar uma solução para o linkpreview grande
-            if(false) {
-                // Pega a url do texto
-                $infoUrl = $page->evaluate("require('WALinkify').findLink(localStorage.getItem('$randomNameVar'))")['result']['result']['value'];
-    
-                // Verifica quais urls não funcionam na nova modalidade
-                $excludedDomains = ['shopee', 'instagram', 'facebook', 'temu', 'google'];
-                $isExcluded = false;
-                foreach ($excludedDomains as $domain) {
-                    if (str_contains($infoUrl['url'], $domain)) {
-                        $isExcluded = true;
-                        break;
-                    }
-                }
-
-                // Gera um preview do link
-                $preview = Cache::remember(md5($infoUrl['url']), now()->addMinutes(120), function () use($infoUrl) {
-                    return (new Client)->parse($infoUrl['url']);
-                }); 
-
-                // Pega a imagem
-                $urlImage = $preview->image;
-
-                // Verifica se a imagem é relativa
-                if (substr($preview->image, 0, 1) === '/') {
-                    $urlImage = "{$infoUrl['scheme']}{$infoUrl['domain']}{$preview->image}"; // Adiciona a base se for uma URL relativa
-                }
-
-                // Pega o nome do arquivo e caso não exista, baixa o arquivo
-                $fileName = $this->downloadFileAndSet($urlImage);
-
-                // Adiciona o input file no DOM
-                [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
-                
-                // Seta o arquivo no input
-                $page->setFileInput($backendNodeId, "/storage/$fileName");
-
-                // Executa o script no navegador
-                $script = "window.WUAPI.sendCustomLinkPreview(\"$chatId\",  localStorage.getItem('$randomNameVar') , {url: '$preview->url', title: '$preview->title', 'description': '$preview->description'}, \"[data-$nameFileInput]\", \"$fileName\");";
-            } else {
-                // Seta o script para enviar a imagem
-                $script = "window.WUAPI.sendLinkPreview('$chatId', localStorage.getItem('$randomNameVar'), '$link');";
-            }
-            
+            // Seta o script para enviar a imagem
+            $script = "window.WUAPI.sendLinkPreview('$chatId', '$text', '$link');";
 
             // Executa o script no navegador
-            $body    = $page->evaluate($script);
+            $body = $page->evaluate($script);
             $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {

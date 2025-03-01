@@ -57,16 +57,8 @@ class GroupWhatsapp
                 ];
             }
 
-            
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$subject`);");
-
             // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.createGroup(localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            $content = $page->evaluate("window.WUAPI.createGroup('$subject');")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -166,16 +158,9 @@ class GroupWhatsapp
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-            
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$subject`);");
 
             // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.setGroupSubject('$groupId', localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            $content = $page->evaluate("window.WUAPI.setGroupSubject('$groupId', '$subject');")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -204,16 +189,9 @@ class GroupWhatsapp
 
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
-            
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$description`);");
 
             // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.setGroupDescription('$groupId', localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            $content = $page->evaluate("window.WUAPI.setGroupDescription('$groupId', '$description');")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -479,7 +457,7 @@ class GroupWhatsapp
             $content = $page->evaluate("window.WUAPI.getGroupInfoFromInviteCode('$inviteCode');")['result']['result']['value'];
 
             // Coloca o serialized
-            $content['owner'] = ($content['owner']['_serialized'] ?? $content['descOwner']['_serialized'] ?? null);
+            $content['owner'] = ($content['owner'] ?? $content['owner']['_serialized'] ?? $content['descOwner']['_serialized'] ?? null);
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
