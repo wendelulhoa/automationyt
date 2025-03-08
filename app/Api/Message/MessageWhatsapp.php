@@ -248,20 +248,9 @@ class MessageWhatsapp {
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-            // Seta o question temporário
-            $randomNameVar = strtolower(Str::random(6));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `{$poll['name']}`);");
-
-            // Seta o options temporário
-            $randomNameVarOptions = strtolower(Str::random(6));
-            $page->evaluate("localStorage.setItem('$randomNameVarOptions', `" . json_encode($auxOptions) . "`);");
-
             // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendPoll('$chatId', localStorage.getItem('$randomNameVar'), JSON.parse(localStorage.getItem('$randomNameVarOptions')), {$poll['selectableCount']});");
+            $body    = $page->evaluate("window.WUAPI.sendPoll('$chatId', '{$poll['name']}', " . json_encode($auxOptions) . ", {$poll['selectableCount']});");
             $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
 
             return $content;
         } catch (\Throwable $th) {
