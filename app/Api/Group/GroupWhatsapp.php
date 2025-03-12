@@ -377,6 +377,8 @@ class GroupWhatsapp
             // Seta um tempo de espera
             sleep($this->getRamdomSleep($this->sleepTime));
 
+            // Verifica se é comunidade
+            $isCommunity = (strpos($groupId, '_') !== false) ? 1 : 0;
 
             // Pega o groupId/number
             [$groupId, $number] = [$this->getWhatsappGroupId($groupId, true, true), $number];
@@ -385,7 +387,7 @@ class GroupWhatsapp
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.removeParticipant('$groupId', '$number');")['result']['result']['value'];
+            $content = $page->evaluate("window.WUAPI.removeParticipant('$groupId', '$number', $isCommunity);")['result']['result']['value'];
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -418,17 +420,27 @@ class GroupWhatsapp
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
 
-            // Adiciona o input file no DOM
-            [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+            // Verifica a conexão
+            $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
 
-            // Seta o arquivo no input
-            $page->setFileInput($backendNodeId, "/storage/$fileName");
+            // Versão do via navegador
+            if(!isset($content['isSocket']) || isset($content['isSocket']) && !$content['isSocket']) {
+                // Adiciona o input file no DOM
+                [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
 
-            // Executa o script no navegador
-            $content = $page->evaluate("window.WUAPI.changeGroupPhoto(\"$groupId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
+                // Seta o arquivo no input
+                $page->setFileInput($backendNodeId, "/storage/$fileName");
 
-            // Deleta a variável temporária e o input file
-            $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
+                // Executa o script no navegador
+                $content = $page->evaluate("window.WUAPI.changeGroupPhoto(\"$groupId\", \"[data-$nameFileInput]\");")['result']['result']['value'];
+
+                // Deleta a variável temporária e o input file
+                $page->evaluate("window.WUAPI.removeInputFile('$nameFileInput');");
+            }
+            // Versão do via socket
+            else {
+                $content = $page->evaluate("window.WUAPI.changeGroupPhoto(\"$groupId\", \"/storage/$fileName\");")['result']['result']['value'];
+            }
 
             return $content;
         } catch (\Throwable $th) {

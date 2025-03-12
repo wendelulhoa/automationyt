@@ -29,7 +29,7 @@ class WhatsappController extends Controller
      {
           try {
                // Gera o qrcode
-               $content = (new Whatsapp)->getQrcode($sessionId);
+              $content = (new Whatsapp)->getQrcode($sessionId);
 
                // Caso for vazio tento gerar novamente
                if(empty($content['qrCode'])) {
@@ -157,7 +157,6 @@ class WhatsappController extends Controller
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
                // dd($page->evaluate("require('WAWebLaunchSocket').launchSocket(null)"));
                // dd($page->evaluate("window.WUAPI.isClearContacts"));
-               // dd($page->evaluate("window.WUAPI.countTableIndexedDB('contact')"));
                // dd($page->evaluate("window.WUAPI.clearCache()"));
                // dd($page->evaluate("document.querySelectorAll('input').length"));
                // dd($page->evaluate("window.WUAPI.deleteChatsView()"));

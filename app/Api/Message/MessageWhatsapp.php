@@ -154,23 +154,35 @@ class MessageWhatsapp {
 
             // Normalizar texto para UTF-8 (se necessário)
             $caption = str_replace(["´", "`", "'"], ["", "", ""], $caption);
-            
-            // Seta o caption temporário
-            $randomNameVar = strtolower(Str::random(6));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$caption`);");
 
-            // Adiciona o input file no DOM
-            [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
-            
-            // Seta o arquivo no input
-            $page->setFileInput($backendNodeId, "/storage/$fileName");
+            // Verifica a conexão
+            $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
 
-            // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\", \"$fileName\");");
-            $content = $body['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            // Versão do via navegador
+            if(!isset($content['isSocket']) || isset($content['isSocket']) && !$content['isSocket']) {
+                // Seta o caption temporário
+                $randomNameVar = strtolower(Str::random(6));
+                $page->evaluate("localStorage.setItem('$randomNameVar', `$caption`);");
+    
+                // Adiciona o input file no DOM
+                [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+                
+                // Seta o arquivo no input
+                $page->setFileInput($backendNodeId, "/storage/$fileName");
+    
+                // Executa o script no navegador
+                $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", localStorage.getItem('$randomNameVar'), \"[data-$nameFileInput]\", \"$fileName\");");
+                $content = $body['result']['result']['value'];
+    
+                // Remove o item temporário
+                $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            }
+            // versão via socket
+            else {
+                // Executa o script no navegador
+                $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", \"$caption\", \"/storage/$fileName\");");
+                $content = $body['result']['result']['value'];
+            }
 
             return $content;
         } catch (\Throwable $th) {
