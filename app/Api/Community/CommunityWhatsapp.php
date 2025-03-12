@@ -57,15 +57,8 @@ class CommunityWhatsapp
                 ];
             }
 
-            // Seta o text temporário
-            $randomNameVar = strtolower(Str::random(5));
-            $page->evaluate("localStorage.setItem('$randomNameVar', `$subject`);");
-
             // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.createCommunity(localStorage.getItem('$randomNameVar'));")['result']['result']['value'];
-
-            // Remove o item temporário
-            $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
+            $content = $page->evaluate("window.WUAPI.createCommunity('$subject');")['result']['result']['value'];
 
             // Caso dê sucesso, pega a comunidade pai.
             if($content['success']) {
