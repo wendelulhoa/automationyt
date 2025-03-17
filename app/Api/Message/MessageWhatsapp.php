@@ -39,15 +39,20 @@ class MessageWhatsapp {
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-            // Seta como true ou false para enviar
-            $mention = $mention ? 'true' : 'false';
-
             // Normalizar texto para UTF-8 (se necessário)
             $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
 
-            // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendText('$chatId', '$text', $mention);");
-            $content = $body['result']['result']['value'];
+            // Envia para o socket
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'sendText', ['chatId' => $chatId, 'text' => $text, 'mention' => $mention]);
+            } else {
+                // Seta como true ou false para enviar
+                $mention = $mention ? 'true' : 'false';
+
+                // Executa o script no navegador
+                $body    = $page->evaluate("window.WUAPI.sendText('$chatId', '$text', $mention);");
+                $content = $body['result']['result']['value'];
+            }
 
             return $content;
         } catch (\Throwable $th) {
@@ -81,12 +86,18 @@ class MessageWhatsapp {
             // Normalizar texto para UTF-8 (se necessário)
             $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
             
-            // Seta o script para enviar a imagem
-            $script = "window.WUAPI.sendLinkPreview('$chatId', '$text', '$link');";
+            // Envia para o socket
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'sendLinkPreview', ['chatId' => $chatId, 'text' => $text, 'link' => $link]);
+            } else {
+                // Seta o script para enviar a imagem
+                $script = "window.WUAPI.sendLinkPreview('$chatId', '$text \n \n $link', '$link');";
+    
+                // Executa o script no navegador
+                $body = $page->evaluate($script);
+                $content = $body['result']['result']['value'];
+            }
 
-            // Executa o script no navegador
-            $body = $page->evaluate($script);
-            $content = $body['result']['result']['value'];
 
             return $content;
         } catch (\Throwable $th) {
@@ -117,9 +128,14 @@ class MessageWhatsapp {
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-            // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendVcard('$chatId', '$title', '$contact');");
-            $content = $body['result']['result']['value'];
+            // Envia para o socket
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'sendVcard', ['chatId' => $chatId, 'title' => $title, 'contact' => $contact]);
+            } else {
+                // Executa o script no navegador
+                $body    = $page->evaluate("window.WUAPI.sendVcard('$chatId', '$title', '$contact');");
+                $content = $body['result']['result']['value'];
+            }
 
             return $content;
         } catch (\Throwable $th) {
@@ -155,11 +171,10 @@ class MessageWhatsapp {
             // Normalizar texto para UTF-8 (se necessário)
             $caption = str_replace(["´", "`", "'"], ["", "", ""], $caption);
 
-            // Verifica a conexão
-            $content = $page->evaluate("window.WUAPI.checkConnection();")['result']['result']['value'];
-
-            // Versão do via navegador
-            if(!isset($content['isSocket']) || isset($content['isSocket']) && !$content['isSocket']) {
+            // Envia para o socket
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'sendFile', ['chatId' => $chatId, 'caption' => $caption, 'path' => "/storage/$fileName"]);
+            } else {
                 // Seta o caption temporário
                 $randomNameVar = strtolower(Str::random(6));
                 $page->evaluate("localStorage.setItem('$randomNameVar', `$caption`);");
@@ -176,12 +191,6 @@ class MessageWhatsapp {
     
                 // Remove o item temporário
                 $page->evaluate("localStorage.removeItem(`$randomNameVar`);");
-            }
-            // versão via socket
-            else {
-                // Executa o script no navegador
-                $body    = $page->evaluate("window.WUAPI.sendFile(\"$chatId\", \"$caption\", \"/storage/$fileName\");");
-                $content = $body['result']['result']['value'];
             }
 
             return $content;
@@ -260,9 +269,14 @@ class MessageWhatsapp {
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-            // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendPoll('$chatId', '{$poll['name']}', " . json_encode($auxOptions) . ", {$poll['selectableCount']});");
-            $content = $body['result']['result']['value'];
+            // Envia para o socket
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'sendPoll', ['chatId' => $chatId, 'title' => $poll['name'], 'options' => json_encode($auxOptions)]);
+            } else {
+                // Executa o script no navegador
+                $body    = $page->evaluate("window.WUAPI.sendPoll('$chatId', '{$poll['name']}', " . json_encode($auxOptions) . ", {$poll['selectableCount']});");
+                $content = $body['result']['result']['value'];
+            }
 
             return $content;
         } catch (\Throwable $th) {

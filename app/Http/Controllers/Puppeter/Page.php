@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Puppeter;
 use App\Http\Controllers\Puppeter\Websocketpuppeteer;
+use Illuminate\Support\Facades\Http;
 
 Class Page {
 
@@ -10,7 +11,7 @@ Class Page {
      *
      * @param string $urlSocket
      */
-    public function __construct(private string $urlSocket, private string $targetId)
+    public function __construct(private string $urlSocket, private string $targetId, public bool $isSocket = false)
     {
     }
 
@@ -206,5 +207,18 @@ Class Page {
             'id' => 1,
             'method' => 'Network.clearBrowserCookies',
         ]);
+    }
+
+    /**
+     * Método para enviar uma ação via socket
+     *
+     * @param string $sessionId
+     * @param array  $params
+     * 
+     * @return array
+     */
+    public function sendActionSocket(string $sessionId, string $typeFn, array $params = [])
+    {
+        return Http::post("http://{$sessionId}/send-action/{$typeFn}", $params)->json();
     }
 }

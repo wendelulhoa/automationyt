@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Puppeter;
 use App\Http\Controllers\Puppeter\Websocketpuppeteer;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 Class Browser {
@@ -151,7 +152,7 @@ Class Browser {
         // Pega o ID da aba
         $targetId = $result['result']['targetId'];
 
-        return new Page("{$this->url}/devtools/page/{$targetId}", $targetId);
+        return new Page("{$this->url}/devtools/page/{$targetId}", $targetId, $this->isSocket());
     }
 
     /**
@@ -170,7 +171,7 @@ Class Browser {
         $pages = [];
         foreach ($result['result']['targetInfos'] as $value) {
             if($value['type'] == 'page' && !in_array($value['url'], ['chrome://privacy-sandbox-dialog/notice', 'about:blank', 'chrome-untrusted://new-tab-page/one-google-bar?paramsencoded="'])) {
-                $pages[] = new Page("{$this->url}/devtools/page/{$value['targetId']}", $value['targetId']);
+                $pages[] = new Page("{$this->url}/devtools/page/{$value['targetId']}", $value['targetId'], $this->isSocket());
             }
         }
 
@@ -317,5 +318,26 @@ Class Browser {
     private function isPortInUse(int $port): bool
     {
         return in_array($port, $this->portsInUse);
+    }
+
+    /**
+     * Verifica se a sessão é um socket
+     *
+     * @param string $sessionId
+     *
+     * @return bool
+     */
+    public function isSocket(): bool
+    {
+        try {
+            // Desconecta do whatsapp
+            $content = Cache::remember("issocket-{$this->sessionId}", now()->addMinutes(30), function () {
+                return Http::get("{$this->url}/issocket")->json();
+            }); 
+
+            return isset($content['socket']) && $content['socket'];
+        } catch (\Throwable $th) {
+            return false;
+        }
     }
 }
