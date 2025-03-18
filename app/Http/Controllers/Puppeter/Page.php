@@ -219,6 +219,6 @@ Class Page {
      */
     public function sendActionSocket(string $sessionId, string $typeFn, array $params = [])
     {
-        return Http::post("http://{$sessionId}/send-action/{$typeFn}", $params)->json();
+        return Http::timeout(120)->post("http://{$sessionId}/send-action/{$typeFn}", $params)->json();
     }
 }

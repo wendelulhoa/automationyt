@@ -50,7 +50,7 @@ class MessageWhatsapp {
                 $mention = $mention ? 'true' : 'false';
 
                 // Executa o script no navegador
-                $body    = $page->evaluate("window.WUAPI.sendText('$chatId', '$text', $mention);");
+                $body    = $page->evaluate("window.WUAPI.sendText('$chatId', `$text`, $mention);");
                 $content = $body['result']['result']['value'];
             }
 
@@ -91,7 +91,7 @@ class MessageWhatsapp {
                 $content = $page->sendActionSocket($sessionId, 'sendLinkPreview', ['chatId' => $chatId, 'text' => "$text \n \n $link", 'link' => $link]);
             } else {
                 // Seta o script para enviar a imagem
-                $script = "window.WUAPI.sendLinkPreview('$chatId', '$text \n \n $link', '$link');";
+                $script = "window.WUAPI.sendLinkPreview('$chatId', `$text \n \n $link`, '$link');";
     
                 // Executa o script no navegador
                 $body = $page->evaluate($script);
