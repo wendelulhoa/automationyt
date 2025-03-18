@@ -57,8 +57,12 @@ class CommunityWhatsapp
                 ];
             }
 
-            // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.createCommunity('$subject');")['result']['result']['value'];
+            // Envia para o socket
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'createCommunity', ['subject' => $subject]);
+            } else {
+                $content = $page->evaluate("window.WUAPI.createCommunity('$subject');")['result']['result']['value'];
+            }
 
             // Caso dê sucesso, pega a comunidade pai.
             if($content['success']) {

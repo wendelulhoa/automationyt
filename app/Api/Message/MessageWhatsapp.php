@@ -88,7 +88,7 @@ class MessageWhatsapp {
             
             // Envia para o socket
             if($page->isSocket) {
-                $content = $page->sendActionSocket($sessionId, 'sendLinkPreview', ['chatId' => $chatId, 'text' => $text, 'link' => $link]);
+                $content = $page->sendActionSocket($sessionId, 'sendLinkPreview', ['chatId' => $chatId, 'text' => "$text \n \n $link", 'link' => $link]);
             } else {
                 // Seta o script para enviar a imagem
                 $script = "window.WUAPI.sendLinkPreview('$chatId', '$text \n \n $link', '$link');";
