@@ -469,7 +469,7 @@ class GroupWhatsapp
             $content = $page->evaluate("window.WUAPI.getGroupInfoFromInviteCode('$inviteCode');")['result']['result']['value'];
 
             // Coloca o serialized
-            $content['owner'] = ($content['owner'] ?? $content['owner']['_serialized'] ?? $content['descOwner']['_serialized'] ?? null);
+            $content['owner'] = ($content['owner']['_serialized'] ?? $content['owner'] ?? $content['descOwner']['_serialized'] ?? null);
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;

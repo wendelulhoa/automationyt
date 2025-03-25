@@ -191,6 +191,7 @@ trait UtilWhatsapp
 
             // Caso seja c.us é por que é número de telefone
             if(strpos($id, '@c.us') !== false) {
+                $id = str_replace('-', '', $id);
                 $id = $this->removeNineDigit($id);
             }
 
