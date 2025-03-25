@@ -55,7 +55,7 @@ class SendWebookCommand extends Command
     {
         // Pega só os números dos participantes
         foreach ($participants as $key => $participant) {
-            $participants[$key] = $participant['user'];
+            $participants[$key] = isset($participant['user']) ? $participant['user'] : $participant;
         }
 
         return $participants;
@@ -81,7 +81,7 @@ class SendWebookCommand extends Command
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                 // Seta os grupos
-                $events = $page->evaluate("window.WUAPI.webhookEvents")['result']['result']['value'];
+                $events = $page->isSocket ? $page->evaluate("window.WUAPI.getWebhooks()")['result']['result']['value'] : $page->evaluate("window.WUAPI.webhookEvents")['result']['result']['value'];
             } catch (\Throwable $th) {
                 continue;
             }
@@ -92,7 +92,7 @@ class SendWebookCommand extends Command
                     // Caso não for webhook não envia o webhook.
                     if(!$instance->webhook) {
                         // Deleta os evento
-                        $page->evaluate("window.WUAPI.webhookEvents = {}");
+                        $page->isSocket ? $page->evaluate("window.WUAPI.clearWebhooks()") : $page->evaluate("window.WUAPI.webhookEvents = {}");
                         continue;
                     }
 
@@ -116,8 +116,8 @@ class SendWebookCommand extends Command
                     $params['author']      = isset($event['author']) ? $event['author']['user'] : null;
                     $params['action']      = $this->getAction($event['subtype']);
                     $params['participant'] = $this->getParticipantsNumber($event['recipients'])[0];
-                    $params['msgid']       = $params['action'] == 'msgreceived' ? $event['id']['_serialized'] : null;
-                    $params['content']     = $params['action'] == 'msgreceived' ? $event['body'] : null;
+                    $params['msgid']       = $params['action'] == 'msgreceived' ? $event['id']['_serialized'] ?? $event['id']['id'] ?? null : null;
+                    $params['content']     = $params['action'] == 'msgreceived' ? $event['body'] ?? null : null;
                     $params['session']     = $sessionId;
 
                     // Retira o conteúdo para salvar o log
@@ -132,7 +132,7 @@ class SendWebookCommand extends Command
                     if (!in_array($event['id']['remote']['user'], ['status'])) {
                         // Faz o envio do webhook
                         $response = Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
-                        
+
                         // Verifica se a chave "message" existe e contém "Internal Server Error"
                         if (isset($response['message']) && trim($response['message']) === trim('Internal Server Error')) {
                             throw new Exception("Erro interno no servidor: " . $response['message']);
@@ -152,7 +152,7 @@ class SendWebookCommand extends Command
                 }
 
                 // Deleta o evento
-                $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
+                $page->isSocket ? $page->evaluate("window.WUAPI.deleteWebhook('$id')") : $page->evaluate("delete window.WUAPI.webhookEvents['$id']");
             }
         }
     }
