@@ -5,8 +5,6 @@ namespace App\Api\Message;
 use App\Http\Controllers\Puppeter\Puppeteer;
 use App\Traits\UtilWhatsapp;
 use Illuminate\Support\Str;
-use Hazaveh\LinkPreview\Client;
-use Illuminate\Support\Facades\Cache;
 
 class MessageWhatsapp {
     use UtilWhatsapp;
@@ -225,15 +223,20 @@ class MessageWhatsapp {
             // Pega o nome do arquivo e caso não exista, baixa o arquivo
             $fileName = $this->downloadFileAndSet($path);
 
-            // Adiciona o input file no DOM
-            [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
-            
-            // Seta o arquivo no input
-            $page->setFileInput($backendNodeId, "/storage/$fileName");
-
-            // Executa o script no navegador
-            $body    = $page->evaluate("window.WUAPI.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");");
-            $content = $body['result']['result']['value'];
+            // Envia para o socket
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'sendFile', ['chatId' => $chatId, 'path' => "/storage/$fileName"]);
+            } else {
+                // Adiciona o input file no DOM
+                [$backendNodeId, $nameFileInput] = $this->addInputFile($page);
+                
+                // Seta o arquivo no input
+                $page->setFileInput($backendNodeId, "/storage/$fileName");
+    
+                // Executa o script no navegador
+                $body    = $page->evaluate("window.WUAPI.sendAudio(\"$chatId\", \"[data-$nameFileInput]\");");
+                $content = $body['result']['result']['value'];
+            }
 
             return $content;
         } catch (\Throwable $th) {
