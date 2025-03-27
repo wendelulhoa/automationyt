@@ -121,7 +121,10 @@ class WhatsappController extends Controller
                $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                // Verifica a conexão
-               $page->evaluate("window.WUAPI.disconnect();");
+               $response = $page->evaluate("window.WUAPI.disconnect();");
+
+               // Aguarda 10s
+               sleep(10);
 
                // Retira da instância
                cache()->forget("instance-{$sessionId}");
@@ -132,7 +135,8 @@ class WhatsappController extends Controller
                // Retorna o resultado em JSON
                return response()->json([
                     'success' => true,
-                    'message' => 'Desconectado com sucesso'
+                    'message' => 'Desconectado com sucesso',
+                    'result'  => $response
                ], 200);
           } catch (\Throwable $th) {
                // Em caso de erro, retorna uma resposta de falha

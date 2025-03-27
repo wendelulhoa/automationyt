@@ -160,7 +160,12 @@ class GroupWhatsapp
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
             // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.setGroupSubject('$groupId', '$subject');")['result']['result']['value'];
+            // A descrição do grupo
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'setGroupSubject', ['chatId' => $groupId, 'subject' => $subject]);
+            } else {
+                $content = $page->evaluate("window.WUAPI.setGroupSubject('$groupId', '$subject');")['result']['result']['value'];
+            }
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
@@ -190,8 +195,12 @@ class GroupWhatsapp
             // Cria uma nova página e navega até a URL
             $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
-            // Seta os grupos
-            $content = $page->evaluate("window.WUAPI.setGroupDescription('$groupId', '$description');")['result']['result']['value'];
+            // A descrição do grupo
+            if($page->isSocket) {
+                $content = $page->sendActionSocket($sessionId, 'setGroupDescription', ['chatId' => $groupId, 'description' => $description]);
+            } else {
+                $content = $page->evaluate("window.WUAPI.setGroupDescription('$groupId', '$description');")['result']['result']['value'];
+            }
 
             // Retorna a resposta JSON com a mensagem de sucesso
             return $content;
