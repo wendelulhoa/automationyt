@@ -31,9 +31,11 @@ if [ -d "$DEST_DIR" ]; then
   git pull && docker compose build && docker compose up -d
 else 
   # Clona o repositório para o diretório especificado
-  git clone git@github.com:wendelulhoa/docker-chrome-wuapi.git "$DEST_DIR"
+  # git clone git@github.com:wendelulhoa/docker-chrome-wuapi.git "$DEST_DIR"
+  # cd "$DEST_DIR"
+  # git checkout beta-proxy
+  git clone git@github.com:wendelulhoa/wuapi-socket.git "$DEST_DIR"
   cd "$DEST_DIR"
-  git checkout beta-proxy
 
   # Remove o arquivo de configuração do Docker
   rm -rf ~/.docker/config.json
