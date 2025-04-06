@@ -40,6 +40,9 @@ class MessageWhatsapp {
             // Normalizar texto para UTF-8 (se necessário)
             $text = str_replace(["´", "`", "'"], ["", "", ""], $text);
 
+            // Caso seja um telefone não tem como mencionar
+            $mention = strpos($chatId, '@c.us') !== false ? false : $mention;
+
             // Envia para o socket
             if($page->isSocket) {
                 $content = $page->sendActionSocket($sessionId, 'sendText', ['chatId' => $chatId, 'text' => $text, 'mention' => $mention]);
