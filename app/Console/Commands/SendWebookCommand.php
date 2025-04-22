@@ -82,7 +82,7 @@ class SendWebookCommand extends Command
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
 
                 // Caso for socket será enviado da própria instância
-                if($page->isSocket && in_array($sessionId, ['session244'])) {
+                if($page->isSocket) {
                     continue;
                 }
 
