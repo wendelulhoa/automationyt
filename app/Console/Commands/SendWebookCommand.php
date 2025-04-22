@@ -68,6 +68,7 @@ class SendWebookCommand extends Command
     {
         // Busca as instâncias conectadas
         $instances = Instance::where(['connected' => true])->get();
+        $webhookUrl = 'https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2';
         
         // Seta o log de inicio
         Log::channel('daily')->info("Começou o envio de webhook");
@@ -79,6 +80,11 @@ class SendWebookCommand extends Command
             // Cria uma nova página e navega até a URL
             try {
                 $page = (new Puppeteer)->init($sessionId, 'https://web.whatsapp.com', view('whatsapp-functions.injected-functions-minified')->render(), 'window.WUAPI');
+
+                // Caso for socket será enviado da própria instância
+                if($page->isSocket && in_array($sessionId, ['session244'])) {
+                    continue;
+                }
 
                 // Seta os grupos
                 $events = $page->isSocket ? $page->evaluate("window.WUAPI.getWebhooks()")['result']['result']['value'] : $page->evaluate("window.WUAPI.webhookEvents")['result']['result']['value'];
@@ -99,7 +105,7 @@ class SendWebookCommand extends Command
                     // Caso tenha no cache é por está em uso
                     if(cache()->has($id) || empty($event['recipients'][0])) continue;
 
-                    // Adiciona o prefixo base64 correto, incluindo o tipo MIME
+                    // Adiciona o cache para não enviar novamente
                     cache()->put($id, $id, now()->addMinutes(2));
 
                     // Sempre reseta os paramêtros
@@ -131,7 +137,7 @@ class SendWebookCommand extends Command
                     // Monta os paramêtros do webhook e envia o webhook
                     if (!in_array($event['id']['remote']['user'], ['status'])) {
                         // Faz o envio do webhook
-                        $response = Http::post('https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2', $params);
+                        $response = Http::post($webhookUrl, $params);
 
                         // Verifica se a chave "message" existe e contém "Internal Server Error"
                         if (isset($response['message']) && trim($response['message']) === trim('Internal Server Error')) {
