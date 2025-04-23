@@ -20,21 +20,17 @@ services:
         image: wuapi
         container_name: server-wuapi
         build:
-            context: ./.docker/server
+            context: ./docker
             dockerfile: Dockerfile
             args:
-                WWWUSER: ${WWWUSER:-developer}
+                WWWUSER: ${WWWUSER:-1000}
                 WWWGROUP: ${WWWGROUP:-1000}
-        environment:
-            GITNAME: ${GITNAME:-developer}
-            GITEMAIL: ${GITEMAIL:-developer@ulhoa.com}
         restart: always
         ports:
             - "8001:80"
         working_dir: /var/www/html/wuapi
         volumes:
             - .:/var/www/html/wuapi
-            - ~/.ssh:/root/.ssh
             - storage-wuapi:/storage
         extra_hosts:
             - "host.docker.internal:host-gateway"
@@ -62,11 +58,11 @@ networks:
     dev-wuapi:
         driver: bridge
     redewuapi:
-        external: true
+        driver: bridge
 
 volumes:
     mysql_data:
         driver: local
     storage-wuapi:
-        external: true
+        driver: local
         name: storage-wuapi
