@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+## Variáveis
+source .env
+
+## Define usuário e Permissões dos arquivos
+chown sail:www-data -R /var/www/html/wuapi/
+chmod 775 -R /var/www/html/wuapi/
+
+### Instala os pacotes do composer
+if [ "$APP_ENV" = "production" ]; then
+    composer install --no-interaction --no-dev
+else
+    composer install --no-interaction
+fi
+
+### Otimização da aplicação
+php artisan clear-compiled && php artisan optimize:clear
+
+## Instala os pacotes do npm
+# npm ci && npm run build
+
+## Iniciar o Supervisor
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
