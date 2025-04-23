@@ -58,11 +58,11 @@ networks:
     dev-wuapi:
         driver: bridge
     redewuapi:
-        driver: bridge
+        external: true
 
 volumes:
     mysql_data:
         driver: local
     storage-wuapi:
-        driver: local
+        external: true
         name: storage-wuapi
