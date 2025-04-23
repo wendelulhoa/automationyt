@@ -2,7 +2,8 @@
 
 # Variáveis
 SESSION_ID=$1
-DEST_DIR="/root/chrome-sessions/$SESSION_ID"
+DEST_DIR=$(dirname $(pwd))"/chrome-sessions/$SESSION_ID"
+
 
 # Verifica se os argumentos SESSION_ID e PORT foram passados
 if [ -z "$1" ]; then

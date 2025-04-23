@@ -2,8 +2,8 @@
 
 # Variáveis
 SESSION_ID=$1
-DEST_DIR="/root/chrome-sessions/$SESSION_ID"
-WUAPI_DIR="/root/wuapi/chrome-sessions/$SESSION_ID"
+DEST_DIR=$(dirname $(pwd))"/chrome-sessions/$SESSION_ID"
+WUAPI_DIR=$(pwd)"/chrome-sessions/$SESSION_ID"
 
 # Verifica se os argumentos SESSION_ID foi passado
 if [ -z "$1" ]; then
@@ -22,6 +22,6 @@ if [ -d "$DEST_DIR" ]; then
   rm -rf "$DEST_DIR"
 
   # Remove o cache
-  docker rmi "$SESSION_ID"-chrome:latest
+  docker rmi "$SESSION_ID"-websocket
 fi
 

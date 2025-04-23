@@ -3,10 +3,10 @@
 # Variáveis
 SESSION_ID=$1
 PORT=$2
-DEST_DIR="/root/chrome-sessions/$SESSION_ID"
-WUAPI_DIR="/root/wuapi/chrome-sessions/$SESSION_ID"
+DEST_DIR=$(dirname $(pwd))"/chrome-sessions/$SESSION_ID"
+WUAPI_DIR=$(pwd)"/chrome-sessions/$SESSION_ID"
 
-# Verifica se os argumentos SESSION_ID e PORT foram passados
+#Verifica se os argumentos SESSION_ID e PORT foram passados
 if [ -z "$1" ] || [ -z "$2" ]; then
   echo "Uso: $0 SESSION_ID PORT"
   exit 1

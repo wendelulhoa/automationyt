@@ -36,9 +36,9 @@ RUN pecl install redis && docker-php-ext-enable redis && rm -rf /tmp/pear
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 ## Usuário
-ARG WWWGROUP=1337
+ARG WWWGROUP
 RUN groupadd --force -g $WWWGROUP sail && \
-    useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
+    useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u $WWWGROUP sail
 
 ## Copia arquivos de configuração
 COPY --chown=sail:sail supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf

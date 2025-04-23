@@ -3,6 +3,7 @@ const http = require('http');
 const axios = require('axios');
 const bodyParser = require('body-parser');
 const { exec } = require('child_process');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -38,7 +39,8 @@ app.post('/start-instance', async (req, res) => {
         const {port, session_id} = req.body;
 
         // Sobe a instância
-        exec(`/root/wuapi/scripts/start_instance.sh ${session_id} ${port} &`)
+        const scriptPath = path.join(__dirname, 'start_instance.sh');
+        exec(`${scriptPath} ${session_id} ${port} &`);
 
         // espera 30s
         for (let index = 0; index < 30; index++) {
@@ -68,7 +70,8 @@ app.post('/restart-instance', async (req, res) => {
         const {session_id} = req.body;
 
         // Sobe a instância
-        exec(`/root/wuapi/scripts/restart_instance.sh ${session_id} &`)
+        const scriptPath = path.join(__dirname, 'restart_instance.sh');
+        exec(`${scriptPath} ${session_id} &`);
 
         // Log
         console.log(`Reiniciou a instância: ${session_id}`)
@@ -86,8 +89,8 @@ app.post('/stop-instance', async (req, res) => {
         const {session_id} = req.body;
 
         // Sobe a instância
-        
-        exec(`/root/wuapi/scripts/stop_instance.sh ${session_id} &`);
+        const scriptPath = path.join(__dirname, 'stop_instance.sh');
+        exec(`${scriptPath} ${session_id} &`);
 
         // Log
         console.log(`desconectou a instância: ${session_id}`)
