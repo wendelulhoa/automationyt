@@ -1,1 +1,1 @@
-* * * * * /bin/php /var/www/html/wuapi/artisan schedule:run >> /dev/null 2>&1
+* * * * * /usr/local/bin/php /var/www/html/wuapi/artisan schedule:run >> /dev/null 2>&1
