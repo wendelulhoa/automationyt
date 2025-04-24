@@ -1,0 +1,21 @@
+version: '3'
+
+silent: true
+
+tasks:
+  default:
+    cmds:
+      - task: config_server
+
+  config_server:
+    desc: Configura o servidor
+    cmds:
+      - bash config_server_docker.sh
+      - echo "Configurado com sucesso!"
+
+  start:*:
+    desc: Inicia o servidor
+    vars:
+      SESSION: "{{ index .MATCH 0 }}"
+    cmds:
+      - echo "Iniciando a instância -> {{.SESSION}}"
