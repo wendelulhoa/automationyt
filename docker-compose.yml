@@ -31,7 +31,7 @@ services:
         working_dir: /var/www/html/wuapi
         volumes:
             - .:/var/www/html/wuapi
-            - storage-wuapi:/storage
+            - storage-wuapi:/storage:rw
         extra_hosts:
             - "host.docker.internal:host-gateway"
         networks:
