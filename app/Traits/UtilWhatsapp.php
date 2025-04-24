@@ -71,9 +71,6 @@ trait UtilWhatsapp
             // Salva o arquivo na raiz do container
             file_put_contents("/storage/$fileName", $fileContent);
 
-            // Define as permissões para 777
-            chmod("/storage/$fileName", 0777);
-
             // Faz a converção para sempre ficar no padrão do whatsapp.
             if(in_array($extension, ['mp3', 'ogg', 'mpeg', 'opus'])) {
                 // Converte para o formato m4a para depois renomear para ogg

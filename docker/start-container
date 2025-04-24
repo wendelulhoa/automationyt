@@ -7,6 +7,10 @@ source .env
 chown sail:www-data -R /var/www/html/wuapi/
 chmod 775 -R /var/www/html/wuapi/
 
+# Ajuste permissões da pasta storage
+chown -R www-data:www-data /storage
+chmod -R 775 /storage
+
 ### Instala os pacotes do composer
 if [ "$APP_ENV" = "production" ]; then
     composer install --no-interaction --no-dev
