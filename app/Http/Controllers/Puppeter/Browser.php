@@ -124,7 +124,6 @@ Class Browser {
 
     /**
      * Método para obter a conexão
-     *
      * @return Websocketpuppeteer
      */
     public function connection(): Websocketpuppeteer
