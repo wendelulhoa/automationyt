@@ -1,13 +1,7 @@
 # Obtém o caminho do diretório das sessões do chrome
 CHROME_PATH=$(dirname $(pwd))
 
-# Cria o volume de storage
-docker volume create storage-wuapi
-
-# Cria uma nova rede da wuapi
-docker network create redewuapi
-
-#  Instala o node e npm
+# Instala o node e npm
 sudo apt install nodejs npm -y
 
 # Configura o js do server de controle de instâncias

@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+# Detecta o sistema operacional
+UNAMEOUT="$(uname -s)"
+case "${UNAMEOUT}" in
+    Linux*)  MACHINE=linux ;;
+    Darwin*) MACHINE=mac ;;
+    *)       MACHINE="UNKNOWN" ;;
+esac
+
+if [[ "$MACHINE" == "UNKNOWN" ]]; then
+    echo "Sistema operacional não suportado: $(uname -s)." >&2
+    exit 1
+fi
+
+# Cores e estilos, apenas se estiver em terminal e suportado
+if [[ -t 1 ]]; then
+    ncolors=$(tput colors)
+    if [[ -n "$ncolors" && "$ncolors" -ge 8 ]]; then
+        BOLD=$(tput bold)
+        YELLOW=$(tput setaf 3)
+        GREEN=$(tput setaf 2)
+        RED=$(tput setaf 1)
+        NC=$(tput sgr0)
+    fi
+fi
+
+# Função de ajuda
+function display_help() {
+    echo -e "${YELLOW}Uso:${NC}"
+    echo
+    echo -e "  ${GREEN}$0 config${NC}                      ${BOLD}→${NC} Configura o servidor"
+    echo -e "  ${GREEN}$0 start <INSTANCE> <PORT>${NC}     ${BOLD}→${NC} Cria e inicia uma instância"
+    echo -e "  ${GREEN}$0 stop <INSTANCE>${NC}             ${BOLD}→${NC} Para e remove uma instância"
+    echo -e "  ${GREEN}$0 restart <INSTANCE>${NC}          ${BOLD}→${NC} Reinicia uma instância"
+    echo -e "  ${GREEN}$0 reboot${NC}                      ${BOLD}→${NC} Reinicia o servidor"
+    echo
+    echo -e "${YELLOW}Docker Compose:${NC}"
+    echo -e "  ${GREEN}$0 up${NC}                          ${BOLD}→${NC} Inicia os serviços"
+    echo -e "  ${GREEN}$0 up -d${NC}                       ${BOLD}→${NC} Inicia os serviços em background"
+    echo -e "  ${GREEN}$0 down${NC}                        ${BOLD}→${NC} Para os serviços"
+    echo -e "  ${GREEN}$0 restart${NC}                     ${BOLD}→${NC} Reinicia os serviços"
+    echo -e "  ${GREEN}$0 ps${NC}                          ${BOLD}→${NC} Mostra status dos containers"
+    echo -e "  ${GREEN}$0 logs${NC}                        ${BOLD}→${NC} Mostra logs dos containers"
+    echo -e "  ${GREEN}$0 stats${NC}                       ${BOLD}→${NC} Mostra estatísticas dos containers"
+    echo
+
+    exit 1
+}
+
+# Exibe ajuda se não houver argumentos ou se argumento for help
+if [[ $# -eq 0 || "$1" =~ ^(-h|--help|help|-help)$ ]]; then
+    display_help
+fi
+
+# Funções de ação
+function config() {
+    echo -e "${GREEN}Configurando o servidor...${NC}"
+    bash config_server_docker.sh
+}
+
+function start() {
+    if [[ -z "$1" || -z "$2" ]]; then
+        echo -e "${RED}Erro: instância e porta são obrigatórios para 'start'.${NC}"
+        display_help
+    fi
+    echo -e "${GREEN}Iniciando a instância '$1' na porta '$2'...${NC}"
+    bash scripts/start_instance.sh "$1" "$2"
+}
+
+function stop() {
+    if [[ -z "$1" ]]; then
+        echo -e "${RED}Erro: instância é obrigatória para 'stop'.${NC}"
+        display_help
+    fi
+    echo -e "${GREEN}Parando a instância '$1'...${NC}"
+    bash scripts/stop_instance.sh "$1"
+}
+
+function restart() {
+    if [[ -z "$1" ]]; then
+        echo -e "${RED}Erro: instância é obrigatória para 'restart'.${NC}"
+        display_help
+    fi
+    echo -e "${GREEN}Reiniciando a instância '$1'...${NC}"
+    bash scripts/restart_instance.sh "$1"
+}
+
+function reboot() {
+    echo -e "${GREEN}Reiniciando o servidor...${NC}"
+    bash reboot_server.sh
+}
+
+# Comando principal
+case "$1" in
+    config)  config ;;
+    start)   start "$2" "$3" ;;
+    stop)    stop "$2" ;;
+    restart) restart "$2" ;;
+    reboot)  reboot ;;
+    up|ps|down|logs|stats)
+        docker compose "$@"
+        ;;
+    *)
+        echo -e "${RED}Erro: opção inválida '${1}'.${NC}"
+        display_help
+        ;;
+esac
