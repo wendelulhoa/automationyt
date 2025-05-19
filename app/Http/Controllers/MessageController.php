@@ -109,11 +109,12 @@ class MessageController extends Controller
             $params = $request->validate([
                 'chatId' => 'required|string',
                 'caption' => 'nullable|string',
-                'path' => 'required|string'
+                'path' => 'required|string',
+                'fileName' => 'nullable|string'
             ]);
 
             // Faz o envio da mensagem
-            $content = (new MessageWhatsapp)->sendFile($sessionId, $params['chatId'], $params['caption'], $params['path']);
+            $content = (new MessageWhatsapp)->sendFile($sessionId, $params['chatId'], $params['caption'], $params['path'], $params['fileName'] ?? '');
 
             // Gera o log de envio de mensagem
             $this->setLog("$sessionId - sendFile: Enviou a mensagem para {$params['chatId']}", $content);

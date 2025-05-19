@@ -151,10 +151,11 @@ class MessageWhatsapp {
      * @param string      $chatId    = Id do chat
      * @param string|null $caption   = Legenda
      * @param string      $path      = Caminho do arquivo
+     * @param string|null $originalFilename  = Nome original do arquivo
      * 
      * @return array
      */
-    public function sendFile(string $sessionId, string $chatId, string|null $caption, string $path): array
+    public function sendFile(string $sessionId, string $chatId, string|null $caption, string $path, string|null $originalFilename): array
     {
         try {
             // Pega o chatId
@@ -174,7 +175,7 @@ class MessageWhatsapp {
 
             // Envia para o socket
             if($page->isSocket) {
-                $content = $page->sendActionSocket($sessionId, 'sendFile', ['chatId' => $chatId, 'caption' => $caption, 'path' => "/storage/$fileName"]);
+                $content = $page->sendActionSocket($sessionId, 'sendFile', ['chatId' => $chatId, 'caption' => $caption, 'path' => "/storage/$fileName", 'fileName' => $originalFilename]);
             } else {
                 // Seta o caption temporário
                 $randomNameVar = strtolower(Str::random(6));
