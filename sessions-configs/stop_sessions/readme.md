@@ -1,1 +1,0 @@
-Sessões a serem desligadas
