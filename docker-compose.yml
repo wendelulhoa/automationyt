@@ -1,11 +1,11 @@
 services:
     db-mysql:
         image: mysql:8.0.33
-        container_name: mysql-wuapi
+        container_name: mysql-automationyt
         command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
         restart: always
         environment:
-            MYSQL_DATABASE: ${DB_DATABASE:-wuapi}
+            MYSQL_DATABASE: ${DB_DATABASE:-automationyt}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234567}
             MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
         ports:
@@ -13,12 +13,12 @@ services:
         volumes:
             - mysql_data:/var/lib/mysql
         networks:
-            - dev-wuapi
+            - dev-automationyt
     web:
         depends_on:
             - db-mysql
-        image: wuapi
-        container_name: server-wuapi
+        image: automationyt
+        container_name: server-automationyt
         build:
             context: ./docker
             dockerfile: Dockerfile
@@ -28,15 +28,15 @@ services:
         restart: always
         ports:
             - "8007:80"
-        working_dir: /var/www/html/wuapi
+        working_dir: /var/www/html/automationyt
         volumes:
-            - .:/var/www/html/wuapi
-            - storage-wuapi:/storage:rw
+            - .:/var/www/html/automationyt
+            - storage-automationyt:/storage:rw
         extra_hosts:
             - "host.docker.internal:host-gateway"
         networks:
-            - dev-wuapi
-            - redewuapi
+            - dev-automationyt
+            - redeautomationyt
         cap_add:
             - NET_ADMIN
         links:
@@ -44,7 +44,7 @@ services:
     
     redis:
         image: redis:latest
-        container_name: redis-wuapi
+        container_name: redis-automationyt
         restart: always
         healthcheck:
             test: ["CMD", "redis-cli", "ping"]
@@ -52,17 +52,17 @@ services:
             timeout: 2s
             retries: 3
         networks:
-            - dev-wuapi
+            - dev-automationyt
 
 networks:
-    dev-wuapi:
+    dev-automationyt:
         driver: bridge
-    redewuapi:
+    redeautomationyt:
         external: true
 
 volumes:
     mysql_data:
         driver: local
-    storage-wuapi:
+    storage-automationyt:
         external: true
-        name: storage-wuapi
+        name: storage-automationyt

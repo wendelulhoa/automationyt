@@ -4,8 +4,8 @@
 source .env
 
 ## Define usuário e Permissões dos arquivos
-chown sail:www-data -R /var/www/html/wuapi/
-chmod 775 -R /var/www/html/wuapi/
+chown sail:www-data -R /var/www/html/automationyt/
+chmod 775 -R /var/www/html/automationyt/
 
 # Ajuste permissões da pasta storage
 chown -R www-data:www-data /storage

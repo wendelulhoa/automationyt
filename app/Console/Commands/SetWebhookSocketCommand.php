@@ -29,7 +29,7 @@ class SetWebhookSocketCommand extends Command
     {
         // Busca as instâncias conectadas
         $instances = Instance::where(['connected' => true])->get();
-        $webhookUrl = 'https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-wuapi?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2';
+        $webhookUrl = 'https://y3280oikdc.execute-api.us-east-1.amazonaws.com/default/webhook-automationyt?x-api-key=c07422a6-5e18-4e1d-af6d-e50d152ef5d2';
 
         foreach ($instances as $instance) {
             // Cria uma nova página e navega até a URL

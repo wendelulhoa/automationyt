@@ -42,11 +42,11 @@ setup-env:
 create-docker-resources:
 	@echo "$(GREEN)[3/5] Criando volume e rede do Docker...$(NC)"
 	
-	@docker volume inspect storage-wuapi > /dev/null 2>&1 || \
-		docker volume create storage-wuapi
+	@docker volume inspect storage-automationyt > /dev/null 2>&1 || \
+		docker volume create storage-automationyt
 
-	@docker network inspect redewuapi > /dev/null 2>&1 || \
-		docker network create redewuapi
+	@docker network inspect redeautomationyt > /dev/null 2>&1 || \
+		docker network create redeautomationyt
 
 prepare-env:
 	@echo "$(GREEN)[4/5] Verificando arquivo .env...$(NC)"
