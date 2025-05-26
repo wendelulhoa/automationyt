@@ -4,7 +4,7 @@
 SESSION_ID=$1
 PORT=$2
 DEST_DIR=$(dirname $(pwd))"/chrome-sessions/$SESSION_ID"
-WUAPI_DIR=$(pwd)"/chrome-sessions/$SESSION_ID"
+AUTOMATIONYT_DIR=$(pwd)"/chrome-sessions/$SESSION_ID"
 
 #Verifica se os argumentos SESSION_ID e PORT foram passados
 if [ -z "$1" ] || [ -z "$2" ]; then
@@ -31,10 +31,7 @@ if [ -d "$DEST_DIR" ]; then
   git pull && docker compose build && docker compose up -d
 else 
   # Clona o repositório para o diretório especificado
-  git clone --depth 1 git@github.com:wendelulhoa/docker-chrome-automationyt.git "$DEST_DIR"
-  # cd "$DEST_DIR"
-  # git checkout beta-proxy
-  # git clone --depth 1 git@github.com:wendelulhoa/automationyt-socket.git "$DEST_DIR"
+  git clone --depth 1 git@github.com:wendelulhoa/docker-chrome-automation.git "$DEST_DIR"
   cd "$DEST_DIR"
 
   # Remove o arquivo de configuração do Docker
@@ -48,12 +45,12 @@ else
   chmod -R 777 "$DEST_DIR/userdata"
 
   # cria a pasta onde vai ficar o .env
-  mkdir -p $WUAPI_DIR
-  chmod -R 777 $WUAPI_DIR
+  mkdir -p $AUTOMATIONYT_DIR
+  chmod -R 777 $AUTOMATIONYT_DIR
 
   # Adiciona na automationyt tbm
-  echo "SESSION_ID=$SESSION_ID" > "$WUAPI_DIR/.env"
-  echo "PORT=$PORT" >> "$WUAPI_DIR/.env"
+  echo "SESSION_ID=$SESSION_ID" > "$AUTOMATIONYT_DIR/.env"
+  echo "PORT=$PORT" >> "$AUTOMATIONYT_DIR/.env"
 
   # Entra no diretório e inicia o Docker Compose
   cd "$DEST_DIR" || exit

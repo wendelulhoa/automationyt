@@ -25,7 +25,7 @@ class Puppeteer extends Controller
      * 
      * @return Page
      */
-    public function init(string $sessionId, string $url, string $script, string $existsFn = '', bool $reload = false): Page
+    public function init(string $sessionId, string $url = '', string $script, string $existsFn = '', bool $reload = false): Page
     {
         // Cria uma nova página e navega até a URL
         $browser = (new Browser($sessionId));
@@ -34,7 +34,7 @@ class Puppeteer extends Controller
         $page = $browser->getFirstPage();
 
         // Verifica se a URL atual é diferente da URL do WhatsApp
-        if(!(strpos($page->getCurrentUrl(), $url) !== false)) {
+        if(!empty($url) && !(strpos($page->getCurrentUrl(), $url) !== false)) {
             // Navega até a URL
             $page->navigate($url);
         }   

@@ -24,7 +24,7 @@ class CheckConnection
             $routeName = $request->route()->getName();
             
             // Caso esteja iniciada retorna mensagem de erro.
-            if(!in_array($routeName, ['wapiwu.getqrcode', 'wapiwu.startsession', 'wapiwu.restartsession', 'wapiwu.disconnect']) && !$this->checkConnection($sessionId)) {
+            if(!in_array($routeName, ['automationyt.startsession', 'automationyt.restartsession', 'automationyt.disconnect']) && !$this->checkConnection($sessionId)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Instância não iniciada.'

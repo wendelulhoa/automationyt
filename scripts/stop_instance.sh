@@ -3,7 +3,7 @@
 # Variáveis
 SESSION_ID=$1
 DEST_DIR=$(dirname $(pwd))"/chrome-sessions/$SESSION_ID"
-WUAPI_DIR=$(pwd)"/chrome-sessions/$SESSION_ID"
+AUTOMATIONYT_DIR=$(pwd)"/chrome-sessions/$SESSION_ID"
 
 # Verifica se os argumentos SESSION_ID foi passado
 if [ -z "$1" ]; then
@@ -18,7 +18,7 @@ if [ -d "$DEST_DIR" ]; then
   docker compose down --remove-orphans
   
   # Remove as pastas
-  rm -rf "$WUAPI_DIR"
+  rm -rf "$AUTOMATIONYT_DIR"
   rm -rf "$DEST_DIR"
 
   # Remove o cache
